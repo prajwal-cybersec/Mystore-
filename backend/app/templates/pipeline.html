@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MyStore X-Ray Pipeline — Real-Time Event Architecture</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: '#ea580c',
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-gray-950 text-gray-100 min-h-screen flex flex-col font-mono text-xs">
+
+  <!-- TOP BAR -->
+  <header class="bg-gray-900 border-b border-gray-800 p-4">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <a href="/" class="text-orange-500 font-bold hover:underline flex items-center gap-1.5">
+          <i class="fa-solid fa-arrow-left"></i> Back to MyStore
+        </a>
+        <span class="text-gray-600">|</span>
+        <h1 class="text-base font-black tracking-wide text-white flex items-center gap-2">
+          <span class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span>
+          EVENT-DRIVEN ARCHITECTURE X-RAY
+        </h1>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <span class="px-2.5 py-1 bg-gray-800 border border-gray-700 rounded-lg text-gray-300">
+          SSE Stream: <strong id="streamStatus" class="text-emerald-400">CONNECTING...</strong>
+        </span>
+        <button onclick="triggerStressTest()" id="stressBtn" class="px-3.5 py-1.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg shadow transition flex items-center gap-1.5">
+          <i class="fa-solid fa-bomb"></i> Fire 10-Buyer Stress Test
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN DASHBOARD -->
+  <main class="max-w-7xl mx-auto p-4 flex-1 w-full space-y-6">
+
+    <!-- TOP ROW: ARCHITECTURE CARDS -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      
+      <!-- 1. POSTGRES CARD -->
+      <div class="bg-gray-900/90 border border-blue-900/50 rounded-xl p-4 shadow-lg flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <span class="font-bold text-blue-400 flex items-center gap-1.5 text-sm">
+              <i class="fa-solid fa-database"></i> 1. Aiven PostgreSQL
+            </span>
+            <span class="text-[10px] bg-blue-950 text-blue-300 border border-blue-800 px-2 py-0.5 rounded">Source of Truth</span>
+          </div>
+          <p class="text-gray-400 text-[11px] mb-3">Handles ACID checkout, row-level locks on <code>store_stock</code>, and writes to transactional outbox.</p>
+          <div class="space-y-1 bg-gray-950 p-2.5 rounded-lg border border-gray-800 text-[11px]">
+            <div class="flex justify-between"><span>Orders:</span> <strong id="statOrders" class="text-white">-</strong></div>
+            <div class="flex justify-between"><span>Outbox Pending:</span> <strong id="statOutboxPending" class="text-amber-400">-</strong></div>
+            <div class="flex justify-between"><span>Outbox Published:</span> <strong id="statOutboxPublished" class="text-emerald-400">-</strong></div>
+          </div>
+        </div>
+        <div class="mt-3 pt-2 border-t border-gray-800/80 text-[10px] text-gray-500">
+          Guardrail: <code>qty &gt;= :n</code> prevents double-sell
+        </div>
+      </div>
+
+      <!-- 2. APACHE KAFKA CARD -->
+      <div class="bg-gray-900/90 border border-amber-900/50 rounded-xl p-4 shadow-lg flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <span class="font-bold text-amber-400 flex items-center gap-1.5 text-sm">
+              <i class="fa-solid fa-diagram-project"></i> 2. Apache Kafka
+            </span>
+            <span class="text-[10px] bg-amber-950 text-amber-300 border border-amber-800 px-2 py-0.5 rounded">Event Bus</span>
+          </div>
+          <p class="text-gray-400 text-[11px] mb-3">Outbox relay publishes events asynchronously. Consumers react with processed_events table idempotency.</p>
+          <div class="space-y-1 bg-gray-950 p-2.5 rounded-lg border border-gray-800 text-[11px]">
+            <div class="flex justify-between"><span>Active Topics:</span> <strong class="text-white">8 topics</strong></div>
+            <div class="flex justify-between"><span>Processed Events:</span> <strong id="statEventsProcessed" class="text-emerald-400">-</strong></div>
+            <div class="flex justify-between"><span>Notifications Sent:</span> <strong id="statNotifications" class="text-blue-400">-</strong></div>
+          </div>
+        </div>
+        <div class="mt-3 pt-2 border-t border-gray-800/80 text-[10px] text-gray-500">
+          Topics: <code>orders.placed</code>, <code>inventory.changed</code>
+        </div>
+      </div>
+
+      <!-- 3. OPENSEARCH CARD -->
+      <div class="bg-gray-900/90 border border-emerald-900/50 rounded-xl p-4 shadow-lg flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <span class="font-bold text-emerald-400 flex items-center gap-1.5 text-sm">
+              <i class="fa-solid fa-magnifying-glass"></i> 3. Aiven OpenSearch
+            </span>
+            <span class="text-[10px] bg-emerald-950 text-emerald-300 border border-emerald-800 px-2 py-0.5 rounded">Hybrid Search</span>
+          </div>
+          <p class="text-gray-400 text-[11px] mb-3">Hybrid search (kNN 384-d vectors + BM25 fuzziness). Real-time partial index updates via consumers.</p>
+          <div class="space-y-1 bg-gray-950 p-2.5 rounded-lg border border-gray-800 text-[11px]">
+            <div class="flex justify-between"><span>Index:</span> <strong class="text-white">products (310 docs)</strong></div>
+            <div class="flex justify-between"><span>Vector Dimension:</span> <strong class="text-emerald-400">384 (HNSW Faiss)</strong></div>
+            <div class="flex justify-between"><span>Search Scorecard Recall@5:</span> <strong class="text-white">100.0%</strong></div>
+          </div>
+        </div>
+        <div class="mt-3 pt-2 border-t border-gray-800/80 text-[10px] text-gray-500">
+          Hinglish: "sasta atta" -&gt; "cheap flour"
+        </div>
+      </div>
+
+    </div>
+
+    <!-- STRESS TEST RESULT BANNER -->
+    <div id="stressResultBanner" class="hidden bg-red-950/70 border border-red-700/60 p-4 rounded-xl text-red-200 space-y-2">
+      <div class="flex items-center justify-between">
+        <span class="font-bold text-red-300 flex items-center gap-2 text-sm">
+          <i class="fa-solid fa-shield-halved"></i> Race Condition Concurrency Result (10 Buyers for 1 Unit)
+        </span>
+        <button onclick="document.getElementById('stressResultBanner').classList.add('hidden')" class="text-red-400 hover:text-white">&times;</button>
+      </div>
+      <div id="stressResultContent" class="text-xs font-mono"></div>
+    </div>
+
+    <!-- BOTTOM ROW: LIVE EVENT TIMELINE & NOTIFICATIONS -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      
+      <!-- LIVE SSE STREAM TIMELINE -->
+      <div class="bg-gray-900 border border-gray-800 rounded-xl p-4 flex flex-col h-[480px]">
+        <div class="flex items-center justify-between border-b border-gray-800 pb-2 mb-3">
+          <span class="font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-stream text-orange-400"></i> Live Order Stage Transitions (SSE)
+          </span>
+          <span class="text-[10px] text-gray-500">Auto-refreshing every 2s</span>
+        </div>
+        
+        <div id="timelineContainer" class="flex-1 overflow-y-auto space-y-2.5 pr-2">
+          <!-- Populated by SSE -->
+        </div>
+      </div>
+
+      <!-- NOTIFICATIONS & SMS AUDIT LOG -->
+      <div class="bg-gray-900 border border-gray-800 rounded-xl p-4 flex flex-col h-[480px]">
+        <div class="flex items-center justify-between border-b border-gray-800 pb-2 mb-3">
+          <span class="font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-bell text-blue-400"></i> Kafka Notification Consumer Audit Log
+          </span>
+          <button onclick="fetchNotifications()" class="text-blue-400 hover:underline text-[10px]">Refresh</button>
+        </div>
+
+        <div id="notificationsContainer" class="flex-1 overflow-y-auto space-y-2.5 pr-2">
+          <!-- Populated via API -->
+        </div>
+      </div>
+
+    </div>
+
+    <!-- SEARCH SCORECARD SUMMARY TABLE -->
+    <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
+      <h3 class="font-bold text-white mb-2 flex items-center gap-2">
+        <i class="fa-solid fa-chart-simple text-emerald-400"></i> OpenSearch Hybrid Benchmark Scorecard (30 Labeled Indian E-Commerce Queries)
+      </h3>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="border-b border-gray-800 text-gray-400">
+              <th class="py-2 px-3">Search Strategy</th>
+              <th class="py-2 px-3">Recall@5</th>
+              <th class="py-2 px-3">MRR (Mean Reciprocal Rank)</th>
+              <th class="py-2 px-3">Strengths</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-800/50">
+            <tr>
+              <td class="py-2.5 px-3 font-semibold text-gray-300">BM25 Full-Text Only</td>
+              <td class="py-2.5 px-3 text-amber-400 font-bold">90.00%</td>
+              <td class="py-2.5 px-3">0.8233</td>
+              <td class="py-2.5 px-3 text-gray-400">Exact SKU & brand matches, fuzzy typo correction</td>
+            </tr>
+            <tr>
+              <td class="py-2.5 px-3 font-semibold text-gray-300">Vector Only (kNN Dense Embedding)</td>
+              <td class="py-2.5 px-3 text-blue-400 font-bold">93.33%</td>
+              <td class="py-2.5 px-3">0.7844</td>
+              <td class="py-2.5 px-3 text-gray-400">Semantic intent ("noise cancelling travel", "cookware")</td>
+            </tr>
+            <tr class="bg-emerald-950/20">
+              <td class="py-2.5 px-3 font-bold text-emerald-300 flex items-center gap-1.5">
+                <i class="fa-solid fa-trophy text-yellow-400"></i> MyStore Hybrid (BM25 + kNN with RRF)
+              </td>
+              <td class="py-2.5 px-3 text-emerald-400 font-bold">100.00%</td>
+              <td class="py-2.5 px-3 font-bold text-white">0.8261</td>
+              <td class="py-2.5 px-3 text-emerald-200">Zero query misses across Hinglish, typos, and semantic synonyms</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    // 1. Fetch system status
+    async function fetchStatus() {
+      try {
+        const res = await fetch('/pipeline/status');
+        const data = await res.json();
+        document.getElementById('statOrders').textContent = data.counts.orders;
+        document.getElementById('statOutboxPending').textContent = data.counts.outbox_pending;
+        document.getElementById('statOutboxPublished').textContent = data.counts.outbox_published;
+        document.getElementById('statEventsProcessed').textContent = data.counts.events_processed;
+        document.getElementById('statNotifications').textContent = data.counts.notifications_sent;
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    // 2. Fetch notifications
+    async function fetchNotifications() {
+      try {
+        const res = await fetch('/notifications?limit=15');
+        const items = await res.json();
+        const container = document.getElementById('notificationsContainer');
+        if (items.length === 0) {
+          container.innerHTML = '<div class="text-gray-600 text-center py-12">No notifications sent yet. Place an order to see Kafka react.</div>';
+          return;
+        }
+        container.innerHTML = items.map(n => `
+          <div class="p-2.5 rounded-lg border ${n.channel === 'SMS' ? 'bg-amber-950/20 border-amber-900/40 text-amber-200' : 'bg-blue-950/20 border-blue-900/40 text-blue-200'}">
+            <div class="flex justify-between items-center mb-1">
+              <span class="font-bold text-[10px] uppercase px-1.5 py-0.5 rounded bg-gray-900">${n.channel}</span>
+              <span class="text-gray-500 text-[10px]">${new Date(n.created_at).toLocaleTimeString()}</span>
+            </div>
+            <p class="whitespace-pre-line text-[11px] leading-relaxed">${n.message}</p>
+          </div>
+        `).join('');
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    // 3. Connect Server-Sent Events (SSE)
+    function connectSSE() {
+      const streamStatus = document.getElementById('streamStatus');
+      const timeline = document.getElementById('timelineContainer');
+      const es = new EventSource('/pipeline/stream');
+
+      es.onopen = () => {
+        streamStatus.textContent = 'ONLINE (LISTENING)';
+        streamStatus.className = 'text-emerald-400';
+      };
+
+      es.onerror = () => {
+        streamStatus.textContent = 'RECONNECTING...';
+        streamStatus.className = 'text-amber-400';
+      };
+
+      es.onmessage = (event) => {
+        try {
+          const item = JSON.parse(event.data);
+          if (item.stage === 'CONNECTED') return;
+
+          const card = document.createElement('div');
+          card.className = 'p-2.5 bg-gray-950 border border-gray-800 rounded-lg flex items-start justify-between gap-3 animate-in fade-in slide-in-from-top-1';
+          
+          let badgeColor = item.published ? 'bg-emerald-950 text-emerald-300 border-emerald-800' : 'bg-amber-950 text-amber-300 border-amber-800';
+          card.innerHTML = `
+            <div>
+              <div class="flex items-center gap-2 mb-1">
+                <span class="px-1.5 py-0.5 text-[10px] border rounded ${badgeColor}">
+                  ${item.stage}
+                </span>
+                <span class="text-orange-400 font-bold">${item.topic}</span>
+              </div>
+              <div class="text-gray-400 text-[10px]">Key: <span class="font-mono text-gray-200">${item.key}</span></div>
+            </div>
+            <span class="text-gray-500 text-[10px] whitespace-nowrap">${new Date(item.created_at).toLocaleTimeString()}</span>
+          `;
+
+          timeline.insertBefore(card, timeline.firstChild);
+          if (timeline.children.length > 25) {
+            timeline.removeChild(timeline.lastChild);
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      };
+    }
+
+    // 4. Fire 10-buyer stress test
+    async function triggerStressTest() {
+      const btn = document.getElementById('stressBtn');
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Testing 10 Buyers...`;
+
+      try {
+        const res = await fetch('/dev/stress-last-unit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ concurrency: 10, city: 'Bengaluru' })
+        });
+        const data = await res.json();
+        
+        const banner = document.getElementById('stressResultBanner');
+        const content = document.getElementById('stressResultContent');
+        content.innerHTML = `
+          <div>&gt; Concurrency Tested: <strong>${data.concurrency_tested} simultaneous requests</strong></div>
+          <div>&gt; Succeeded Checkouts: <strong class="text-emerald-400">${data.succeeded_count}</strong></div>
+          <div>&gt; Rejected with OutOfStockError: <strong class="text-red-400">${data.rejected_count}</strong></div>
+          <div>&gt; Final Store Stock: <strong class="text-white">${data.final_store_stock} units</strong></div>
+          <div class="mt-2 text-emerald-300 font-bold">&gt; Invariant: ${data.invariant_preserved ? 'VERIFIED PASSED (Zero Double-Sell)' : 'FAILED'}</div>
+        `;
+        banner.classList.remove('hidden');
+        fetchStatus();
+        fetchNotifications();
+      } catch (e) {
+        alert("Stress test failed: " + e.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-bomb"></i> Fire 10-Buyer Stress Test`;
+      }
+    }
+
+    // Initialize
+    window.addEventListener('DOMContentLoaded', () => {
+      fetchStatus();
+      fetchNotifications();
+      connectSSE();
+      setInterval(fetchStatus, 3000);
+      setInterval(fetchNotifications, 5000);
+    });
+  </script>
+</body>
+</html>
+

@@ -1,0 +1,23 @@
+[project]
+name = "nammastore"
+version = "0.1.0"
+description = "NammaStore — Indian online retail store backend"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi[standard]",
+    "uvicorn[standard]",
+    "sqlalchemy[asyncio]>=2.0",
+    "asyncpg",
+    "alembic",
+    "pydantic-settings",
+    "aiokafka",
+    "opensearch-py",
+    "httpx",
+    "python-dotenv",
+    "structlog",
+    "sentence-transformers",
+]
+
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
