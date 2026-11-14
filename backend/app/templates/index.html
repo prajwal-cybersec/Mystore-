@@ -70,18 +70,30 @@
         <span>My<span class="text-gray-900">Store</span></span>
       </a>
 
-      <!-- SEARCH BAR WITH HINGLISH TYPO-TOLERANCE -->
+      <!-- SEARCH BAR WITH HINGLISH TYPO-TOLERANCE & NATIVE VOICE SEARCH -->
       <div class="flex-1 max-w-2xl relative">
-        <div class="relative">
+        <div class="relative flex items-center">
           <input 
             type="text" 
             id="searchInput"
-            placeholder="Search 'bluetoth earphones', 'sasta atta', 'bata juta'..." 
-            class="w-full pl-10 pr-24 py-2.5 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm shadow-inner"
+            placeholder="Search 'bluetoth earphones', 'sasta atta', 'bata juta' or click mic..." 
+            class="w-full pl-10 pr-36 py-2.5 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm shadow-inner"
             oninput="handleSearchInput(this.value)"
             onkeydown="if(event.key==='Enter') triggerSearch()"
           />
-          <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3.5 text-gray-400 text-sm"></i>
+          <i class="fa-solid fa-magnifying-glass absolute left-3.5 text-gray-400 text-sm"></i>
+          
+          <!-- Native Voice Search ("Bolo aur Kharido") Button -->
+          <button 
+            type="button"
+            id="voiceSearchBtn"
+            onclick="startVoiceSearch()"
+            title="Bolo aur Kharido (Vernacular Voice Search)"
+            class="absolute right-24 p-1.5 text-gray-400 hover:text-orange-600 transition rounded-full hover:bg-orange-50 flex items-center justify-center"
+          >
+            <i class="fa-solid fa-microphone text-sm" id="micIcon"></i>
+          </button>
+
           <button 
             onclick="triggerSearch()"
             class="absolute right-1 top-1 bottom-1 bg-orange-600 hover:bg-orange-700 text-white px-5 rounded-full text-xs font-semibold tracking-wide transition shadow"
@@ -418,9 +430,18 @@
 
     function renderSingleCard(p, isRecommended = false) {
       let cityQty = 0;
+      let otherCityOption = null;
       if (p.city_stock) {
         const match = p.city_stock.find(cs => cs.city === currentCity);
         if (match) cityQty = match.qty;
+
+        // Check if out of stock in current city, but available in another Indian warehouse
+        if (cityQty <= 0) {
+          const alternate = p.city_stock.find(cs => cs.qty > 0);
+          if (alternate) {
+            otherCityOption = alternate;
+          }
+        }
       }
 
       const isOutOfStock = cityQty <= 0;
@@ -429,6 +450,8 @@
       let badgeHtml = '';
       if (isRecommended) {
         badgeHtml = `<span class="bg-indigo-100 text-indigo-700 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase"><i class="fa-solid fa-sparkles mr-1"></i> Similar Found</span>`;
+      } else if (isOutOfStock && otherCityOption) {
+        badgeHtml = `<span class="bg-blue-100 text-blue-800 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase flex items-center gap-1 w-fit"><i class="fa-solid fa-truck-fast"></i> 2-Day Express from ${otherCityOption.city} (${otherCityOption.qty} left)</span>`;
       } else if (isOutOfStock) {
         badgeHtml = `<span class="bg-red-100 text-red-700 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">Out of stock in ${currentCity}</span>`;
       } else if (isLowStock) {
@@ -436,6 +459,10 @@
       } else {
         badgeHtml = `<span class="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">In Stock (${cityQty})</span>`;
       }
+
+      const canOrder = cityQty > 0 || otherCityOption != null;
+      const availableQty = cityQty > 0 ? cityQty : (otherCityOption ? otherCityOption.qty : 0);
+      const deliveryCity = cityQty > 0 ? currentCity : (otherCityOption ? otherCityOption.city : currentCity);
 
       return `
         <div class="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition overflow-hidden flex flex-col justify-between p-3.5 group">
@@ -457,30 +484,75 @@
               <span class="text-sm font-black text-gray-900">₹${p.price_inr.toLocaleString('en-IN')}</span>
             </div>
             <button 
-              onclick='addToCart(${JSON.stringify(p).replace(/'/g, "&#39;")}, ${cityQty})'
-              ${isOutOfStock ? 'disabled' : ''}
-              class="px-3 py-1.5 bg-orange-600 hover:bg-orange-700 disabled:bg-gray-200 disabled:text-gray-400 text-white rounded-lg text-xs font-bold transition shadow-sm flex items-center gap-1.5"
+              onclick='addToCart(${JSON.stringify(p).replace(/'/g, "&#39;")}, ${availableQty}, "${deliveryCity}")'
+              ${!canOrder ? 'disabled' : ''}
+              class="px-3 py-1.5 ${otherCityOption && cityQty <= 0 ? 'bg-blue-600 hover:bg-blue-700' : 'bg-orange-600 hover:bg-orange-700'} disabled:bg-gray-200 disabled:text-gray-400 text-white rounded-lg text-xs font-bold transition shadow-sm flex items-center gap-1.5"
             >
-              <i class="fa-solid fa-cart-plus"></i> Add
+              <i class="fa-solid fa-cart-plus"></i> ${otherCityOption && cityQty <= 0 ? 'Ship' : 'Add'}
             </button>
           </div>
         </div>
       `;
     }
 
-    // Cart operations
-    function addToCart(product, cityStock) {
-      if (cityStock <= 0) return;
+    // Voice Search ("Bolo aur Kharido") implementation using Web Speech API
+    let recognition = null;
+    function startVoiceSearch() {
+      const micIcon = document.getElementById('micIcon');
+      const searchInput = document.getElementById('searchInput');
+
+      if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+        alert('Voice search is supported on Chrome, Edge, and modern Android/iOS mobile browsers.');
+        return;
+      }
+
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!recognition) {
+        recognition = new SpeechRecognition();
+        recognition.lang = 'hi-IN'; // Hinglish & Indian English optimized
+        recognition.continuous = false;
+        recognition.interimResults = false;
+
+        recognition.onstart = () => {
+          micIcon.className = 'fa-solid fa-microphone text-orange-600 animate-pulse text-lg';
+          searchInput.placeholder = '🎙️ Listening... Bolo kya chahiye?';
+        };
+
+        recognition.onresult = (event) => {
+          const transcript = event.results[0][0].transcript;
+          searchInput.value = transcript;
+          triggerSearch();
+        };
+
+        recognition.onerror = (event) => {
+          console.warn('Speech error:', event.error);
+          micIcon.className = 'fa-solid fa-microphone text-sm';
+          searchInput.placeholder = "Search 'bluetoth earphones', 'sasta atta', 'bata juta' or click mic...";
+        };
+
+        recognition.onend = () => {
+          micIcon.className = 'fa-solid fa-microphone text-sm';
+          searchInput.placeholder = "Search 'bluetoth earphones', 'sasta atta', 'bata juta' or click mic...";
+        };
+      }
+
+      recognition.start();
+    }
+
+    // Cart operations with intelligent cross-city routing
+    function addToCart(product, maxStock, originCity = null) {
+      if (maxStock <= 0) return;
+      const effectiveCity = originCity || currentCity;
       const existing = cart.find(item => item.product.id === product.id);
       if (existing) {
-        if (existing.quantity < cityStock) {
+        if (existing.quantity < maxStock) {
           existing.quantity += 1;
         } else {
-          alert(`Cannot add more than ${cityStock} units available in ${currentCity}!`);
+          alert(`Cannot add more than ${maxStock} units available!`);
           return;
         }
       } else {
-        cart.push({ product, quantity: 1, cityStock });
+        cart.push({ product, quantity: 1, cityStock: maxStock, originCity: effectiveCity });
       }
       updateCartUI();
       toggleCartDrawer(true);
