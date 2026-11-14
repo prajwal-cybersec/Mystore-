@@ -196,11 +196,13 @@ def search_hybrid(
         else 0.0
     )
 
-    # If raw_query was provided and BM25 found 0 matches and top vector similarity is below threshold (< 0.82),
-    # then this is a "product not found" query. We flag it and provide the top kNN items as "similar / fallback recommendations".
+    # If raw_query was provided and BM25 found 0 matches and top vector similarity is below threshold (< 0.795),
+    # then this is truly an uncatalogued / non-existent item (e.g. "aeroplane", "spaceship", "asdfghjkl").
+    # For valid product searches in Hindi/Devanagari/regional scripts (e.g. "तूर दाल" score ~0.809),
+    # the vector matches the exact item (Tata Toor Dal) so it must be returned as valid search results!
     is_not_found = False
     similar_hits = []
-    if raw_query and bm25_hits_count == 0 and knn_top_score < 0.82:
+    if raw_query and bm25_hits_count == 0 and knn_top_score < 0.795:
         is_not_found = True
         # Take top 4 closest items as "similar products you might like"
         for hit in knn_res.get("hits", {}).get("hits", [])[:4]:

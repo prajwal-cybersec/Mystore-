@@ -519,7 +519,9 @@
         };
 
         recognition.onresult = (event) => {
-          const transcript = event.results[0][0].transcript;
+          let transcript = event.results[0][0].transcript || '';
+          // Strip Hindi full-stop '।' (purna viram) and English trailing period/punctuation from voice input
+          transcript = transcript.replace(/[।॥\.\,\!\?]/g, '').trim();
           searchInput.value = transcript;
           triggerSearch();
         };

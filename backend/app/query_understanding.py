@@ -109,6 +109,33 @@ WORD_MAPPINGS = {
     "blutooth": "bluetooth",
     "mobail": "mobile",
     "fone": "phone",
+    # Common Devanagari words translated to English catalog keywords
+    "दाल": "dal toor",
+    "तूर": "toor",
+    "अरहर": "arhar toor",
+    "आटा": "atta flour",
+    "चावल": "rice",
+    "चीनी": "sugar",
+    "नमक": "salt",
+    "हल्दी": "turmeric haldi",
+    "तेल": "oil",
+    "साबुन": "soap",
+    "दूध": "milk",
+    "जूता": "shoes",
+    "जूते": "shoes",
+    "कपड़े": "clothing",
+    "कुर्ता": "kurta",
+    "कुर्ती": "kurta",
+    "चाय": "tea",
+    "कॉफी": "coffee",
+    "मसाला": "masala spices",
+    "सस्ता": "cheap",
+    "सस्ते": "cheap",
+    "इयरफोन": "earphones",
+    "हेडफोन": "headphones",
+    "मोबाइल": "mobile phone",
+    "फोन": "phone",
+    "घड़ी": "watch",
 }
 
 # Number words in Hinglish
@@ -135,8 +162,9 @@ def normalize_hinglish_query(query: str) -> dict[str, Any]:
     if not raw:
         return {"original": "", "rewritten": "", "brand_preserved": None, "extracted_price": None}
 
-    cleaned = raw.lower()
-    cleaned = re.sub(r"[^\w\s\-\']", " ", cleaned)
+    # Remove punctuation including Hindi full-stop '।' (purna viram '॥') and English periods/symbols
+    cleaned = re.sub(r"[\.\,\!\?\;\:\'\"\\\/\|\`\~\@\#\$\%\^\&\*\(\)\_\+\=\[\]\{\}\<\>।॥]", " ", raw)
+    cleaned = cleaned.lower()
     cleaned = re.sub(r"\s+", " ", cleaned).strip()
 
     # Detect protected brands
