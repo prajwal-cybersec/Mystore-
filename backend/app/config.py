@@ -9,7 +9,7 @@ class Settings(BaseSettings):
     """Central configuration sourced from env vars / .env."""
 
     model_config = SettingsConfigDict(
-        env_file="../.env",
+        env_file=(".env", "../.env"),
         env_file_encoding="utf-8",
         extra="ignore",
     )
