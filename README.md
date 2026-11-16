@@ -153,33 +153,3 @@ python -m scripts.search_scorecard
 | **BM25 Only** | 90.00% | 0.8233 | Misses semantic intent / descriptive queries |
 | **Vector (kNN) Only** | 93.33% | 0.7844 | Misses exact brand SKUs & typo edge-cases |
 | **MyStore Hybrid (BM25 + kNN with RRF)** | **100.00%** | **0.8261** | **Zero query misses across Hinglish & typos** |
-
----
-
-## 🎬 2-Minute Demo Script
-
-1. **Browse & Indian Localization (30s)**:
-   - Navigate to `http://localhost:8000/`.
-   - Switch cities between *Bengaluru*, *Mumbai*, and *Delhi* — observe dynamic city stock badges (`In Stock`, `⚡ Only N left!`, `Out of stock`).
-2. **Hinglish & Typo Search (30s)**:
-   - Search `sasta atta` — observe banner: *"Showing results for: cheap flour"*.
-   - Search `bluetoth earphones` — observe instant BoAt/Sony results despite the typo.
-3. **Atomic Cart & Checkout (30s)**:
-   - Add items to the cart drawer and click **Place Order Now**.
-   - Note the immediate order confirmation with the generated Order ID and Kafka topic emission.
-4. **X-Ray Event Pipeline & 10-Buyer Stress Test (30s)**:
-   - Switch to `http://localhost:8000/pipeline`.
-   - Watch the live SSE timeline and SMS/Email notification logs.
-   - Click **Fire 10-Buyer Stress Test**: watch 10 concurrent checkouts fight for 1 remaining unit — exactly 1 succeeds, 9 are rejected, preserving the database invariant.
-
----
-
-## 🏆 3-Minute Pitch Outline (Hackathon)
-
-- **Hook (30s)**: Indian e-commerce faces two brutal challenges during flash sales: race condition stock overselling and query drops due to localized Hinglish phrasing.
-- **The Problem (45s)**: Direct Kafka writes inside checkout transactions cause dual-write inconsistency; traditional keyword search fails when shoppers search `kam daam wala phone` or make common typos.
-- **Our Solution (60s)**:
-  - **Aiven PostgreSQL** + Transactional Outbox pattern guarantees ACID stock reservation with zero double-selling.
-  - **Aiven Apache Kafka** provides an asynchronous, idempotent event spine with automatic DLQ fallback.
-  - **Aiven OpenSearch** with Hybrid Search (BM25 + 384-d dense embeddings + RRF) and Hinglish query translation delivers 100% Recall@5.
-- **Live Proof (45s)**: Demonstrate the live 10-buyer stress test and the real-time X-Ray pipeline dashboard running on fully managed Aiven infrastructure.
