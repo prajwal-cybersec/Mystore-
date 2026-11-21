@@ -5,7 +5,8 @@ from __future__ import annotations
 import asyncio
 import uuid
 from typing import Any, Dict, List, Optional
-from fastapi import APIRouter, Depends, HTTPException, Response
+import structlog
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Response
 from pydantic import BaseModel, Field
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -18,7 +19,23 @@ from app.pdf_service import (
     merge_order_invoices_pdf,
 )
 
+logger = structlog.stdlib.get_logger(__name__)
 router = APIRouter(tags=["checkout"])
+
+
+async def _background_generate_invoices(sub_order_ids: List[str], order_id: str):
+    """Auto-generate invoices for newly created sub-orders in the background."""
+    try:
+        from app.invoice_service import generate_suborder_invoice
+        from app.consumers.notification_consumer import handle_invoice_generated
+        async with async_session_factory() as session:
+            async with session.begin():
+                for so_id in sub_order_ids:
+                    await generate_suborder_invoice(session=session, sub_order_id=so_id)
+        # Notify once all are generated
+        await handle_invoice_generated({"order_id": order_id})
+    except Exception as exc:
+        logger.error("background_invoice_generation_failed", order_id=order_id, error=str(exc))
 
 
 class CheckoutItemSchema(BaseModel):
@@ -41,17 +58,29 @@ class StressTestRequestSchema(BaseModel):
 @router.post("/checkout")
 async def checkout_endpoint(
     req: CheckoutRequestSchema,
+    background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
 ) -> Dict[str, Any]:
     """Execute checkout in one strict atomic PostgreSQL transaction."""
     items_dicts = [{"product_id": it.product_id, "quantity": it.quantity} for it in req.items]
     async with db.begin():
-        return await execute_checkout_transaction(
+        res = await execute_checkout_transaction(
             session=db,
             customer_id=req.customer_id,
             city=req.city,
             items=items_dicts,
         )
+
+    # Immediately trigger invoice generation for each sub-order in background
+    sub_order_ids = [so["sub_order_id"] for so in res.get("sub_orders", [])]
+    if sub_order_ids:
+        background_tasks.add_task(
+            _background_generate_invoices,
+            sub_order_ids=sub_order_ids,
+            order_id=res["order_id"],
+        )
+
+    return res
 
 
 @router.get("/orders/{order_id}")
@@ -96,6 +125,44 @@ async def get_order_endpoint(
         {"oid": oid},
     )
     sub_orders_rows = so_res.mappings().all()
+
+    # If any sub-orders lack invoices, generate them on-the-fly now
+    missing_invoices = [so for so in sub_orders_rows if not so["invoice_no"]]
+    if missing_invoices:
+        from app.invoice_service import generate_suborder_invoice
+        from app.consumers.notification_consumer import handle_invoice_generated
+        for so in missing_invoices:
+            await generate_suborder_invoice(session=db, sub_order_id=so["sub_order_id"])
+        await db.commit()
+        await handle_invoice_generated({"order_id": str(oid)})
+        # Re-fetch updated sub-orders and order status
+        so_res = await db.execute(
+            text("""
+                SELECT so.id as sub_order_id, so.order_id, so.seller_id, so.city as package_city,
+                       so.subtotal, so.tax, so.status as sub_order_status, so.created_at as so_created_at,
+                       s.name as seller_name, s.seller_code, s.state as seller_state, s.gstin, s.address as seller_address,
+                       i.id as invoice_id, i.invoice_no, i.taxable_value, i.cgst, i.sgst, i.igst, i.total as invoice_total, i.issued_at,
+                       sh.id as shipment_id, sh.tracking_number, sh.status as shipment_status
+                FROM sub_orders so
+                JOIN sellers s ON s.id = so.seller_id
+                LEFT JOIN invoices i ON i.sub_order_id = so.id
+                LEFT JOIN shipments sh ON sh.sub_order_id = so.id
+                WHERE so.order_id = :oid
+                ORDER BY so.created_at ASC
+            """),
+            {"oid": oid},
+        )
+        sub_orders_rows = so_res.mappings().all()
+        ord_res_updated = await db.execute(
+            text("""
+                SELECT id, customer_id, city, status, total_inr, grand_total,
+                       invoices_expected, invoices_ready, created_at
+                FROM orders
+                WHERE id = :oid
+            """),
+            {"oid": oid},
+        )
+        order = ord_res_updated.mappings().first()
 
     # Fetch all items for this order
     items_res = await db.execute(
@@ -247,12 +314,19 @@ async def download_single_invoice_pdf(
             JOIN orders o ON o.id = so.order_id
             LEFT JOIN customers c ON c.id = o.customer_id
             LEFT JOIN shipments sh ON sh.sub_order_id = so.id
-            WHERE i.id = :iid
+            WHERE i.id = :iid OR so.id = :iid
         """),
         {"iid": inv_uuid},
     )
     inv = res.mappings().first()
     if not inv:
+        # Check if iid is a sub_order that needs invoice generation
+        so_check = await db.execute(text("SELECT id FROM sub_orders WHERE id = :iid"), {"iid": inv_uuid})
+        if so_check.scalar():
+            from app.invoice_service import generate_suborder_invoice
+            await generate_suborder_invoice(session=db, sub_order_id=inv_uuid)
+            await db.commit()
+            return await download_single_invoice_pdf(invoice_id=invoice_id, db=db)
         raise HTTPException(status_code=404, detail="Tax Invoice not found")
 
     # Fetch line items for this sub-order
@@ -313,12 +387,16 @@ async def download_all_order_invoices_pdf(
     """
     order = await get_order_endpoint(order_id=order_id, db=db)
 
-    # Check readiness
+    # If any invoices are still pending, fulfill them on-the-fly immediately!
     if not order["all_invoices_ready"]:
-        raise HTTPException(
-            status_code=409,
-            detail=f"Invoices are still generating ({order['invoices_ready']}/{order['invoices_expected']} ready). Please retry in a few seconds.",
-        )
+        from app.invoice_service import generate_suborder_invoice
+        from app.consumers.notification_consumer import handle_invoice_generated
+        for so in order["sub_orders"]:
+            if not so.get("invoice"):
+                await generate_suborder_invoice(session=db, sub_order_id=so["sub_order_id"])
+        await db.commit()
+        await handle_invoice_generated({"order_id": order_id})
+        order = await get_order_endpoint(order_id=order_id, db=db)
 
     # Fetch customer contact details
     cust_res = await db.execute(
