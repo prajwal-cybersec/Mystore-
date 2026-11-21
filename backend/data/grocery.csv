@@ -1,0 +1,26 @@
+sku,name,brand,category,subcategory,price_inr,mrp_inr,rating,description,stock_bengaluru,stock_mumbai,stock_delhi
+GRO-0001,Aashirvaad Shudh Chakki Whole Wheat Atta 5kg,Aashirvaad,Grocery,atta,245,310,4.5,Chakki-ground whole wheat atta for soft rotis,120,95,140
+GRO-0002,Aashirvaad Multigrain Atta 5kg,Aashirvaad,Grocery,atta,299,375,4.4,"Six-grain atta with soya, oats and chana",65,78,52
+GRO-0003,Patanjali Whole Wheat Atta 5kg,Patanjali,Grocery,atta,225,270,4.1,Stone-ground chakki atta with high fibre,88,104,73
+GRO-0004,Tata Sampann Basmati Rice 5kg,Tata,Grocery,rice,725,850,4.3,Long-grain basmati rice for biryani and pulao,45,60,38
+GRO-0005,Patanjali Basmati Rice 1kg,Patanjali,Grocery,rice,120,150,4.0,Aromatic basmati rice with extra-long grains,92,81,110
+GRO-0006,Tata Sampann Poha 500g,Tata,Grocery,rice,45,60,4.4,Thick flattened rice for quick breakfast poha,150,132,165
+GRO-0007,Patanjali Fortified Mustard Oil 1L,Patanjali,Grocery,oil,165,199,4.2,Kachi ghani mustard oil fortified with vitamins,76,89,64
+GRO-0008,Patanjali Soybean Refined Oil 1L,Patanjali,Grocery,oil,139,165,3.9,Light refined soybean oil for everyday cooking,58,47,71
+GRO-0009,Tata Simply Better Cold Pressed Groundnut Oil 1L,Tata,Grocery,oil,385,450,4.4,"Cold-pressed groundnut oil, unrefined and aromatic",22,31,26
+GRO-0010,Tata Tea Premium 500g,Tata,Grocery,tea,285,320,4.4,Rich Assam blend for strong everyday chai,140,155,128
+GRO-0011,Tata Tea Gold 250g,Tata,Grocery,tea,175,195,4.5,Gentle long leaves for aromatic golden cups,96,84,102
+GRO-0012,Tata Tea Agni 250g,Tata,Grocery,tea,89,105,4.1,Strong granular tea for kadak chai,175,160,190
+GRO-0013,Britannia Good Day Cashew Cookies 200g,Britannia,Grocery,snacks,48,60,4.5,Buttery cookies loaded with crunchy cashews,188,172,195
+GRO-0014,Britannia Marie Gold 250g,Britannia,Grocery,snacks,38,45,4.4,"Light crispy tea-time biscuits, low in fat",165,149,178
+GRO-0015,Britannia NutriChoice Digestive 250g,Britannia,Grocery,snacks,78,95,4.3,High-fibre digestive biscuits with whole grains,82,91,77
+GRO-0016,Dabur Hajmola Regular 120 Tablets,Dabur,Grocery,snacks,63,75,4.4,Tangy digestive tablets with ayurvedic herbs,54,1,62
+GRO-0017,Amul Butter 500g,Amul,Grocery,dairy,275,290,4.7,"Iconic pasteurised white butter, utterly butterly delicious",35,42,28
+GRO-0018,Amul Taaza Toned Milk 1L,Amul,Grocery,dairy,54,57,4.5,"Homogenised toned milk, ready to pour",130,145,118
+GRO-0019,Amul Pure Ghee 1L,Amul,Grocery,dairy,640,675,4.6,Rich granular ghee for festive cooking,18,24,15
+GRO-0020,Dabur Glucose D 500g,Dabur,Grocery,health drinks,155,180,4.2,Instant energy drink mix with Vitamin D,48,55,41
+GRO-0021,Patanjali Amla Juice 1L,Patanjali,Grocery,health drinks,165,200,4.2,Pure amla juice rich in Vitamin C,37,29,1
+GRO-0022,Patanjali Aloe Vera Juice 1L,Patanjali,Grocery,health drinks,209,250,4.1,Aloe vera juice for digestion and immunity,26,33,30
+GRO-0023,Patanjali Nutrela Daily Multivitamin 60 Tablets,Patanjali,Grocery,vitamins,299,360,4.2,Vegetarian multivitamin with 12 vitamins and minerals,1,19,23
+GRO-0024,Dabur Giloy Ghanvati 60 Tablets,Dabur,Grocery,vitamins,105,125,4.0,Giloy tablets to support natural immunity,61,0,44
+GRO-0025,Patanjali Nutrela Vitamin B12 60 Capsules,Patanjali,Grocery,vitamins,339,399,4.1,Vegan Vitamin B12 capsules for daily energy,14,21,0

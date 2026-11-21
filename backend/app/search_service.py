@@ -290,7 +290,7 @@ async def _pg_fallback_search(
     params: Dict[str, Any] = {}
 
     if category:
-        where_clauses.append("p.category = :category")
+        where_clauses.append("p.category ILIKE :category")
         params["category"] = category
 
     if min_price is not None:

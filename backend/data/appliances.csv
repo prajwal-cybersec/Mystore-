@@ -1,0 +1,26 @@
+sku,name,brand,category,subcategory,price_inr,mrp_inr,rating,description,stock_bengaluru,stock_mumbai,stock_delhi
+APP-0001,Prestige Iris 750W Mixer Grinder,Prestige,Appliances,mixer grinder,2999,4299,4.2,750W mixer with three stainless steel jars,25,18,32
+APP-0002,Prestige Delight Plus 750W Mixer Grinder,Prestige,Appliances,mixer grinder,3299,4999,4.1,750W mixer grinder with spill-proof jars,12,16,9
+APP-0003,Bajaj Rex 500W Mixer Grinder 3 Jars,Bajaj,Appliances,mixer grinder,2299,3599,4.3,Compact 500W mixer with three multipurpose jars,34,28,41
+APP-0004,Philips HL7756/00 750W Mixer Grinder,Philips,Appliances,mixer grinder,3999,4795,4.4,Advanced air ventilation for faster motor cooling,8,11,6
+APP-0005,Prestige Popular Pressure Cooker 3L,Prestige,Appliances,pressure cooker,1049,1310,4.4,Virgin aluminium cooker for daily cooking,45,52,38
+APP-0006,Prestige Svachh Outer Lid Pressure Cooker 5L,Prestige,Appliances,pressure cooker,1899,2480,4.5,Spill-controlled lid keeps your kitchen clean,27,33,24
+APP-0007,Prestige Deluxe Alpha Svachh Cooker 3L,Prestige,Appliances,pressure cooker,2599,3320,4.6,Stainless steel cooker with controlled spillage lid,14,1,19
+APP-0008,Havells Efficiencia Neo BLDC Ceiling Fan,Havells,Appliances,fan,3499,4650,4.4,Energy-saving BLDC motor with remote control,21,26,17
+APP-0009,Havells Stealth Air 1200mm Ceiling Fan,Havells,Appliances,fan,2999,3990,4.3,Silent operation with aerodynamic aluminium blades,15,12,20
+APP-0010,Bajaj Frosta 1200mm Ceiling Fan,Bajaj,Appliances,fan,1499,2290,4.1,High air delivery with double ball bearings,39,44,31
+APP-0011,Bajaj Esteem 400mm Wall Fan,Bajaj,Appliances,fan,1999,2890,4.0,Wall-mounted fan with wide oscillation coverage,18,22,25
+APP-0012,Havells Festiva 1200mm Ceiling Fan,Havells,Appliances,fan,2199,2955,4.2,Dust-resistant fan with elegant decorative trims,29,35,27
+APP-0013,Philips GC1905 Steam Iron 1440W,Philips,Appliances,iron,1495,1695,4.5,"1440W steam iron, crease-free results everyday",33,40,28
+APP-0014,Philips GC1920 Steam Iron 2000W,Philips,Appliances,iron,1995,2295,4.4,Powerful steam output with non-stick soleplate,16,13,21
+APP-0015,Bajaj Majesty DX11 Dry Iron 1000W,Bajaj,Appliances,iron,649,999,4.2,Lightweight dry iron with non-stick coating,55,60,48
+APP-0016,Bajaj Majesty MX3 Steam Iron 1250W,Bajaj,Appliances,iron,1099,1599,4.0,1250W steam iron with swivel cord,24,30,19
+APP-0017,LG 28L Convection Microwave MC2846BV,LG,Appliances,microwave,12490,14999,4.5,28L convection with 251 auto cook menus,7,9,5
+APP-0018,Samsung 23L Solo Microwave MS23A3513AK,Samsung,Appliances,microwave,7190,8990,4.3,Solo microwave with ceramic enamel cavity,11,14,10
+APP-0019,Samsung 28L Convection Microwave MC28A5013AK,Samsung,Appliances,microwave,10990,13490,4.4,Convection microwave with tandoor technology,1,6,8
+APP-0020,LG 8kg Front Load Washing Machine FHM1208ZDL,LG,Appliances,washing machine,30990,35990,4.5,Front load with 6 Motion Direct Drive,5,7,4
+APP-0021,Samsung 7kg Top Load Washing Machine WA70A4002GS,Samsung,Appliances,washing machine,15490,18900,4.3,Top load with center jet technology,13,17,12
+APP-0022,LG 7kg Semi Automatic Top Load Washing Machine,LG,Appliances,washing machine,10990,13490,4.2,Twin tub washer with Rat Away Technology,9,0,11
+APP-0023,LG 1.5 Ton 3 Star Dual Inverter Split AC,LG,Appliances,AC,38990,44990,4.4,"Fast cooling, low noise, 100% copper tubes",4,6,3
+APP-0024,Samsung 1.5 Ton 3 Star Inverter Split AC,Samsung,Appliances,AC,36990,42990,4.3,Convertible 5-in-1 cooling with digital inverter,6,8,1
+APP-0025,LG 1 Ton 3 Star Dual Inverter Split AC,LG,Appliances,AC,32990,38990,4.4,Compact inverter AC for small bedrooms,0,5,7

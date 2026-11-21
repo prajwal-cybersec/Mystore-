@@ -1,0 +1,26 @@
+sku,name,brand,category,subcategory,price_inr,mrp_inr,rating,description,stock_bengaluru,stock_mumbai,stock_delhi
+FAS-0001,Bata Men's Formal Derby Shoes,Bata,Fashion,shoes,1499,2499,4.2,Classic formal derbies with cushioned insole,42,35,58
+FAS-0002,Puma Smash V2 Sneakers,Puma,Fashion,shoes,2199,4499,4.4,Iconic tennis-style sneakers with SoftFoam comfort,27,31,22
+FAS-0003,Bata Women's Ballerina Flats,Bata,Fashion,shoes,699,1299,4.0,Everyday ballerinas with anti-skid sole,65,72,49
+FAS-0004,Puma Softride Enzo Evo Running Shoes,Puma,Fashion,shoes,2799,5999,4.3,Lightweight running shoes with Softride cushioning,18,1,25
+FAS-0005,Bata Men's Casual Slip-On Shoes,Bata,Fashion,shoes,999,1799,3.9,Easy slip-on casuals with memory foam insole,53,47,61
+FAS-0006,Puma Essential Logo Men's T-Shirt,Puma,Fashion,t-shirt,799,1499,4.2,Cotton crew-neck tee with bold Puma logo,88,76,94
+FAS-0007,Levis Men's Graphic Crew Neck T-Shirt,Levis,Fashion,t-shirt,899,1799,4.3,Regular fit cotton tee with iconic batwing print,34,41,29
+FAS-0008,Allen Solly Men's Classic Polo T-Shirt,Allen Solly,Fashion,t-shirt,1099,1999,4.4,Classic polo with signature stag embroidery,56,62,48
+FAS-0009,Puma Women's Essential Logo T-Shirt,Puma,Fashion,t-shirt,899,1699,4.2,Relaxed fit women's tee for everyday comfort,23,19,36
+FAS-0010,Levis 511 Slim Fit Men's Jeans,Levis,Fashion,jeans,2299,3999,4.5,"Slim fit stretch jeans, sits below waist",21,26,33
+FAS-0011,Levis 311 Shaping Skinny Women's Jeans,Levis,Fashion,jeans,2499,4299,4.4,Women's skinny jeans with tummy-slimming panel,15,20,17
+FAS-0012,Allen Solly Men's Slim Fit Jeans,Allen Solly,Fashion,jeans,1799,2999,4.2,Mid-rise slim jeans in dark wash denim,38,44,52
+FAS-0013,Allen Solly Women's Boyfriend Jeans,Allen Solly,Fashion,jeans,1699,2799,4.0,Relaxed boyfriend jeans with rolled-up hems,29,0,31
+FAS-0014,Fabindia Men's Handloom Cotton Kurta,Fabindia,Fashion,kurta,1499,2299,4.3,Handloom cotton kurta with mandarin collar,47,53,41
+FAS-0015,Biba Women's Anarkali Kurta,Biba,Fashion,kurta,1999,3999,4.4,Flared Anarkali kurta with printed yoke,32,28,45
+FAS-0016,Fabindia Women's Chanderi Kurta,Fabindia,Fashion,kurta,2499,3499,4.5,Elegant Chanderi silk kurta with hand block print,12,16,14
+FAS-0017,Biba Women's Straight Kurta,Biba,Fashion,kurta,1299,2599,4.2,Straight-fit festive kurta with mirror work,58,63,1
+FAS-0018,Fabindia Handloom Cotton Saree,Fabindia,Fashion,saree,2999,4499,4.4,Breathable handloom cotton saree with contrast border,25,31,27
+FAS-0019,Fabindia Tussar Silk Saree,Fabindia,Fashion,saree,5999,7999,4.6,"Pure Tussar silk saree, handwoven in Bhagalpur",8,11,9
+FAS-0020,Fabindia Block Print Cotton Saree,Fabindia,Fashion,saree,1999,2999,4.2,Lightweight daily-wear saree with block prints,44,39,50
+FAS-0021,Fabindia Linen Zari Saree,Fabindia,Fashion,saree,3499,4999,4.3,Pure linen saree with zari border,0,18,22
+FAS-0022,Puma Phase Backpack,Puma,Fashion,bag,899,1499,4.3,22L backpack with padded laptop sleeve,67,74,59
+FAS-0023,Allen Solly Women's Structured Handbag,Allen Solly,Fashion,bag,2199,3699,4.2,Structured tote handbag with detachable sling strap,24,29,33
+FAS-0024,Fabindia Jute Tote Bag,Fabindia,Fashion,bag,599,899,4.1,Eco-friendly jute tote with cotton handles,81,68,77
+FAS-0025,Bata Women's Sling Bag,Bata,Fashion,bag,999,1699,3.8,Compact sling bag with zip closure,1,42,37

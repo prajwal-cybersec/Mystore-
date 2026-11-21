@@ -1,0 +1,26 @@
+sku,name,brand,category,subcategory,price_inr,mrp_inr,rating,description,stock_bengaluru,stock_mumbai,stock_delhi
+BEA-0001,Himalaya Purifying Neem Face Wash 150ml,Himalaya,Beauty,face wash,175,210,4.4,Neem and turmeric face wash for pimple-free skin,85,72,94
+BEA-0002,Mamaearth Ubtan Face Wash 100ml,Mamaearth,Beauty,face wash,229,269,4.2,Turmeric and saffron face wash for natural glow,46,58,39
+BEA-0003,Lakme Blush & Glow Lemon Face Wash 50g,Lakme,Beauty,face wash,79,99,4.1,Lemon freshness face wash for bright skin,112,98,125
+BEA-0004,Nivea Men Dark Spot Reduction Face Wash 100g,Nivea,Beauty,face wash,189,249,4.0,Deep-cleansing face wash that reduces dark spots,33,27,41
+BEA-0005,Lakme Peach Milk Moisturizer 120ml,Lakme,Beauty,moisturizer,199,249,4.5,Light peach milk moisturiser with vitamin E,68,75,52
+BEA-0006,Nivea Soft Light Moisturizer 200ml,Nivea,Beauty,moisturizer,289,350,4.6,Quick-absorbing cream with jojoba oil and vitamin E,91,84,103
+BEA-0007,Mamaearth Oil-Free Face Moisturizer 80ml,Mamaearth,Beauty,moisturizer,279,319,4.1,Oil-free hydration with apple cider vinegar,24,31,22
+BEA-0008,Himalaya Nourishing Skin Cream 50g,Himalaya,Beauty,moisturizer,145,170,4.3,Ayurvedic cream with aloe vera and winter cherry,57,49,63
+BEA-0009,Dove Essential Nourishment Body Lotion 250ml,Dove,Beauty,moisturizer,265,325,4.4,Rich nourishing lotion for soft smooth skin,38,44,29
+BEA-0010,Dove Intense Repair Shampoo 340ml,Dove,Beauty,shampoo,335,399,4.5,Repairs damaged hair with keratin actives,76,88,64
+BEA-0011,Dove Hair Fall Rescue Shampoo 340ml,Dove,Beauty,shampoo,329,390,4.4,Reduces hair fall with Nutrilock actives,59,67,71
+BEA-0012,Mamaearth Onion Shampoo 250ml,Mamaearth,Beauty,shampoo,299,349,4.2,Onion and plant keratin shampoo for stronger hair,42,1,36
+BEA-0013,Himalaya Anti-Hair Fall Shampoo 200ml,Himalaya,Beauty,shampoo,155,185,4.1,Bhringaraja and chickpea formula against hair fall,83,95,78
+BEA-0014,Maybelline SuperStay Matte Ink Lipstick - Pioneer,Maybelline,Beauty,lipstick,599,699,4.5,"16-hour matte liquid lipstick, transfer-proof bold colour",28,34,25
+BEA-0015,Maybelline Color Sensational Creamy Matte Lipstick,Maybelline,Beauty,lipstick,315,375,4.3,Creamy matte bullet with rich one-swipe colour,47,53,44
+BEA-0016,Lakme Absolute Matte Melt Liquid Lip Colour,Lakme,Beauty,lipstick,649,800,4.2,Mousse-textured liquid lip with intense matte finish,19,23,17
+BEA-0017,Lakme Enrich Matte Lipstick,Lakme,Beauty,lipstick,289,350,3.9,Classic matte bullet enriched with vitamin E,65,71,58
+BEA-0018,Mamaearth ME Oud Eau De Parfum 50ml,Mamaearth,Beauty,perfume,549,699,4.0,"Oud eau de parfum, warm and long-lasting",1,21,26
+BEA-0019,Nivea Men Fresh Active Roll On 50ml,Nivea,Beauty,perfume,175,225,4.4,48-hour odour protection with fresh ocean extracts,104,118,96
+BEA-0020,Nivea Pearl & Beauty Roll On 50ml,Nivea,Beauty,perfume,179,225,4.3,Roll-on with pearl extracts for beautiful underarms,87,92,81
+BEA-0021,Nivea Men Protect & Care Roll On 50ml,Nivea,Beauty,perfume,185,225,4.2,Gentle 48-hour protection with aloe vera,73,66,79
+BEA-0022,Mamaearth Ultra Light Indian Sunscreen SPF 50 80g,Mamaearth,Beauty,sunscreen,449,499,4.2,SPF 50 PA+++ sunscreen with turmeric and carrot,35,41,30
+BEA-0023,Lakme Sun Expert SPF 50 Ultra Matte Sunscreen 50g,Lakme,Beauty,sunscreen,385,449,4.3,Ultra-matte dry-touch sunscreen for Indian summers,52,0,47
+BEA-0024,Lakme Sun Expert Tinted Sunscreen SPF 50 50ml,Lakme,Beauty,sunscreen,335,399,4.1,Tinted SPF 50 sunscreen with natural coverage,26,32,1
+BEA-0025,Nivea Sun Protect & Moisture Lotion SPF 50 75ml,Nivea,Beauty,sunscreen,399,475,4.4,Water-resistant SPF 50 lotion with instant moisture,0,56,61

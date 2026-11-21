@@ -1,0 +1,26 @@
+sku,name,brand,category,subcategory,price_inr,mrp_inr,rating,description,stock_bengaluru,stock_mumbai,stock_delhi
+ELE-0001,boAt Airdopes 141 Bluetooth TWS Earbuds,boAt,Electronics,earbuds,1299,4490,4.2,True wireless earbuds with 42 hours playback and ENx,85,68,92
+ELE-0002,OnePlus Nord Buds 3 Pro ANC,OnePlus,Electronics,earbuds,2799,3299,4.5,Hybrid active noise cancellation with punchy bass and Titanized,44,52,38
+ELE-0003,Sony WF-C500 True Wireless Earbuds,Sony,Electronics,earbuds,4490,8990,4.3,Compact ergonomic earbuds with DSEE sound and 20hr battery,26,1,33
+ELE-0004,realme Buds Air 6 Wireless Earbuds,realme,Electronics,earbuds,3299,4999,4.4,50dB smart active noise cancellation with Hi-Res LHDC audio,51,46,60
+ELE-0005,Boult Audio Z40 True Wireless Earbuds,Boult,Electronics,earbuds,1199,4999,4.0,Budget earbuds with 60 hours playback and low latency,78,84,70
+ELE-0006,boAt Rockerz 450 Bluetooth On-Ear Headphones,boAt,Electronics,headphones,1499,3990,4.2,Comfortable padded ear cushions with 15 hours non-stop music,90,75,82
+ELE-0007,Sony WH-CH520 Wireless Bluetooth Headphones,Sony,Electronics,headphones,3990,5990,4.4,Lightweight on-ear headphones with 50-hour battery and multipoint,35,42,28
+ELE-0008,JBL Tune 770NC Wireless Over-Ear ANC Headphones,JBL,Electronics,headphones,5999,9999,4.3,Adaptive noise cancelling headphones with pure bass sound performance,19,27,15
+ELE-0009,Sony WH-1000XM4 Wireless Industry Leading Headphones,Sony,Electronics,headphones,19990,29990,4.7,Flagship active noise cancellation headphones with exceptional high-resolution audio,14,18,0
+ELE-0010,boAt Rockerz 550 Over-Ear Wireless Headphones,boAt,Electronics,headphones,1799,4999,4.1,Dynamic 50mm drivers for powerful deep bass acoustic response,62,55,48
+ELE-0011,Noise ColorFit Pulse 2 Max Smartwatch,Noise,Electronics,smartwatch,1199,5999,4.1,1.85-inch vibrant TFT display with Bluetooth calling and sports,72,64,80
+ELE-0012,boAt Wave Call 2 Bluetooth Calling Smartwatch,boAt,Electronics,smartwatch,1399,6990,4.0,HD curved screen with 700+ active fitness tracking modes,88,95,76
+ELE-0013,Fire-Boltt Phoenix Pro Bluetooth Calling Smartwatch,Fire-Boltt,Electronics,smartwatch,1499,11999,4.2,Luxury metallic casing with AI voice assistant and health,55,60,49
+ELE-0014,OnePlus Watch 2 Smartwatch,OnePlus,Electronics,smartwatch,21999,27999,4.6,Dual-engine architecture with Wear OS and 100-hour battery,1,16,12
+ELE-0015,Samsung Galaxy Watch 6 Bluetooth 40mm,Samsung,Electronics,smartwatch,18999,33999,4.5,Advanced sleep coaching with sapphire crystal glass and ECG,11,14,19
+ELE-0016,boAt Stone 350 10W Bluetooth Speaker,boAt,Electronics,speaker,1499,3490,4.3,Rugged IPX7 waterproof portable speaker with 12 hours playtime,65,70,58
+ELE-0017,JBL Flip 6 Portable Waterproof Bluetooth Speaker,JBL,Electronics,speaker,8999,13999,4.6,Powerful two-way speaker system with deep bass and IP67,24,30,22
+ELE-0018,Sony SRS-XB100 Wireless Portable Travel Speaker,Sony,Electronics,speaker,3990,4990,4.5,Compact body with extra bass and built-in hands-free microphone,38,44,36
+ELE-0019,boAt Stone 180 5W Portable Speaker,boAt,Electronics,speaker,999,2490,4.1,Lightweight wireless speaker with premium acoustic sound and strap,92,80,105
+ELE-0020,JBL Go 3 Eco Portable Waterproof Speaker,JBL,Electronics,speaker,2999,3999,4.4,Ultra-portable stylish design with rich original pro sound audio,47,53,1
+ELE-0021,Mi 20000mAh 18W Fast Charging Power Bank 3i,Xiaomi,Electronics,powerbank,2149,2499,4.3,Triple port output power bank with two-way fast charge,60,72,55
+ELE-0022,Ambrane 10000mAh Slim Power Bank with 20W Boost,Ambrane,Electronics,powerbank,999,1999,4.1,Pocket-sized fast charging backup battery with metallic finish body,84,90,78
+ELE-0023,realme 10000mAh 30W Dart Charge Power Bank,realme,Electronics,powerbank,1999,2999,4.4,High-speed two-way charging support for smartphones and accessories,36,0,42
+ELE-0024,SanDisk Ultra Dual Drive Luxe 128GB Type-C,SanDisk,Electronics,storage,1249,2700,4.5,All-metal dual flash drive for smartphones and computers,110,98,125
+ELE-0025,SanDisk Extreme Portable 1TB External SSD,SanDisk,Electronics,storage,8499,18500,4.7,Rugged fast external NVMe solid state drive with IP65,20,25,18

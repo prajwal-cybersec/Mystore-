@@ -1,0 +1,26 @@
+sku,name,brand,category,subcategory,price_inr,mrp_inr,rating,description,stock_bengaluru,stock_mumbai,stock_delhi
+MOB-0001,"Redmi 13C (6GB, 128GB)",Redmi,Mobiles,budget phone,8999,11999,4.2,Budget phone with 50MP camera and 5000mAh battery,62,48,75
+MOB-0002,realme Narzo N55,realme,Mobiles,budget phone,9499,12999,4.1,Slim budget phone with 33W SUPERVOOC charging,34,57,41
+MOB-0003,Samsung Galaxy M05,Samsung,Mobiles,budget phone,6999,9999,4.0,Entry-level Galaxy with 50MP dual camera,88,66,53
+MOB-0004,Vivo Y18,Vivo,Mobiles,budget phone,8499,11999,3.8,Budget phone with 90Hz display and 5000mAh battery,29,36,1
+MOB-0005,Redmi A4 5G,Redmi,Mobiles,budget phone,8499,10999,4.0,Affordable 5G phone with Snapdragon 4s Gen 2,45,52,60
+MOB-0006,OnePlus Nord CE4 Lite 5G,OnePlus,Mobiles,mid-range phone,17999,22999,4.2,AMOLED display with 80W SUPERVOOC fast charging,27,33,44
+MOB-0007,realme 13 Pro 5G,realme,Mobiles,mid-range phone,23999,28999,4.3,Curved AMOLED display with Sony LYT-600 camera,18,25,21
+MOB-0008,Samsung Galaxy M35 5G,Samsung,Mobiles,mid-range phone,16999,24999,4.2,Super AMOLED phone with 6000mAh long-lasting battery,71,49,63
+MOB-0009,Redmi Note 14 Pro 5G,Redmi,Mobiles,mid-range phone,24999,29999,4.3,200MP camera phone with 120Hz curved AMOLED display,39,58,31
+MOB-0010,Vivo T4 5G,Vivo,Mobiles,mid-range phone,21999,25999,4.2,7300mAh battery phone with Snapdragon 7s Gen 3,26,19,37
+MOB-0011,Apple iPhone 15 (128GB),Apple,Mobiles,flagship,52999,69900,4.7,"Dynamic Island, 48MP main camera, A16 Bionic chip",14,0,22
+MOB-0012,Samsung Galaxy S25 5G,Samsung,Mobiles,flagship,74999,80999,4.6,Compact flagship with Galaxy AI and Snapdragon 8 Elite,9,12,16
+MOB-0013,"OnePlus 13 5G (12GB, 256GB)",OnePlus,Mobiles,flagship,64999,69999,4.6,Snapdragon 8 Elite flagship with Hasselblad cameras,11,17,13
+MOB-0014,Vivo X200 5G,Vivo,Mobiles,flagship,65999,71999,4.6,ZEISS optics flagship with Dimensity 9400 performance,1,8,10
+MOB-0015,Apple iPhone 16 (128GB),Apple,Mobiles,flagship,69999,79900,4.7,A18 chip with Camera Control and Action button,21,28,35
+MOB-0016,Apple iPhone 16 Clear Case with MagSafe,Apple,Mobiles,phone case,3999,4900,4.4,Clear polycarbonate case with MagSafe for iPhone 16,42,55,61
+MOB-0017,Samsung Galaxy S25 Clear Case,Samsung,Mobiles,phone case,1499,2499,4.2,Transparent protective case for Galaxy S25,66,73,48
+MOB-0018,OnePlus 13 Sandstone Magnetic Case,OnePlus,Mobiles,phone case,1499,1999,4.3,Textured sandstone case with magnetic accessory support,31,26,43
+MOB-0019,Vivo X200 Protective Case,Vivo,Mobiles,phone case,1299,1999,4.1,Slim protective case for vivo X200,23,30,17
+MOB-0020,Apple iPhone 15 Silicone Case with MagSafe,Apple,Mobiles,phone case,2999,4900,4.3,"Soft silicone case with MagSafe, soft microfiber lining",37,46,0
+MOB-0021,Apple 20W USB-C Power Adapter,Apple,Mobiles,charger,1699,1900,4.5,Compact 20W adapter with USB-C fast charging,92,85,78
+MOB-0022,Samsung 25W Travel Adapter,Samsung,Mobiles,charger,1099,1699,4.3,25W super fast charging adapter with USB-C port,74,69,81
+MOB-0023,OnePlus SUPERVOOC 80W Power Adapter,OnePlus,Mobiles,charger,1999,2499,4.4,80W SUPERVOOC fast charger for OnePlus phones,56,1,49
+MOB-0024,realme 33W Dart Charge Adapter,realme,Mobiles,charger,999,1499,4.1,33W Dart fast charger with smart protection chip,63,58,67
+MOB-0025,Vivo 44W FlashCharge Adapter,Vivo,Mobiles,charger,1499,2299,4.0,44W FlashCharge adapter with USB-A to USB-C cable,35,41,52

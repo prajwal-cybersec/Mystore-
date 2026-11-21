@@ -1,0 +1,151 @@
+sku,name,brand,category,subcategory,price_inr,mrp_inr,rating,description,stock_bengaluru,stock_mumbai,stock_delhi
+MOB-0001,"Redmi 13C (6GB, 128GB)",Redmi,Mobiles,budget phone,8999,11999,4.2,Budget phone with 50MP camera and 5000mAh battery,62,48,75
+MOB-0002,realme Narzo N55,realme,Mobiles,budget phone,9499,12999,4.1,Slim budget phone with 33W SUPERVOOC charging,34,57,41
+MOB-0003,Samsung Galaxy M05,Samsung,Mobiles,budget phone,6999,9999,4.0,Entry-level Galaxy with 50MP dual camera,88,66,53
+MOB-0004,Vivo Y18,Vivo,Mobiles,budget phone,8499,11999,3.8,Budget phone with 90Hz display and 5000mAh battery,29,36,1
+MOB-0005,Redmi A4 5G,Redmi,Mobiles,budget phone,8499,10999,4.0,Affordable 5G phone with Snapdragon 4s Gen 2,45,52,60
+MOB-0006,OnePlus Nord CE4 Lite 5G,OnePlus,Mobiles,mid-range phone,17999,22999,4.2,AMOLED display with 80W SUPERVOOC fast charging,27,33,44
+MOB-0007,realme 13 Pro 5G,realme,Mobiles,mid-range phone,23999,28999,4.3,Curved AMOLED display with Sony LYT-600 camera,18,25,21
+MOB-0008,Samsung Galaxy M35 5G,Samsung,Mobiles,mid-range phone,16999,24999,4.2,Super AMOLED phone with 6000mAh long-lasting battery,71,49,63
+MOB-0009,Redmi Note 14 Pro 5G,Redmi,Mobiles,mid-range phone,24999,29999,4.3,200MP camera phone with 120Hz curved AMOLED display,39,58,31
+MOB-0010,Vivo T4 5G,Vivo,Mobiles,mid-range phone,21999,25999,4.2,7300mAh battery phone with Snapdragon 7s Gen 3,26,19,37
+MOB-0011,Apple iPhone 15 (128GB),Apple,Mobiles,flagship,52999,69900,4.7,"Dynamic Island, 48MP main camera, A16 Bionic chip",14,0,22
+MOB-0012,Samsung Galaxy S25 5G,Samsung,Mobiles,flagship,74999,80999,4.6,Compact flagship with Galaxy AI and Snapdragon 8 Elite,9,12,16
+MOB-0013,"OnePlus 13 5G (12GB, 256GB)",OnePlus,Mobiles,flagship,64999,69999,4.6,Snapdragon 8 Elite flagship with Hasselblad cameras,11,17,13
+MOB-0014,Vivo X200 5G,Vivo,Mobiles,flagship,65999,71999,4.6,ZEISS optics flagship with Dimensity 9400 performance,1,8,10
+MOB-0015,Apple iPhone 16 (128GB),Apple,Mobiles,flagship,69999,79900,4.7,A18 chip with Camera Control and Action button,21,28,35
+MOB-0016,Apple iPhone 16 Clear Case with MagSafe,Apple,Mobiles,phone case,3999,4900,4.4,Clear polycarbonate case with MagSafe for iPhone 16,42,55,61
+MOB-0017,Samsung Galaxy S25 Clear Case,Samsung,Mobiles,phone case,1499,2499,4.2,Transparent protective case for Galaxy S25,66,73,48
+MOB-0018,OnePlus 13 Sandstone Magnetic Case,OnePlus,Mobiles,phone case,1499,1999,4.3,Textured sandstone case with magnetic accessory support,31,26,43
+MOB-0019,Vivo X200 Protective Case,Vivo,Mobiles,phone case,1299,1999,4.1,Slim protective case for vivo X200,23,30,17
+MOB-0020,Apple iPhone 15 Silicone Case with MagSafe,Apple,Mobiles,phone case,2999,4900,4.3,"Soft silicone case with MagSafe, soft microfiber lining",37,46,0
+MOB-0021,Apple 20W USB-C Power Adapter,Apple,Mobiles,charger,1699,1900,4.5,Compact 20W adapter with USB-C fast charging,92,85,78
+MOB-0022,Samsung 25W Travel Adapter,Samsung,Mobiles,charger,1099,1699,4.3,25W super fast charging adapter with USB-C port,74,69,81
+MOB-0023,OnePlus SUPERVOOC 80W Power Adapter,OnePlus,Mobiles,charger,1999,2499,4.4,80W SUPERVOOC fast charger for OnePlus phones,56,1,49
+MOB-0024,realme 33W Dart Charge Adapter,realme,Mobiles,charger,999,1499,4.1,33W Dart fast charger with smart protection chip,63,58,67
+MOB-0025,Vivo 44W FlashCharge Adapter,Vivo,Mobiles,charger,1499,2299,4.0,44W FlashCharge adapter with USB-A to USB-C cable,35,41,52
+FAS-0001,Bata Men's Formal Derby Shoes,Bata,Fashion,shoes,1499,2499,4.2,Classic formal derbies with cushioned insole,42,35,58
+FAS-0002,Puma Smash V2 Sneakers,Puma,Fashion,shoes,2199,4499,4.4,Iconic tennis-style sneakers with SoftFoam comfort,27,31,22
+FAS-0003,Bata Women's Ballerina Flats,Bata,Fashion,shoes,699,1299,4.0,Everyday ballerinas with anti-skid sole,65,72,49
+FAS-0004,Puma Softride Enzo Evo Running Shoes,Puma,Fashion,shoes,2799,5999,4.3,Lightweight running shoes with Softride cushioning,18,1,25
+FAS-0005,Bata Men's Casual Slip-On Shoes,Bata,Fashion,shoes,999,1799,3.9,Easy slip-on casuals with memory foam insole,53,47,61
+FAS-0006,Puma Essential Logo Men's T-Shirt,Puma,Fashion,t-shirt,799,1499,4.2,Cotton crew-neck tee with bold Puma logo,88,76,94
+FAS-0007,Levis Men's Graphic Crew Neck T-Shirt,Levis,Fashion,t-shirt,899,1799,4.3,Regular fit cotton tee with iconic batwing print,34,41,29
+FAS-0008,Allen Solly Men's Classic Polo T-Shirt,Allen Solly,Fashion,t-shirt,1099,1999,4.4,Classic polo with signature stag embroidery,56,62,48
+FAS-0009,Puma Women's Essential Logo T-Shirt,Puma,Fashion,t-shirt,899,1699,4.2,Relaxed fit women's tee for everyday comfort,23,19,36
+FAS-0010,Levis 511 Slim Fit Men's Jeans,Levis,Fashion,jeans,2299,3999,4.5,"Slim fit stretch jeans, sits below waist",21,26,33
+FAS-0011,Levis 311 Shaping Skinny Women's Jeans,Levis,Fashion,jeans,2499,4299,4.4,Women's skinny jeans with tummy-slimming panel,15,20,17
+FAS-0012,Allen Solly Men's Slim Fit Jeans,Allen Solly,Fashion,jeans,1799,2999,4.2,Mid-rise slim jeans in dark wash denim,38,44,52
+FAS-0013,Allen Solly Women's Boyfriend Jeans,Allen Solly,Fashion,jeans,1699,2799,4.0,Relaxed boyfriend jeans with rolled-up hems,29,0,31
+FAS-0014,Fabindia Men's Handloom Cotton Kurta,Fabindia,Fashion,kurta,1499,2299,4.3,Handloom cotton kurta with mandarin collar,47,53,41
+FAS-0015,Biba Women's Anarkali Kurta,Biba,Fashion,kurta,1999,3999,4.4,Flared Anarkali kurta with printed yoke,32,28,45
+FAS-0016,Fabindia Women's Chanderi Kurta,Fabindia,Fashion,kurta,2499,3499,4.5,Elegant Chanderi silk kurta with hand block print,12,16,14
+FAS-0017,Biba Women's Straight Kurta,Biba,Fashion,kurta,1299,2599,4.2,Straight-fit festive kurta with mirror work,58,63,1
+FAS-0018,Fabindia Handloom Cotton Saree,Fabindia,Fashion,saree,2999,4499,4.4,Breathable handloom cotton saree with contrast border,25,31,27
+FAS-0019,Fabindia Tussar Silk Saree,Fabindia,Fashion,saree,5999,7999,4.6,"Pure Tussar silk saree, handwoven in Bhagalpur",8,11,9
+FAS-0020,Fabindia Block Print Cotton Saree,Fabindia,Fashion,saree,1999,2999,4.2,Lightweight daily-wear saree with block prints,44,39,50
+FAS-0021,Fabindia Linen Zari Saree,Fabindia,Fashion,saree,3499,4999,4.3,Pure linen saree with zari border,0,18,22
+FAS-0022,Puma Phase Backpack,Puma,Fashion,bag,899,1499,4.3,22L backpack with padded laptop sleeve,67,74,59
+FAS-0023,Allen Solly Women's Structured Handbag,Allen Solly,Fashion,bag,2199,3699,4.2,Structured tote handbag with detachable sling strap,24,29,33
+FAS-0024,Fabindia Jute Tote Bag,Fabindia,Fashion,bag,599,899,4.1,Eco-friendly jute tote with cotton handles,81,68,77
+FAS-0025,Bata Women's Sling Bag,Bata,Fashion,bag,999,1699,3.8,Compact sling bag with zip closure,1,42,37
+GRO-0001,Aashirvaad Shudh Chakki Whole Wheat Atta 5kg,Aashirvaad,Grocery,atta,245,310,4.5,Chakki-ground whole wheat atta for soft rotis,120,95,140
+GRO-0002,Aashirvaad Multigrain Atta 5kg,Aashirvaad,Grocery,atta,299,375,4.4,"Six-grain atta with soya, oats and chana",65,78,52
+GRO-0003,Patanjali Whole Wheat Atta 5kg,Patanjali,Grocery,atta,225,270,4.1,Stone-ground chakki atta with high fibre,88,104,73
+GRO-0004,Tata Sampann Basmati Rice 5kg,Tata,Grocery,rice,725,850,4.3,Long-grain basmati rice for biryani and pulao,45,60,38
+GRO-0005,Patanjali Basmati Rice 1kg,Patanjali,Grocery,rice,120,150,4.0,Aromatic basmati rice with extra-long grains,92,81,110
+GRO-0006,Tata Sampann Poha 500g,Tata,Grocery,rice,45,60,4.4,Thick flattened rice for quick breakfast poha,150,132,165
+GRO-0007,Patanjali Fortified Mustard Oil 1L,Patanjali,Grocery,oil,165,199,4.2,Kachi ghani mustard oil fortified with vitamins,76,89,64
+GRO-0008,Patanjali Soybean Refined Oil 1L,Patanjali,Grocery,oil,139,165,3.9,Light refined soybean oil for everyday cooking,58,47,71
+GRO-0009,Tata Simply Better Cold Pressed Groundnut Oil 1L,Tata,Grocery,oil,385,450,4.4,"Cold-pressed groundnut oil, unrefined and aromatic",22,31,26
+GRO-0010,Tata Tea Premium 500g,Tata,Grocery,tea,285,320,4.4,Rich Assam blend for strong everyday chai,140,155,128
+GRO-0011,Tata Tea Gold 250g,Tata,Grocery,tea,175,195,4.5,Gentle long leaves for aromatic golden cups,96,84,102
+GRO-0012,Tata Tea Agni 250g,Tata,Grocery,tea,89,105,4.1,Strong granular tea for kadak chai,175,160,190
+GRO-0013,Britannia Good Day Cashew Cookies 200g,Britannia,Grocery,snacks,48,60,4.5,Buttery cookies loaded with crunchy cashews,188,172,195
+GRO-0014,Britannia Marie Gold 250g,Britannia,Grocery,snacks,38,45,4.4,"Light crispy tea-time biscuits, low in fat",165,149,178
+GRO-0015,Britannia NutriChoice Digestive 250g,Britannia,Grocery,snacks,78,95,4.3,High-fibre digestive biscuits with whole grains,82,91,77
+GRO-0016,Dabur Hajmola Regular 120 Tablets,Dabur,Grocery,snacks,63,75,4.4,Tangy digestive tablets with ayurvedic herbs,54,1,62
+GRO-0017,Amul Butter 500g,Amul,Grocery,dairy,275,290,4.7,"Iconic pasteurised white butter, utterly butterly delicious",35,42,28
+GRO-0018,Amul Taaza Toned Milk 1L,Amul,Grocery,dairy,54,57,4.5,"Homogenised toned milk, ready to pour",130,145,118
+GRO-0019,Amul Pure Ghee 1L,Amul,Grocery,dairy,640,675,4.6,Rich granular ghee for festive cooking,18,24,15
+GRO-0020,Dabur Glucose D 500g,Dabur,Grocery,health drinks,155,180,4.2,Instant energy drink mix with Vitamin D,48,55,41
+GRO-0021,Patanjali Amla Juice 1L,Patanjali,Grocery,health drinks,165,200,4.2,Pure amla juice rich in Vitamin C,37,29,1
+GRO-0022,Patanjali Aloe Vera Juice 1L,Patanjali,Grocery,health drinks,209,250,4.1,Aloe vera juice for digestion and immunity,26,33,30
+GRO-0023,Patanjali Nutrela Daily Multivitamin 60 Tablets,Patanjali,Grocery,vitamins,299,360,4.2,Vegetarian multivitamin with 12 vitamins and minerals,1,19,23
+GRO-0024,Dabur Giloy Ghanvati 60 Tablets,Dabur,Grocery,vitamins,105,125,4.0,Giloy tablets to support natural immunity,61,0,44
+GRO-0025,Patanjali Nutrela Vitamin B12 60 Capsules,Patanjali,Grocery,vitamins,339,399,4.1,Vegan Vitamin B12 capsules for daily energy,14,21,0
+ELE-0001,boAt Airdopes 141 Bluetooth TWS Earbuds,boAt,Electronics,earbuds,1299,4490,4.2,True wireless earbuds with 42 hours playback and ENx,85,68,92
+ELE-0002,OnePlus Nord Buds 3 Pro ANC,OnePlus,Electronics,earbuds,2799,3299,4.5,Hybrid active noise cancellation with punchy bass and Titanized,44,52,38
+ELE-0003,Sony WF-C500 True Wireless Earbuds,Sony,Electronics,earbuds,4490,8990,4.3,Compact ergonomic earbuds with DSEE sound and 20hr battery,26,1,33
+ELE-0004,realme Buds Air 6 Wireless Earbuds,realme,Electronics,earbuds,3299,4999,4.4,50dB smart active noise cancellation with Hi-Res LHDC audio,51,46,60
+ELE-0005,Boult Audio Z40 True Wireless Earbuds,Boult,Electronics,earbuds,1199,4999,4.0,Budget earbuds with 60 hours playback and low latency,78,84,70
+ELE-0006,boAt Rockerz 450 Bluetooth On-Ear Headphones,boAt,Electronics,headphones,1499,3990,4.2,Comfortable padded ear cushions with 15 hours non-stop music,90,75,82
+ELE-0007,Sony WH-CH520 Wireless Bluetooth Headphones,Sony,Electronics,headphones,3990,5990,4.4,Lightweight on-ear headphones with 50-hour battery and multipoint,35,42,28
+ELE-0008,JBL Tune 770NC Wireless Over-Ear ANC Headphones,JBL,Electronics,headphones,5999,9999,4.3,Adaptive noise cancelling headphones with pure bass sound performance,19,27,15
+ELE-0009,Sony WH-1000XM4 Wireless Industry Leading Headphones,Sony,Electronics,headphones,19990,29990,4.7,Flagship active noise cancellation headphones with exceptional high-resolution audio,14,18,0
+ELE-0010,boAt Rockerz 550 Over-Ear Wireless Headphones,boAt,Electronics,headphones,1799,4999,4.1,Dynamic 50mm drivers for powerful deep bass acoustic response,62,55,48
+ELE-0011,Noise ColorFit Pulse 2 Max Smartwatch,Noise,Electronics,smartwatch,1199,5999,4.1,1.85-inch vibrant TFT display with Bluetooth calling and sports,72,64,80
+ELE-0012,boAt Wave Call 2 Bluetooth Calling Smartwatch,boAt,Electronics,smartwatch,1399,6990,4.0,HD curved screen with 700+ active fitness tracking modes,88,95,76
+ELE-0013,Fire-Boltt Phoenix Pro Bluetooth Calling Smartwatch,Fire-Boltt,Electronics,smartwatch,1499,11999,4.2,Luxury metallic casing with AI voice assistant and health,55,60,49
+ELE-0014,OnePlus Watch 2 Smartwatch,OnePlus,Electronics,smartwatch,21999,27999,4.6,Dual-engine architecture with Wear OS and 100-hour battery,1,16,12
+ELE-0015,Samsung Galaxy Watch 6 Bluetooth 40mm,Samsung,Electronics,smartwatch,18999,33999,4.5,Advanced sleep coaching with sapphire crystal glass and ECG,11,14,19
+ELE-0016,boAt Stone 350 10W Bluetooth Speaker,boAt,Electronics,speaker,1499,3490,4.3,Rugged IPX7 waterproof portable speaker with 12 hours playtime,65,70,58
+ELE-0017,JBL Flip 6 Portable Waterproof Bluetooth Speaker,JBL,Electronics,speaker,8999,13999,4.6,Powerful two-way speaker system with deep bass and IP67,24,30,22
+ELE-0018,Sony SRS-XB100 Wireless Portable Travel Speaker,Sony,Electronics,speaker,3990,4990,4.5,Compact body with extra bass and built-in hands-free microphone,38,44,36
+ELE-0019,boAt Stone 180 5W Portable Speaker,boAt,Electronics,speaker,999,2490,4.1,Lightweight wireless speaker with premium acoustic sound and strap,92,80,105
+ELE-0020,JBL Go 3 Eco Portable Waterproof Speaker,JBL,Electronics,speaker,2999,3999,4.4,Ultra-portable stylish design with rich original pro sound audio,47,53,1
+ELE-0021,Mi 20000mAh 18W Fast Charging Power Bank 3i,Xiaomi,Electronics,powerbank,2149,2499,4.3,Triple port output power bank with two-way fast charge,60,72,55
+ELE-0022,Ambrane 10000mAh Slim Power Bank with 20W Boost,Ambrane,Electronics,powerbank,999,1999,4.1,Pocket-sized fast charging backup battery with metallic finish body,84,90,78
+ELE-0023,realme 10000mAh 30W Dart Charge Power Bank,realme,Electronics,powerbank,1999,2999,4.4,High-speed two-way charging support for smartphones and accessories,36,0,42
+ELE-0024,SanDisk Ultra Dual Drive Luxe 128GB Type-C,SanDisk,Electronics,storage,1249,2700,4.5,All-metal dual flash drive for smartphones and computers,110,98,125
+ELE-0025,SanDisk Extreme Portable 1TB External SSD,SanDisk,Electronics,storage,8499,18500,4.7,Rugged fast external NVMe solid state drive with IP65,20,25,18
+BEA-0001,Himalaya Purifying Neem Face Wash 150ml,Himalaya,Beauty,face wash,175,210,4.4,Neem and turmeric face wash for pimple-free skin,85,72,94
+BEA-0002,Mamaearth Ubtan Face Wash 100ml,Mamaearth,Beauty,face wash,229,269,4.2,Turmeric and saffron face wash for natural glow,46,58,39
+BEA-0003,Lakme Blush & Glow Lemon Face Wash 50g,Lakme,Beauty,face wash,79,99,4.1,Lemon freshness face wash for bright skin,112,98,125
+BEA-0004,Nivea Men Dark Spot Reduction Face Wash 100g,Nivea,Beauty,face wash,189,249,4.0,Deep-cleansing face wash that reduces dark spots,33,27,41
+BEA-0005,Lakme Peach Milk Moisturizer 120ml,Lakme,Beauty,moisturizer,199,249,4.5,Light peach milk moisturiser with vitamin E,68,75,52
+BEA-0006,Nivea Soft Light Moisturizer 200ml,Nivea,Beauty,moisturizer,289,350,4.6,Quick-absorbing cream with jojoba oil and vitamin E,91,84,103
+BEA-0007,Mamaearth Oil-Free Face Moisturizer 80ml,Mamaearth,Beauty,moisturizer,279,319,4.1,Oil-free hydration with apple cider vinegar,24,31,22
+BEA-0008,Himalaya Nourishing Skin Cream 50g,Himalaya,Beauty,moisturizer,145,170,4.3,Ayurvedic cream with aloe vera and winter cherry,57,49,63
+BEA-0009,Dove Essential Nourishment Body Lotion 250ml,Dove,Beauty,moisturizer,265,325,4.4,Rich nourishing lotion for soft smooth skin,38,44,29
+BEA-0010,Dove Intense Repair Shampoo 340ml,Dove,Beauty,shampoo,335,399,4.5,Repairs damaged hair with keratin actives,76,88,64
+BEA-0011,Dove Hair Fall Rescue Shampoo 340ml,Dove,Beauty,shampoo,329,390,4.4,Reduces hair fall with Nutrilock actives,59,67,71
+BEA-0012,Mamaearth Onion Shampoo 250ml,Mamaearth,Beauty,shampoo,299,349,4.2,Onion and plant keratin shampoo for stronger hair,42,1,36
+BEA-0013,Himalaya Anti-Hair Fall Shampoo 200ml,Himalaya,Beauty,shampoo,155,185,4.1,Bhringaraja and chickpea formula against hair fall,83,95,78
+BEA-0014,Maybelline SuperStay Matte Ink Lipstick - Pioneer,Maybelline,Beauty,lipstick,599,699,4.5,"16-hour matte liquid lipstick, transfer-proof bold colour",28,34,25
+BEA-0015,Maybelline Color Sensational Creamy Matte Lipstick,Maybelline,Beauty,lipstick,315,375,4.3,Creamy matte bullet with rich one-swipe colour,47,53,44
+BEA-0016,Lakme Absolute Matte Melt Liquid Lip Colour,Lakme,Beauty,lipstick,649,800,4.2,Mousse-textured liquid lip with intense matte finish,19,23,17
+BEA-0017,Lakme Enrich Matte Lipstick,Lakme,Beauty,lipstick,289,350,3.9,Classic matte bullet enriched with vitamin E,65,71,58
+BEA-0018,Mamaearth ME Oud Eau De Parfum 50ml,Mamaearth,Beauty,perfume,549,699,4.0,"Oud eau de parfum, warm and long-lasting",1,21,26
+BEA-0019,Nivea Men Fresh Active Roll On 50ml,Nivea,Beauty,perfume,175,225,4.4,48-hour odour protection with fresh ocean extracts,104,118,96
+BEA-0020,Nivea Pearl & Beauty Roll On 50ml,Nivea,Beauty,perfume,179,225,4.3,Roll-on with pearl extracts for beautiful underarms,87,92,81
+BEA-0021,Nivea Men Protect & Care Roll On 50ml,Nivea,Beauty,perfume,185,225,4.2,Gentle 48-hour protection with aloe vera,73,66,79
+BEA-0022,Mamaearth Ultra Light Indian Sunscreen SPF 50 80g,Mamaearth,Beauty,sunscreen,449,499,4.2,SPF 50 PA+++ sunscreen with turmeric and carrot,35,41,30
+BEA-0023,Lakme Sun Expert SPF 50 Ultra Matte Sunscreen 50g,Lakme,Beauty,sunscreen,385,449,4.3,Ultra-matte dry-touch sunscreen for Indian summers,52,0,47
+BEA-0024,Lakme Sun Expert Tinted Sunscreen SPF 50 50ml,Lakme,Beauty,sunscreen,335,399,4.1,Tinted SPF 50 sunscreen with natural coverage,26,32,1
+BEA-0025,Nivea Sun Protect & Moisture Lotion SPF 50 75ml,Nivea,Beauty,sunscreen,399,475,4.4,Water-resistant SPF 50 lotion with instant moisture,0,56,61
+APP-0001,Prestige Iris 750W Mixer Grinder,Prestige,Appliances,mixer grinder,2999,4299,4.2,750W mixer with three stainless steel jars,25,18,32
+APP-0002,Prestige Delight Plus 750W Mixer Grinder,Prestige,Appliances,mixer grinder,3299,4999,4.1,750W mixer grinder with spill-proof jars,12,16,9
+APP-0003,Bajaj Rex 500W Mixer Grinder 3 Jars,Bajaj,Appliances,mixer grinder,2299,3599,4.3,Compact 500W mixer with three multipurpose jars,34,28,41
+APP-0004,Philips HL7756/00 750W Mixer Grinder,Philips,Appliances,mixer grinder,3999,4795,4.4,Advanced air ventilation for faster motor cooling,8,11,6
+APP-0005,Prestige Popular Pressure Cooker 3L,Prestige,Appliances,pressure cooker,1049,1310,4.4,Virgin aluminium cooker for daily cooking,45,52,38
+APP-0006,Prestige Svachh Outer Lid Pressure Cooker 5L,Prestige,Appliances,pressure cooker,1899,2480,4.5,Spill-controlled lid keeps your kitchen clean,27,33,24
+APP-0007,Prestige Deluxe Alpha Svachh Cooker 3L,Prestige,Appliances,pressure cooker,2599,3320,4.6,Stainless steel cooker with controlled spillage lid,14,1,19
+APP-0008,Havells Efficiencia Neo BLDC Ceiling Fan,Havells,Appliances,fan,3499,4650,4.4,Energy-saving BLDC motor with remote control,21,26,17
+APP-0009,Havells Stealth Air 1200mm Ceiling Fan,Havells,Appliances,fan,2999,3990,4.3,Silent operation with aerodynamic aluminium blades,15,12,20
+APP-0010,Bajaj Frosta 1200mm Ceiling Fan,Bajaj,Appliances,fan,1499,2290,4.1,High air delivery with double ball bearings,39,44,31
+APP-0011,Bajaj Esteem 400mm Wall Fan,Bajaj,Appliances,fan,1999,2890,4.0,Wall-mounted fan with wide oscillation coverage,18,22,25
+APP-0012,Havells Festiva 1200mm Ceiling Fan,Havells,Appliances,fan,2199,2955,4.2,Dust-resistant fan with elegant decorative trims,29,35,27
+APP-0013,Philips GC1905 Steam Iron 1440W,Philips,Appliances,iron,1495,1695,4.5,"1440W steam iron, crease-free results everyday",33,40,28
+APP-0014,Philips GC1920 Steam Iron 2000W,Philips,Appliances,iron,1995,2295,4.4,Powerful steam output with non-stick soleplate,16,13,21
+APP-0015,Bajaj Majesty DX11 Dry Iron 1000W,Bajaj,Appliances,iron,649,999,4.2,Lightweight dry iron with non-stick coating,55,60,48
+APP-0016,Bajaj Majesty MX3 Steam Iron 1250W,Bajaj,Appliances,iron,1099,1599,4.0,1250W steam iron with swivel cord,24,30,19
+APP-0017,LG 28L Convection Microwave MC2846BV,LG,Appliances,microwave,12490,14999,4.5,28L convection with 251 auto cook menus,7,9,5
+APP-0018,Samsung 23L Solo Microwave MS23A3513AK,Samsung,Appliances,microwave,7190,8990,4.3,Solo microwave with ceramic enamel cavity,11,14,10
+APP-0019,Samsung 28L Convection Microwave MC28A5013AK,Samsung,Appliances,microwave,10990,13490,4.4,Convection microwave with tandoor technology,1,6,8
+APP-0020,LG 8kg Front Load Washing Machine FHM1208ZDL,LG,Appliances,washing machine,30990,35990,4.5,Front load with 6 Motion Direct Drive,5,7,4
+APP-0021,Samsung 7kg Top Load Washing Machine WA70A4002GS,Samsung,Appliances,washing machine,15490,18900,4.3,Top load with center jet technology,13,17,12
+APP-0022,LG 7kg Semi Automatic Top Load Washing Machine,LG,Appliances,washing machine,10990,13490,4.2,Twin tub washer with Rat Away Technology,9,0,11
+APP-0023,LG 1.5 Ton 3 Star Dual Inverter Split AC,LG,Appliances,AC,38990,44990,4.4,"Fast cooling, low noise, 100% copper tubes",4,6,3
+APP-0024,Samsung 1.5 Ton 3 Star Inverter Split AC,Samsung,Appliances,AC,36990,42990,4.3,Convertible 5-in-1 cooling with digital inverter,6,8,1
+APP-0025,LG 1 Ton 3 Star Dual Inverter Split AC,LG,Appliances,AC,32990,38990,4.4,Compact inverter AC for small bedrooms,0,5,7
