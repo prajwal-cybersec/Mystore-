@@ -8,7 +8,10 @@ from app.models.order import Order, OrderItem
 from app.models.outbox import Outbox
 from app.models.processed_event import ProcessedEvent
 from app.models.product import Product
+from app.models.return_request import ReturnRequest, ReturnStatusHistory
+from app.models.seller import Invoice, Seller, SellerInvoiceCounter, SellerOffer, Shipment, SubOrder
 from app.models.store_stock import StoreStock
+from app.models.tryon_event import TryonEvent
 
 __all__ = [
     "Base",
@@ -22,5 +25,14 @@ __all__ = [
     "Outbox",
     "ProcessedEvent",
     "Product",
+    "ReturnRequest",
+    "ReturnStatusHistory",
+    "Invoice",
+    "Seller",
+    "SellerInvoiceCounter",
+    "SellerOffer",
+    "Shipment",
+    "SubOrder",
     "StoreStock",
+    "TryonEvent",
 ]

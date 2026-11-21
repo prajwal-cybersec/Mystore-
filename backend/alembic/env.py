@@ -19,7 +19,10 @@ import app.models.order  # noqa: F401
 import app.models.outbox  # noqa: F401
 import app.models.processed_event  # noqa: F401
 import app.models.product  # noqa: F401
+import app.models.return_request  # noqa: F401
+import app.models.seller  # noqa: F401
 import app.models.store_stock  # noqa: F401
+import app.models.tryon_event  # noqa: F401
 
 config = context.config
 if config.config_file_name is not None:

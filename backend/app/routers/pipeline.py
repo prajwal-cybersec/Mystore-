@@ -55,17 +55,25 @@ async def list_notifications(
 
 @router.get("/pipeline/status")
 async def pipeline_status(db: AsyncSession = Depends(get_db)) -> Dict[str, Any]:
-    """Provide real-time status counts across outbox, processed_events, and notifications."""
+    """Provide real-time status counts across outbox, processed_events, notifications, and multi-seller marketplace."""
     outbox_pending = await db.execute(text("SELECT count(*) FROM outbox WHERE published_at IS NULL"))
     outbox_published = await db.execute(text("SELECT count(*) FROM outbox WHERE published_at IS NOT NULL"))
     events_processed = await db.execute(text("SELECT count(*) FROM processed_events"))
     total_notifications = await db.execute(text("SELECT count(*) FROM notifications"))
     total_orders = await db.execute(text("SELECT count(*) FROM orders"))
+    total_sub_orders = await db.execute(text("SELECT count(*) FROM sub_orders"))
+    total_invoices = await db.execute(text("SELECT count(*) FROM invoices"))
+    total_shipments = await db.execute(text("SELECT count(*) FROM shipments"))
+    total_sellers = await db.execute(text("SELECT count(*) FROM sellers"))
 
     return {
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "counts": {
             "orders": total_orders.scalar() or 0,
+            "sub_orders": total_sub_orders.scalar() or 0,
+            "invoices": total_invoices.scalar() or 0,
+            "shipments": total_shipments.scalar() or 0,
+            "sellers": total_sellers.scalar() or 0,
             "outbox_pending": outbox_pending.scalar() or 0,
             "outbox_published": outbox_published.scalar() or 0,
             "events_processed": events_processed.scalar() or 0,
@@ -82,10 +90,18 @@ async def event_generator() -> AsyncGenerator[str, None]:
     # Send initial connected ping
     init_data = json.dumps({
         "stage": "CONNECTED",
-        "message": "MyStore Event Stream connected",
+        "message": "MyStore Multi-Seller Event Stream connected",
         "timestamp": last_checked_time.isoformat(),
     })
     yield f"data: {init_data}\n\n"
+
+    stage_topic_map = {
+        "orders.placed": "1. ORDER_PLACED",
+        "suborder.created": "2. SUBORDER_CREATED",
+        "invoice.generated": "3. INVOICE_GENERATED",
+        "inventory.changed": "4. INVENTORY_SYNCED",
+        "returns.events": "REVERSE_LOGISTICS",
+    }
 
     while True:
         try:
@@ -97,11 +113,18 @@ async def event_generator() -> AsyncGenerator[str, None]:
                         FROM outbox
                         WHERE created_at >= NOW() - INTERVAL '30 seconds'
                         ORDER BY created_at DESC
-                        LIMIT 5
+                        LIMIT 8
                     """)
                 )
                 rows = res.mappings().all()
                 for r in rows:
+                    payload = r["payload"] if isinstance(r["payload"], dict) else json.loads(r["payload"] or "{}")
+                    stage_name = stage_topic_map.get(r["topic"], "OUTBOX_EVENT")
+                    if r["topic"] == "invoice.generated":
+                        ready = payload.get("invoices_ready", 1)
+                        expected = payload.get("invoices_expected", 1)
+                        stage_name = f"3. INVOICE_GENERATED ({ready}/{expected})"
+
                     event_data = {
                         "id": str(r["id"]),
                         "topic": r["topic"],
@@ -109,7 +132,8 @@ async def event_generator() -> AsyncGenerator[str, None]:
                         "published": r["published_at"] is not None,
                         "created_at": r["created_at"].isoformat() if r["created_at"] else None,
                         "published_at": r["published_at"].isoformat() if r["published_at"] else None,
-                        "stage": "OUTBOX_PUBLISHED" if r["published_at"] else "OUTBOX_PENDING",
+                        "stage": stage_name,
+                        "payload_summary": payload.get("event_type", r["topic"]),
                     }
                     yield f"data: {json.dumps(event_data)}\n\n"
 

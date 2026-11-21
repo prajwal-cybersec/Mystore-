@@ -19,6 +19,7 @@ from app.routers.checkout import router as checkout_router
 from app.routers.pipeline import router as pipeline_router
 from app.routers.views import router as views_router
 from app.routers.tryon import router as tryon_router
+from app.routers.returns import router as returns_router
 
 logger = structlog.stdlib.get_logger(__name__)
 
@@ -50,3 +51,4 @@ app.include_router(checkout_router)
 app.include_router(pipeline_router)
 app.include_router(views_router)
 app.include_router(tryon_router)
+app.include_router(returns_router)

@@ -63,8 +63,10 @@
           <p class="text-gray-400 text-[11px] mb-3">Handles ACID checkout, row-level locks on <code>store_stock</code>, and writes to transactional outbox.</p>
           <div class="space-y-1 bg-gray-950 p-2.5 rounded-lg border border-gray-800 text-[11px]">
             <div class="flex justify-between"><span>Orders:</span> <strong id="statOrders" class="text-white">-</strong></div>
-            <div class="flex justify-between"><span>Outbox Pending:</span> <strong id="statOutboxPending" class="text-amber-400">-</strong></div>
-            <div class="flex justify-between"><span>Outbox Published:</span> <strong id="statOutboxPublished" class="text-emerald-400">-</strong></div>
+            <div class="flex justify-between"><span>Seller Sub-Orders:</span> <strong id="statSubOrders" class="text-indigo-400">-</strong></div>
+            <div class="flex justify-between"><span>GST Invoices:</span> <strong id="statInvoices" class="text-emerald-400">-</strong></div>
+            <div class="flex justify-between"><span>Shipments:</span> <strong id="statShipments" class="text-blue-400">-</strong></div>
+            <div class="flex justify-between"><span>Outbox Pending / Published:</span> <strong class="text-gray-300"><span id="statOutboxPending" class="text-amber-400">-</span> / <span id="statOutboxPublished" class="text-emerald-400">-</span></strong></div>
           </div>
         </div>
         <div class="mt-3 pt-2 border-t border-gray-800/80 text-[10px] text-gray-500">
@@ -160,6 +162,52 @@
 
     </div>
 
+    <!-- RETURNS & REVERSE LOGISTICS PIPELINE PANEL -->
+    <div class="bg-gray-900 border border-gray-800 rounded-xl p-4 space-y-4">
+      <div class="flex items-center justify-between border-b border-gray-800 pb-2">
+        <h3 class="font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-truck-ramp-box text-orange-400"></i> Reverse Logistics & Returns Analytics (Transactional Outbox & Kafka)
+        </h3>
+        <a href="/admin/returns" class="text-xs bg-orange-600 hover:bg-orange-700 text-white font-semibold px-2.5 py-1 rounded transition flex items-center gap-1">
+          <i class="fa-solid fa-gear"></i> Admin Portal
+        </a>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-3 text-xs">
+        <div class="bg-gray-950 p-3 rounded-lg border border-gray-800">
+          <div class="text-gray-400">Total Returns:</div>
+          <div id="retPipelineTotal" class="text-lg font-bold text-white mt-1">-</div>
+        </div>
+        <div class="bg-gray-950 p-3 rounded-lg border border-gray-800">
+          <div class="text-gray-400">Return Rate:</div>
+          <div id="retPipelineRate" class="text-lg font-bold text-amber-400 mt-1">-</div>
+        </div>
+        <div class="bg-gray-950 p-3 rounded-lg border border-gray-800">
+          <div class="text-gray-400">Try-On Return Rate:</div>
+          <div id="retPipelineTryonRate" class="text-lg font-bold text-emerald-400 mt-1">-</div>
+        </div>
+        <div class="bg-gray-950 p-3 rounded-lg border border-gray-800">
+          <div class="text-gray-400">Non-Try-On Return Rate:</div>
+          <div id="retPipelineNonTryonRate" class="text-lg font-bold text-rose-400 mt-1">-</div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+        <div class="bg-gray-950 p-3 rounded-lg border border-gray-800">
+          <div class="font-bold text-gray-300 mb-2">Returns by Status:</div>
+          <div id="retPipelineStatusContainer" class="flex flex-wrap gap-2">
+            <!-- Badges -->
+          </div>
+        </div>
+        <div class="bg-gray-950 p-3 rounded-lg border border-gray-800">
+          <div class="font-bold text-gray-300 mb-2">Top 5 Return Reasons:</div>
+          <div id="retPipelineReasonsContainer" class="space-y-1">
+            <!-- List -->
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- SEARCH SCORECARD SUMMARY TABLE -->
     <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
       <h3 class="font-bold text-white mb-2 flex items-center gap-2">
@@ -210,6 +258,9 @@
         const res = await fetch('/pipeline/status');
         const data = await res.json();
         document.getElementById('statOrders').textContent = data.counts.orders;
+        if (document.getElementById('statSubOrders')) document.getElementById('statSubOrders').textContent = data.counts.sub_orders || 0;
+        if (document.getElementById('statInvoices')) document.getElementById('statInvoices').textContent = data.counts.invoices || 0;
+        if (document.getElementById('statShipments')) document.getElementById('statShipments').textContent = data.counts.shipments || 0;
         document.getElementById('statOutboxPending').textContent = data.counts.outbox_pending;
         document.getElementById('statOutboxPublished').textContent = data.counts.outbox_published;
         document.getElementById('statEventsProcessed').textContent = data.counts.events_processed;
@@ -325,13 +376,58 @@
       }
     }
 
+    // 5. Fetch returns metrics
+    async function fetchReturnsStats() {
+      try {
+        const res = await fetch('/api/returns/stats');
+        if (!res.ok) return;
+        const data = await res.json();
+        document.getElementById('retPipelineTotal').textContent = data.total_returns || 0;
+        document.getElementById('retPipelineRate').textContent = `${data.return_rate_pct || 0}%`;
+        
+        const tc = data.tryon_comparison || {};
+        document.getElementById('retPipelineTryonRate').textContent = `${tc.tryon_return_rate_pct || 0}% (${tc.tryon_returns || 0}/${tc.tryon_items_ordered || 0})`;
+        document.getElementById('retPipelineNonTryonRate').textContent = `${tc.non_tryon_return_rate_pct || 0}% (${tc.non_tryon_returns || 0}/${tc.non_tryon_items_ordered || 0})`;
+
+        const statusContainer = document.getElementById('retPipelineStatusContainer');
+        const byStatus = data.by_status || {};
+        const statusKeys = Object.keys(byStatus);
+        if (statusKeys.length === 0) {
+          statusContainer.innerHTML = '<span class="text-gray-500">No returns yet</span>';
+        } else {
+          statusContainer.innerHTML = statusKeys.map(k => `
+            <span class="px-2 py-0.5 rounded bg-gray-800 border border-gray-700 text-gray-200">
+              ${k}: <strong class="text-orange-400">${byStatus[k]}</strong>
+            </span>
+          `).join('');
+        }
+
+        const reasonsContainer = document.getElementById('retPipelineReasonsContainer');
+        const topReasons = data.top_reasons || [];
+        if (topReasons.length === 0) {
+          reasonsContainer.innerHTML = '<span class="text-gray-500">No return reasons recorded</span>';
+        } else {
+          reasonsContainer.innerHTML = topReasons.map(r => `
+            <div class="flex justify-between text-gray-400 border-b border-gray-800 pb-0.5">
+              <span>${(r.reason || '').replace(/_/g, ' ')}:</span>
+              <strong class="text-white">${r.count}</strong>
+            </div>
+          `).join('');
+        }
+      } catch (e) {
+        console.error("fetchReturnsStats error:", e);
+      }
+    }
+
     // Initialize
     window.addEventListener('DOMContentLoaded', () => {
       fetchStatus();
       fetchNotifications();
+      fetchReturnsStats();
       connectSSE();
       setInterval(fetchStatus, 3000);
       setInterval(fetchNotifications, 5000);
+      setInterval(fetchReturnsStats, 5000);
     });
   </script>
 </body>

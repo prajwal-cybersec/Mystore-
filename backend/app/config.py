@@ -39,6 +39,25 @@ class Settings(BaseSettings):
     # --- App ---
     app_env: str = "development"
     log_level: str = "INFO"
+    admin_api_key: str = ""
+
+    # --- Marketplace & GST Configuration ---
+    category_gst_rates: dict[str, float] = {
+        "fashion": 0.12,
+        "electronics": 0.18,
+        "mobiles": 0.18,
+        "appliances": 0.18,
+        "beauty": 0.18,
+        "food & health": 0.05,
+    }
+    default_gst_rate: float = 0.18
+    city_state_map: dict[str, str] = {
+        "bengaluru": "Karnataka",
+        "mumbai": "Maharashtra",
+        "delhi": "Delhi",
+        "hyderabad": "Telangana",
+        "chennai": "Tamil Nadu",
+    }
 
     @property
     def async_pg_url(self) -> str:

@@ -30,6 +30,16 @@ class Order(Base):
         String(32), nullable=False, server_default=text("'pending'"), default="pending"
     )
     total_inr: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
+    grand_total: Mapped[Decimal | None] = mapped_column(Numeric(12, 2), nullable=True)
+    invoices_expected: Mapped[int] = mapped_column(
+        Integer, nullable=False, server_default=text("0"), default=0
+    )
+    invoices_ready: Mapped[int] = mapped_column(
+        Integer, nullable=False, server_default=text("0"), default=0
+    )
+    delivered_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=text("now()"),
@@ -58,6 +68,12 @@ class OrderItem(Base):
     quantity: Mapped[int] = mapped_column(Integer, nullable=False)
     unit_price_inr: Mapped[Decimal] = mapped_column(
         Numeric(10, 2), nullable=False
+    )
+    sub_order_id: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid, ForeignKey("sub_orders.id", ondelete="SET NULL"), nullable=True
+    )
+    offer_id: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid, ForeignKey("seller_offers.id", ondelete="SET NULL"), nullable=True
     )
 
     # Relationships

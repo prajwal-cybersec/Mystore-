@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MyStore Admin — Post-Delivery Returns Operations</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-100 text-gray-900 min-h-screen flex flex-col font-sans">
+
+  <!-- ADMIN HEADER -->
+  <header class="bg-slate-900 text-white shadow-md sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <a href="/" class="text-orange-400 hover:text-orange-300 transition text-sm flex items-center gap-1.5">
+          <i class="fa-solid fa-arrow-left"></i> Storefront
+        </a>
+        <span class="text-slate-600">|</span>
+        <a href="/pipeline" class="text-slate-300 hover:text-white transition text-sm flex items-center gap-1.5">
+          <i class="fa-solid fa-microchip text-orange-400"></i> X-Ray Pipeline
+        </a>
+        <span class="text-slate-600">|</span>
+        <h1 class="font-bold text-base tracking-wide flex items-center gap-2">
+          <i class="fa-solid fa-truck-ramp-box text-orange-500"></i>
+          <span>Returns & Reverse Logistics Management</span>
+        </h1>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <span id="adminKeyBadge" class="text-xs bg-slate-800 text-slate-300 px-3 py-1 rounded-full border border-slate-700 flex items-center gap-1.5">
+          <i class="fa-solid fa-key text-amber-400"></i>
+          <span id="keyLabel">Admin Key: Set</span>
+        </span>
+        <button onclick="retAdminPromptKey()" class="text-xs text-slate-300 hover:text-white underline">Change Key</button>
+        <button onclick="retAdminLoadReturns()" class="px-3 py-1.5 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition">
+          <i class="fa-solid fa-arrows-rotate"></i> Refresh
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="max-w-7xl mx-auto px-4 py-6 flex-1 w-full space-y-6">
+
+    <!-- METRICS OVERVIEW CARDS -->
+    <div class="grid grid-cols-2 md:grid-cols-6 gap-3 text-center">
+      <div class="bg-white p-3 rounded-xl border border-gray-200 shadow-sm">
+        <div class="text-xs text-gray-500 uppercase font-semibold">Total Returns</div>
+        <div id="statTotal" class="text-xl font-black text-gray-900 mt-1">-</div>
+      </div>
+      <div class="bg-white p-3 rounded-xl border border-gray-200 shadow-sm">
+        <div class="text-xs text-amber-600 uppercase font-semibold">Requested</div>
+        <div id="statRequested" class="text-xl font-black text-amber-600 mt-1">-</div>
+      </div>
+      <div class="bg-white p-3 rounded-xl border border-gray-200 shadow-sm">
+        <div class="text-xs text-blue-600 uppercase font-semibold">Pickup Sched.</div>
+        <div id="statPickup" class="text-xl font-black text-blue-600 mt-1">-</div>
+      </div>
+      <div class="bg-white p-3 rounded-xl border border-gray-200 shadow-sm">
+        <div class="text-xs text-purple-600 uppercase font-semibold">In Warehouse</div>
+        <div id="statReceived" class="text-xl font-black text-purple-600 mt-1">-</div>
+      </div>
+      <div class="bg-white p-3 rounded-xl border border-gray-200 shadow-sm">
+        <div class="text-xs text-emerald-600 uppercase font-semibold">Refunded</div>
+        <div id="statRefunded" class="text-xl font-black text-emerald-600 mt-1">-</div>
+      </div>
+      <div class="bg-white p-3 rounded-xl border border-gray-200 shadow-sm">
+        <div class="text-xs text-indigo-600 uppercase font-semibold">Replaced</div>
+        <div id="statReplaced" class="text-xl font-black text-indigo-600 mt-1">-</div>
+      </div>
+    </div>
+
+    <!-- ERROR / WARNING BANNER -->
+    <div id="adminAlertBanner" class="hidden p-4 rounded-xl text-sm border flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <i id="alertIcon" class="fa-solid fa-triangle-exclamation"></i>
+        <span id="alertMessage"></span>
+      </div>
+      <button onclick="document.getElementById('adminAlertBanner').classList.add('hidden')" class="text-gray-500 hover:text-gray-800">&times;</button>
+    </div>
+
+    <!-- FILTERS BAR -->
+    <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-wrap items-center justify-between gap-3">
+      <div class="flex flex-wrap items-center gap-1.5">
+        <span class="text-xs font-bold text-gray-500 mr-1">Status:</span>
+        <button onclick="retAdminFilter('')" class="ret-filter-btn px-2.5 py-1 text-xs font-semibold rounded-lg bg-gray-900 text-white" data-status="">All</button>
+        <button onclick="retAdminFilter('requested')" class="ret-filter-btn px-2.5 py-1 text-xs font-semibold rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200" data-status="requested">Requested</button>
+        <button onclick="retAdminFilter('approved')" class="ret-filter-btn px-2.5 py-1 text-xs font-semibold rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200" data-status="approved">Approved</button>
+        <button onclick="retAdminFilter('pickup_scheduled')" class="ret-filter-btn px-2.5 py-1 text-xs font-semibold rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200" data-status="pickup_scheduled">Pickup Sched.</button>
+        <button onclick="retAdminFilter('picked_up')" class="ret-filter-btn px-2.5 py-1 text-xs font-semibold rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200" data-status="picked_up">Picked Up</button>
+        <button onclick="retAdminFilter('received')" class="ret-filter-btn px-2.5 py-1 text-xs font-semibold rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200" data-status="received">Received</button>
+        <button onclick="retAdminFilter('refunded')" class="ret-filter-btn px-2.5 py-1 text-xs font-semibold rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200" data-status="refunded">Refunded</button>
+        <button onclick="retAdminFilter('replacement_shipped')" class="ret-filter-btn px-2.5 py-1 text-xs font-semibold rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200" data-status="replacement_shipped">Replaced</button>
+        <button onclick="retAdminFilter('rejected')" class="ret-filter-btn px-2.5 py-1 text-xs font-semibold rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200" data-status="rejected">Rejected</button>
+        <button onclick="retAdminFilter('cancelled')" class="ret-filter-btn px-2.5 py-1 text-xs font-semibold rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200" data-status="cancelled">Cancelled</button>
+      </div>
+
+      <div class="text-xs text-gray-500">
+        Showing <strong id="visibleCount" class="text-gray-900">0</strong> return requests
+      </div>
+    </div>
+
+    <!-- RETURNS TABLE -->
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs border-collapse">
+          <thead>
+            <tr class="bg-gray-50 border-b border-gray-200 text-gray-600 uppercase tracking-wider text-[11px]">
+              <th class="py-3 px-4 font-bold">Reference / Created</th>
+              <th class="py-3 px-4 font-bold">Customer & Location</th>
+              <th class="py-3 px-4 font-bold">Product Item</th>
+              <th class="py-3 px-4 font-bold">Reason & Resolution</th>
+              <th class="py-3 px-4 font-bold">Status</th>
+              <th class="py-3 px-4 font-bold">Refund Amount</th>
+              <th class="py-3 px-4 font-bold text-right">Workflow Actions</th>
+            </tr>
+          </thead>
+          <tbody id="adminReturnsTableBody" class="divide-y divide-gray-100">
+            <tr>
+              <td colspan="7" class="py-12 text-center text-gray-400">
+                <i class="fa-solid fa-spinner fa-spin text-2xl text-orange-500 mb-2"></i>
+                <div>Loading return requests...</div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ACTION MODALS -->
+  <!-- 1. Schedule Pickup Modal -->
+  <div id="modalSchedulePickup" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+      <h3 class="text-base font-bold text-gray-900 flex items-center gap-2">
+        <i class="fa-solid fa-calendar-day text-blue-600"></i> Schedule Return Pickup
+      </h3>
+      <p class="text-xs text-gray-500">Select pickup date for courier pickup at customer's address.</p>
+      
+      <div>
+        <label class="block text-xs font-semibold text-gray-700 mb-1">Pickup Date</label>
+        <input type="date" id="inputPickupDate" class="w-full border border-gray-300 rounded-lg p-2 text-xs focus:ring-2 focus:ring-blue-500 outline-none">
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-gray-700 mb-1">Admin Note (optional)</label>
+        <input type="text" id="inputPickupNote" placeholder="e.g. Courier assigned Delhivery" class="w-full border border-gray-300 rounded-lg p-2 text-xs focus:ring-2 focus:ring-blue-500 outline-none">
+      </div>
+
+      <div class="flex justify-end gap-2 pt-2">
+        <button onclick="document.getElementById('modalSchedulePickup').classList.add('hidden')" class="px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-100 rounded-lg">Cancel</button>
+        <button onclick="retAdminExecuteSchedulePickup()" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-lg transition">Confirm Pickup</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Mark Received Modal (Condition & Restock) -->
+  <div id="modalMarkReceived" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+      <h3 class="text-base font-bold text-gray-900 flex items-center gap-2">
+        <i class="fa-solid fa-boxes-packing text-purple-600"></i> Warehouse Inspection & Receipt
+      </h3>
+      <p class="text-xs text-gray-500">Inspect the returned item condition. If resellable, PostgreSQL <code>store_stock</code> will be automatically incremented and re-synced to OpenSearch via Kafka.</p>
+      
+      <div class="space-y-2">
+        <label class="block text-xs font-semibold text-gray-700">Item Condition:</label>
+        <div class="grid grid-cols-2 gap-2">
+          <label class="flex items-center gap-2 p-3 border rounded-xl cursor-pointer hover:bg-purple-50 transition border-purple-200">
+            <input type="radio" name="itemConditionChoice" value="resellable" checked class="text-purple-600 focus:ring-purple-500">
+            <div>
+              <div class="font-bold text-xs text-gray-900">Resellable</div>
+              <div class="text-[10px] text-gray-500">Auto-restock to city store</div>
+            </div>
+          </label>
+          <label class="flex items-center gap-2 p-3 border rounded-xl cursor-pointer hover:bg-gray-50 transition border-gray-200">
+            <input type="radio" name="itemConditionChoice" value="damaged" class="text-purple-600 focus:ring-purple-500">
+            <div>
+              <div class="font-bold text-xs text-gray-900">Damaged / Scrap</div>
+              <div class="text-[10px] text-gray-500">Do not restock</div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold text-gray-700 mb-1">Inspection Note (optional)</label>
+        <input type="text" id="inputInspectionNote" placeholder="e.g. Tags intact, perfect condition" class="w-full border border-gray-300 rounded-lg p-2 text-xs focus:ring-2 focus:ring-purple-500 outline-none">
+      </div>
+
+      <div class="flex justify-end gap-2 pt-2">
+        <button onclick="document.getElementById('modalMarkReceived').classList.add('hidden')" class="px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-100 rounded-lg">Cancel</button>
+        <button onclick="retAdminExecuteMarkReceived()" class="px-4 py-1.5 bg-purple-600 hover:bg-purple-700 text-white font-semibold text-xs rounded-lg transition">Confirm Received</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Return Details & Timeline Modal -->
+  <div id="modalReturnDetail" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-2xl w-full p-6 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b pb-3">
+        <h3 class="text-base font-bold text-gray-900 flex items-center gap-2">
+          <i class="fa-solid fa-circle-info text-orange-500"></i> Return Details & Audit Trail
+        </h3>
+        <button onclick="document.getElementById('modalReturnDetail').classList.add('hidden')" class="text-gray-400 hover:text-gray-800 text-lg">&times;</button>
+      </div>
+      
+      <div id="returnDetailContent" class="space-y-4 text-xs">
+        <!-- Injected by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT LOGIC -->
+  <script>
+    let retAdminReturns = [];
+    let retCurrentFilter = '';
+    let retSelectedReturnId = null;
+
+    function getAdminKey() {
+      let key = sessionStorage.getItem('admin_api_key');
+      if (!key) {
+        key = prompt("Enter Admin API Key (default dev key: admin123):", "admin123");
+        if (key) {
+          sessionStorage.setItem('admin_api_key', key);
+        }
+      }
+      return key || '';
+    }
+
+    function retAdminPromptKey() {
+      const key = prompt("Enter new Admin API Key:", sessionStorage.getItem('admin_api_key') || 'admin123');
+      if (key !== null) {
+        sessionStorage.setItem('admin_api_key', key);
+        document.getElementById('keyLabel').textContent = 'Admin Key: ' + (key ? 'Set' : 'Empty');
+        retAdminLoadReturns();
+      }
+    }
+
+    function showAdminAlert(msg, isError = false) {
+      const banner = document.getElementById('adminAlertBanner');
+      const text = document.getElementById('alertMessage');
+      const icon = document.getElementById('alertIcon');
+      text.textContent = msg;
+      banner.className = `p-4 rounded-xl text-xs border flex items-center justify-between ${
+        isError ? 'bg-red-50 border-red-200 text-red-800' : 'bg-emerald-50 border-emerald-200 text-emerald-800'
+      }`;
+      icon.className = isError ? 'fa-solid fa-triangle-exclamation mr-1.5' : 'fa-solid fa-circle-check mr-1.5';
+      banner.classList.remove('hidden');
+    }
+
+    async function retAdminLoadReturns() {
+      const key = getAdminKey();
+      const tbody = document.getElementById('adminReturnsTableBody');
+      tbody.innerHTML = `<tr><td colspan="7" class="py-12 text-center text-gray-400"><i class="fa-solid fa-spinner fa-spin text-2xl text-orange-500 mb-2"></i><div>Loading return requests...</div></td></tr>`;
+
+      try {
+        const res = await fetch('/api/admin/returns', {
+          headers: { 'X-Admin-Key': key }
+        });
+
+        if (res.status === 401 || res.status === 403) {
+          tbody.innerHTML = `<tr><td colspan="7" class="py-12 text-center text-red-500 font-bold"><i class="fa-solid fa-lock text-3xl mb-2"></i><div>Unauthorized. Invalid or missing Admin API Key.</div><button onclick="retAdminPromptKey()" class="mt-2 text-xs bg-red-600 text-white px-3 py-1 rounded">Enter Key</button></td></tr>`;
+          return;
+        }
+        if (res.status === 503) {
+          tbody.innerHTML = `<tr><td colspan="7" class="py-12 text-center text-amber-600 font-bold"><i class="fa-solid fa-triangle-exclamation text-3xl mb-2"></i><div>Admin API key is not configured on the server.</div></td></tr>`;
+          return;
+        }
+
+        const data = await res.json();
+        retAdminReturns = data.returns || [];
+        updateMetrics();
+        retAdminRenderTable();
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-red-500">Failed to load returns: ${err.message}</td></tr>`;
+      }
+    }
+
+    function updateMetrics() {
+      document.getElementById('statTotal').textContent = retAdminReturns.length;
+      document.getElementById('statRequested').textContent = retAdminReturns.filter(r => r.status === 'requested').length;
+      document.getElementById('statPickup').textContent = retAdminReturns.filter(r => r.status === 'pickup_scheduled').length;
+      document.getElementById('statReceived').textContent = retAdminReturns.filter(r => r.status === 'received').length;
+      document.getElementById('statRefunded').textContent = retAdminReturns.filter(r => r.status === 'refunded').length;
+      document.getElementById('statReplaced').textContent = retAdminReturns.filter(r => r.status === 'replacement_shipped').length;
+    }
+
+    function retAdminFilter(status) {
+      retCurrentFilter = status;
+      document.querySelectorAll('.ret-filter-btn').forEach(btn => {
+        if (btn.getAttribute('data-status') === status) {
+          btn.className = 'ret-filter-btn px-2.5 py-1 text-xs font-semibold rounded-lg bg-gray-900 text-white';
+        } else {
+          btn.className = 'ret-filter-btn px-2.5 py-1 text-xs font-semibold rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200';
+        }
+      });
+      retAdminRenderTable();
+    }
+
+    function getStatusBadge(status) {
+      const map = {
+        'requested': 'bg-amber-100 text-amber-800 border-amber-300',
+        'approved': 'bg-blue-100 text-blue-800 border-blue-300',
+        'rejected': 'bg-red-100 text-red-800 border-red-300',
+        'pickup_scheduled': 'bg-indigo-100 text-indigo-800 border-indigo-300',
+        'picked_up': 'bg-sky-100 text-sky-800 border-sky-300',
+        'received': 'bg-purple-100 text-purple-800 border-purple-300',
+        'refunded': 'bg-emerald-100 text-emerald-800 border-emerald-300',
+        'replacement_shipped': 'bg-teal-100 text-teal-800 border-teal-300',
+        'cancelled': 'bg-gray-100 text-gray-600 border-gray-300',
+      };
+      const cls = map[status] || 'bg-gray-100 text-gray-800 border-gray-200';
+      return `<span class="px-2 py-0.5 rounded-full text-[11px] font-bold border ${cls}">${status.toUpperCase()}</span>`;
+    }
+
+    function retAdminRenderTable() {
+      const tbody = document.getElementById('adminReturnsTableBody');
+      const filtered = retCurrentFilter
+        ? retAdminReturns.filter(r => r.status === retCurrentFilter)
+        : retAdminReturns;
+
+      document.getElementById('visibleCount').textContent = filtered.length;
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="py-12 text-center text-gray-400">No return requests found in this filter.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(r => {
+        const photos = Array.isArray(r.photo_urls) ? r.photo_urls : [];
+        const photoBadge = photos.length > 0
+          ? `<span class="text-[10px] text-blue-600 font-semibold cursor-pointer" onclick="retAdminViewDetail('${r.id}')"><i class="fa-solid fa-camera"></i> ${photos.length} photo(s)</span>`
+          : `<span class="text-[10px] text-gray-400">No photos</span>`;
+
+        // Action buttons based on status
+        let actions = [];
+        if (r.status === 'requested') {
+          actions.push(`<button onclick="retAdminTransition('${r.id}', 'approve')" class="px-2 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-[11px] font-semibold transition">Approve</button>`);
+          actions.push(`<button onclick="retAdminRejectPrompt('${r.id}')" class="px-2 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-[11px] font-semibold transition">Reject</button>`);
+        } else if (r.status === 'approved') {
+          actions.push(`<button onclick="retAdminOpenScheduleModal('${r.id}')" class="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-[11px] font-semibold transition">Schedule Pickup</button>`);
+        } else if (r.status === 'pickup_scheduled') {
+          actions.push(`<button onclick="retAdminTransition('${r.id}', 'mark_picked_up')" class="px-2 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-[11px] font-semibold transition">Mark Picked Up</button>`);
+        } else if (r.status === 'picked_up') {
+          actions.push(`<button onclick="retAdminOpenMarkReceivedModal('${r.id}')" class="px-2 py-1 bg-purple-600 hover:bg-purple-700 text-white rounded text-[11px] font-semibold transition">Receive & Inspect</button>`);
+        } else if (r.status === 'received') {
+          if (r.resolution === 'refund') {
+            actions.push(`<button onclick="retAdminTransition('${r.id}', 'issue_refund')" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-[11px] font-semibold transition flex items-center gap-1"><i class="fa-solid fa-money-bill-transfer"></i> Issue Refund</button>`);
+          } else {
+            actions.push(`<button onclick="retAdminTransition('${r.id}', 'ship_replacement')" class="px-2.5 py-1 bg-teal-600 hover:bg-teal-700 text-white rounded text-[11px] font-semibold transition flex items-center gap-1"><i class="fa-solid fa-truck-fast"></i> Ship Replacement</button>`);
+          }
+        }
+
+        const actionHtml = actions.length > 0
+          ? `<div class="flex items-center justify-end gap-1.5 flex-wrap">${actions.join('')}</div>`
+          : `<span class="text-[11px] text-gray-400 italic">Completed</span>`;
+
+        return `
+          <tr class="hover:bg-gray-50/80 transition">
+            <td class="py-3 px-4 font-mono">
+              <div class="font-bold text-gray-900 cursor-pointer hover:text-orange-600" onclick="retAdminViewDetail('${r.id}')">${r.reference}</div>
+              <div class="text-[10px] text-gray-400">${new Date(r.created_at).toLocaleString('en-IN', {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'})}</div>
+              <button onclick="retAdminViewDetail('${r.id}')" class="text-[10px] text-orange-600 hover:underline">View Log</button>
+            </td>
+            <td class="py-3 px-4">
+              <div class="font-semibold text-gray-900">${r.customer_name || 'Customer'}</div>
+              <div class="text-[10px] text-gray-500">${r.customer_phone || ''}</div>
+              <div class="text-[10px] text-gray-600 font-mono"><i class="fa-solid fa-location-dot text-orange-500"></i> ${r.city}</div>
+            </td>
+            <td class="py-3 px-4">
+              <div class="flex items-center gap-2">
+                <img src="${r.product_image_url || '/static/placeholder.png'}" class="w-9 h-9 rounded object-cover border border-gray-200">
+                <div>
+                  <div class="font-medium text-gray-900 max-w-xs truncate" title="${r.product_name}">${r.product_name}</div>
+                  <div class="text-[10px] text-gray-500">Qty: <strong>${r.quantity}</strong> • ${r.category}</div>
+                </div>
+              </div>
+            </td>
+            <td class="py-3 px-4">
+              <div class="font-semibold text-gray-800 capitalize">${(r.reason_code || '').replace(/_/g, ' ')}</div>
+              <div class="text-[10px] text-gray-500 capitalize">
+                Resolution: <strong class="text-gray-700">${r.resolution}</strong>
+                ${r.exchange_size ? `<span class="text-blue-600 font-bold">(Size: ${r.exchange_size})</span>` : ''}
+              </div>
+              ${photoBadge}
+            </td>
+            <td class="py-3 px-4">
+              ${getStatusBadge(r.status)}
+              ${r.pickup_date ? `<div class="text-[10px] text-indigo-600 mt-1">Pickup: ${r.pickup_date}</div>` : ''}
+              ${r.item_condition ? `<div class="text-[10px] text-purple-600 capitalize">Cond: ${r.item_condition}</div>` : ''}
+            </td>
+            <td class="py-3 px-4 font-mono font-bold text-gray-900">
+              ₹${r.refund_amount_inr ? r.refund_amount_inr.toLocaleString('en-IN') : '0.00'}
+            </td>
+            <td class="py-3 px-4 text-right">
+              ${actionHtml}
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    async function retAdminTransition(returnId, action, extraPayload = {}) {
+      const key = getAdminKey();
+      try {
+        const body = { action, ...extraPayload };
+        const res = await fetch(`/api/admin/returns/${returnId}/transition`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Admin-Key': key,
+          },
+          body: JSON.stringify(body)
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+          if (data.detail?.error === 'REPLACEMENT_UNAVAILABLE') {
+            showAdminAlert(`Replacement stock is unavailable in local store. Return left in 'received' status so you can issue a refund instead.`, true);
+          } else {
+            showAdminAlert(data.detail?.message || data.detail || 'Action failed', true);
+          }
+          return;
+        }
+
+        showAdminAlert(`Return updated to status '${data.status}' successfully!`);
+        retAdminLoadReturns();
+      } catch (err) {
+        showAdminAlert(`Network error: ${err.message}`, true);
+      }
+    }
+
+    function retAdminRejectPrompt(returnId) {
+      const note = prompt("Enter reason for rejecting this return request:", "Does not meet return policy criteria");
+      if (note !== null) {
+        retAdminTransition(returnId, 'reject', { note });
+      }
+    }
+
+    function retAdminOpenScheduleModal(returnId) {
+      retSelectedReturnId = returnId;
+      // Default date to tomorrow
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      document.getElementById('inputPickupDate').value = tomorrow.toISOString().split('T')[0];
+      document.getElementById('inputPickupNote').value = '';
+      document.getElementById('modalSchedulePickup').classList.remove('hidden');
+    }
+
+    function retAdminExecuteSchedulePickup() {
+      const pickupDate = document.getElementById('inputPickupDate').value;
+      const note = document.getElementById('inputPickupNote').value;
+      if (!pickupDate) {
+        alert("Please select a pickup date.");
+        return;
+      }
+      document.getElementById('modalSchedulePickup').classList.add('hidden');
+      retAdminTransition(retSelectedReturnId, 'schedule_pickup', { pickup_date: pickupDate, note });
+    }
+
+    function retAdminOpenMarkReceivedModal(returnId) {
+      retSelectedReturnId = returnId;
+      document.getElementById('inputInspectionNote').value = '';
+      document.getElementById('modalMarkReceived').classList.remove('hidden');
+    }
+
+    function retAdminExecuteMarkReceived() {
+      const conditionElem = document.querySelector('input[name="itemConditionChoice"]:checked');
+      const itemCondition = conditionElem ? conditionElem.value : 'resellable';
+      const note = document.getElementById('inputInspectionNote').value;
+      document.getElementById('modalMarkReceived').classList.add('hidden');
+      retAdminTransition(retSelectedReturnId, 'mark_received', { item_condition: itemCondition, note });
+    }
+
+    async function retAdminViewDetail(returnId) {
+      try {
+        const res = await fetch(`/api/returns/${returnId}`);
+        if (!res.ok) throw new Error("Could not fetch return details.");
+        const ret = await res.json();
+        
+        const photos = Array.isArray(ret.photo_urls) ? ret.photo_urls : [];
+        const photoSection = photos.length > 0
+          ? `<div>
+               <div class="font-bold text-gray-700 mb-1">Customer Proof Photos:</div>
+               <div class="flex gap-2 flex-wrap">
+                 ${photos.map(p => `<a href="${p}" target="_blank"><img src="${p}" class="w-20 h-20 object-cover rounded-lg border border-gray-200 hover:opacity-80"></a>`).join('')}
+               </div>
+             </div>`
+          : `<div class="text-gray-400">No photos provided.</div>`;
+
+        const historyList = (ret.history || []).map(h => `
+          <li class="flex items-start gap-2.5 pb-2 border-b border-gray-100 last:border-none">
+            <span class="w-2 h-2 rounded-full bg-orange-500 mt-1.5 flex-shrink-0"></span>
+            <div>
+              <div class="font-bold text-gray-900">${h.status.toUpperCase()} <span class="font-normal text-[10px] text-gray-400">by ${h.actor} on ${new Date(h.created_at).toLocaleString()}</span></div>
+              <div class="text-gray-600">${h.note || ''}</div>
+            </div>
+          </li>
+        `).join('');
+
+        document.getElementById('returnDetailContent').innerHTML = `
+          <div class="bg-gray-50 p-3 rounded-xl border border-gray-200 space-y-1">
+            <div class="flex justify-between"><span>Reference:</span> <strong class="font-mono text-orange-600">${ret.reference}</strong></div>
+            <div class="flex justify-between"><span>Status:</span> <strong>${getStatusBadge(ret.status)}</strong></div>
+            <div class="flex justify-between"><span>Resolution:</span> <strong class="capitalize">${ret.resolution} ${ret.exchange_size ? '(Size: ' + ret.exchange_size + ')' : ''}</strong></div>
+            <div class="flex justify-between"><span>Refund Amount:</span> <strong>₹${(ret.refund_amount_inr || 0).toLocaleString('en-IN')}</strong></div>
+            <div class="flex justify-between"><span>Reason:</span> <strong>${(ret.reason_code || '').replace(/_/g, ' ')}</strong></div>
+            ${ret.description ? `<div><span>Description:</span> <p class="text-gray-700 bg-white p-2 rounded border mt-0.5">${ret.description}</p></div>` : ''}
+          </div>
+
+          ${photoSection}
+
+          <div>
+            <div class="font-bold text-gray-700 mb-1.5">Lifecycle History & Audit Log:</div>
+            <ul class="space-y-2 bg-gray-50 p-3 rounded-xl border border-gray-200">
+              ${historyList || '<li class="text-gray-400">No history records yet.</li>'}
+            </ul>
+          </div>
+        `;
+
+        document.getElementById('modalReturnDetail').classList.remove('hidden');
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('keyLabel').textContent = 'Admin Key: ' + (sessionStorage.getItem('admin_api_key') ? 'Set' : 'Set');
+      retAdminLoadReturns();
+    });
+  </script>
+</body>
+</html>

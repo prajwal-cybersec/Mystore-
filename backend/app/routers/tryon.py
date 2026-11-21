@@ -102,56 +102,57 @@ async def save_calibration(product_id: str, payload: CalibrationUpdateRequest):
 
 @router.post("/events")
 async def track_tryon_event(req: TryonEventRequest):
-    """Analytics endpoint recording try-on engagement and add-to-cart conversions."""
+    """Analytics endpoint recording try-on engagement directly to tryon_events table."""
     if req.event_type not in ALLOWED_EVENTS:
         raise HTTPException(status_code=400, detail="Invalid try-on event type.")
 
-    event_payload = {
-        "event_id": str(uuid.uuid4()),
-        "event_type": req.event_type,
-        "product_id": req.product_id,
-        "sku": req.sku,
-        "tryon_type": req.tryon_type,
-        "session_id": req.session_id or str(uuid.uuid4())
-    }
+    prod_uuid = None
+    try:
+        prod_uuid = uuid.UUID(req.product_id)
+    except (ValueError, TypeError):
+        prod_uuid = None
 
     try:
         async with async_session_factory() as session:
             await session.execute(
                 text("""
-                    INSERT INTO outbox (id, event_type, aggregate_type, aggregate_id, payload, created_at)
-                    VALUES (:id, :event_type, 'tryon', :agg_id, :payload, NOW())
+                    INSERT INTO tryon_events (id, event_type, product_id, sku, tryon_type, session_id, created_at)
+                    VALUES (:id, :event_type, :product_id, :sku, :tryon_type, :session_id, NOW())
                 """),
                 {
                     "id": uuid.uuid4(),
                     "event_type": req.event_type,
-                    "agg_id": req.product_id,
-                    "payload": json.dumps(event_payload)
+                    "product_id": prod_uuid,
+                    "sku": req.sku,
+                    "tryon_type": req.tryon_type,
+                    "session_id": req.session_id or str(uuid.uuid4())
                 }
             )
             await session.commit()
-    except Exception:
-        pass
+    except Exception as exc:
+        logger.error("tryon_event_insert_failed", error=str(exc), event_type=req.event_type, product_id=req.product_id)
+        raise HTTPException(status_code=500, detail="Failed to record try-on event.")
 
     return {"status": "recorded", "event": req.event_type, "product_id": req.product_id}
 
 
 @router.get("/stats")
 async def get_tryon_stats():
-    """Returns analytics summary of live try-ons."""
+    """Returns analytics summary of live try-ons from tryon_events table."""
     try:
         async with async_session_factory() as session:
             res = await session.execute(
                 text("""
-                    SELECT aggregate_id as product_id, event_type, count(*) as count
-                    FROM outbox
-                    WHERE event_type IN ('tryon_started', 'tryon_added_to_cart', 'tryon_ai_started', 'tryon_ai_swapped')
-                    GROUP BY aggregate_id, event_type
+                    SELECT product_id::text as product_id, event_type, count(*) as count
+                    FROM tryon_events
+                    WHERE event_type IN ('tryon_started', 'tryon_added_to_cart', 'tryon_ai_started', 'tryon_ai_swapped', 'tryon_recording_started')
+                    GROUP BY product_id, event_type
                 """)
             )
             rows = res.mappings().all()
             return {"stats": [dict(r) for r in rows]}
-    except Exception:
+    except Exception as exc:
+        logger.error("tryon_stats_fetch_failed", error=str(exc))
         return {"stats": []}
 
 

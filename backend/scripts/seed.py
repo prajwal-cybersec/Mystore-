@@ -369,7 +369,7 @@ async def seed():
         """
         INSERT INTO customers (id, email, name, phone, created_at)
         VALUES ($1, $2, $3, $4, NOW())
-        ON CONFLICT (email) DO UPDATE SET name = EXCLUDED.name, phone = EXCLUDED.phone
+        ON CONFLICT (id) DO UPDATE SET email = EXCLUDED.email, name = EXCLUDED.name, phone = EXCLUDED.phone
         """,
         demo_cust_id,
         "demo@mystore.in",
@@ -486,10 +486,104 @@ async def seed():
     s_count = await conn.fetchval("SELECT count(*) FROM store_stock")
     c_count = await conn.fetchval("SELECT count(*) FROM customers")
 
+    # 4. Seed Multi-Seller Marketplace Data (3 Sellers in Karnataka, Maharashtra, Delhi)
+    print("Seeding marketplace sellers and multi-seller product offers...")
+    SELLERS_DATA = [
+        (
+            uuid.UUID("10000000-0000-0000-0000-000000000001"),
+            "MyStore Retail",
+            "MYS",
+            "29AABCM1234F1Z5",
+            "Karnataka",
+            "Warehouse 1, Electronic City, Bengaluru, Karnataka 560100"
+        ),
+        (
+            uuid.UUID("20000000-0000-0000-0000-000000000002"),
+            "Apex Global Traders",
+            "APX",
+            "27AAACA5678B1Z2",
+            "Maharashtra",
+            "Hub 4, Bhiwandi Logistics Park, Mumbai, Maharashtra 421302"
+        ),
+        (
+            uuid.UUID("30000000-0000-0000-0000-000000000003"),
+            "Capital Electronics Hub",
+            "DEL",
+            "07AAACD9012C1Z8",
+            "Delhi",
+            "Plot 12, Okhla Industrial Area Phase III, New Delhi, Delhi 110020"
+        ),
+    ]
+
+    for s_id, s_name, s_code, s_gstin, s_state, s_addr in SELLERS_DATA:
+        await conn.execute(
+            """
+            INSERT INTO sellers (id, name, seller_code, gstin, state, address, created_at)
+            VALUES ($1, $2, $3, $4, $5, $6, NOW())
+            ON CONFLICT (id) DO UPDATE SET
+                name = EXCLUDED.name,
+                seller_code = EXCLUDED.seller_code,
+                gstin = EXCLUDED.gstin,
+                state = EXCLUDED.state,
+                address = EXCLUDED.address
+            """,
+            s_id, s_name, s_code, s_gstin, s_state, s_addr
+        )
+        await conn.execute(
+            """
+            INSERT INTO seller_invoice_counters (seller_id, last_no)
+            VALUES ($1, 0)
+            ON CONFLICT (seller_id) DO NOTHING
+            """,
+            s_id
+        )
+
+    # 5. Seed seller_offers across the 3 sellers with differentiated pricing and stock
+    prod_rows = await conn.fetch("SELECT id, price_inr FROM products")
+    offers_records = []
+    seller_ids = [s[0] for s in SELLERS_DATA]
+
+    for pr in prod_rows:
+        pid = pr["id"]
+        base_price = Decimal(str(pr["price_inr"]))
+
+        # For each city, generate offers across the 3 sellers
+        for city in CITIES:
+            # Seller 1: base price
+            q1 = random.randint(10, 50)
+            offers_records.append((pid, seller_ids[0], city, base_price, q1))
+
+            # Seller 2: slightly cheaper or premium (+/- 2%)
+            p2 = round(base_price * Decimal(str(random.choice([0.98, 0.99, 1.01, 1.02]))), 2)
+            q2 = random.randint(5, 40)
+            offers_records.append((pid, seller_ids[1], city, p2, q2))
+
+            # Seller 3: varied price (+/- 3%)
+            p3 = round(base_price * Decimal(str(random.choice([0.95, 0.97, 1.00, 1.03]))), 2)
+            q3 = random.randint(0, 35)
+            offers_records.append((pid, seller_ids[2], city, p3, q3))
+
+    await conn.executemany(
+        """
+        INSERT INTO seller_offers (id, product_id, seller_id, city, price_inr, qty, created_at, updated_at)
+        VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, NOW(), NOW())
+        ON CONFLICT (product_id, seller_id, city) DO UPDATE SET
+            price_inr = EXCLUDED.price_inr,
+            qty = EXCLUDED.qty,
+            updated_at = NOW()
+        """,
+        offers_records,
+    )
+
+    sellers_count = await conn.fetchval("SELECT count(*) FROM sellers")
+    offers_count = await conn.fetchval("SELECT count(*) FROM seller_offers")
+
     print("\n--- SEED SUMMARY ---")
     print(f"Products in DB:    {p_count}")
     print(f"Stock entries:     {s_count}")
     print(f"Customers in DB:   {c_count}")
+    print(f"Sellers in DB:     {sellers_count}")
+    print(f"Seller offers:     {offers_count}")
     print("Done! All seed data successfully loaded.")
 
     await conn.close()

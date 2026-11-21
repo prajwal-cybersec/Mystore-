@@ -17,10 +17,16 @@ REQUIRED_TOPICS = [
     "inventory.changed",
     "products.updated",
     "search.events",
+    "returns.events",
+    "suborder.created",
+    "invoice.generated",
     "orders.placed.dlq",
     "inventory.changed.dlq",
     "products.updated.dlq",
     "search.events.dlq",
+    "returns.events.dlq",
+    "suborder.created.dlq",
+    "invoice.generated.dlq",
 ]
 
 

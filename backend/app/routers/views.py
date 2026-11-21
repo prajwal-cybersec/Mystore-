@@ -27,3 +27,10 @@ async def home_page(request: Request):
 async def pipeline_page(request: Request):
     """Serve the real-time event-driven X-Ray pipeline dashboard."""
     return templates.TemplateResponse(request, "pipeline.html")
+
+
+@router.get("/admin/returns", response_class=HTMLResponse)
+async def admin_returns_page(request: Request):
+    """Serve the Admin Returns portal."""
+    return templates.TemplateResponse(request, "admin_returns.html")
+
