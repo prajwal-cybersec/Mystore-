@@ -5,8 +5,10 @@ from __future__ import annotations
 from contextlib import asynccontextmanager
 from typing import Any, AsyncGenerator
 
+import os
 import structlog
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 
 from app.config import settings
 from app.database import engine
@@ -35,6 +37,10 @@ app = FastAPI(
     version="0.1.0",
     lifespan=lifespan,
 )
+
+static_dir = os.path.join(os.path.dirname(__file__), "static")
+os.makedirs(static_dir, exist_ok=True)
+app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
 app.include_router(health_router)
 app.include_router(search_router)
