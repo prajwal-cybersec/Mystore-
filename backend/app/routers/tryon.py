@@ -158,9 +158,12 @@ async def get_tryon_stats():
 @router.get("/config")
 async def ai_tryon_config():
     """Tells the storefront whether AI try-on is available and which model to use."""
+    model_name = getattr(settings, "decart_vton_model", "lucy-vton-latest")
+    if not model_name or model_name == "vton-1":
+        model_name = "lucy-vton-latest"
     return {
         "ai_enabled": bool(getattr(settings, "decart_api_key", None)),
-        "model": getattr(settings, "decart_vton_model", "vton-1"),
+        "model": model_name,
         "maxSessionSeconds": getattr(settings, "ai_tryon_max_seconds", 120),
     }
 

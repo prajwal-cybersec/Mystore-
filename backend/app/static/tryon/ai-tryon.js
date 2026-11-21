@@ -296,7 +296,15 @@ async function beginSession() {
 
   try {
     const { createDecartClient, models } = await loadSdk();
-    const model = models.realtime(cfg.model);
+    let modelKey = (cfg && cfg.model) || 'lucy-vton-latest';
+    if (modelKey === 'vton-1') modelKey = 'lucy-vton-latest';
+    let model;
+    try {
+      model = models.realtime(modelKey);
+    } catch (mErr) {
+      console.warn('Requested model not found, falling back to lucy-vton-latest:', mErr);
+      model = models.realtime('lucy-vton-latest');
+    }
 
     camStream = await navigator.mediaDevices.getUserMedia({
       audio: false,

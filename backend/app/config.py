@@ -32,7 +32,7 @@ class Settings(BaseSettings):
 
     # --- Decart AI Try-On ---
     decart_api_key: str = ""
-    decart_vton_model: str = "vton-1"
+    decart_vton_model: str = "lucy-vton-latest"
     ai_tryon_max_seconds: int = 120
     ai_tryon_allowed_origins: str = ""
 
