@@ -109,13 +109,17 @@ async def stress_last_unit_endpoint(
     target_city = req.city
     target_product_id = req.product_id
 
-    # 1. If not specified, target EL-SAM-002 (seeded with exactly 1 unit in Bengaluru)
+    # 1. If not specified, select a catalogue product to test concurrency on
     async with async_session_factory() as session:
         if not target_product_id:
             res = await session.execute(
-                text("SELECT id FROM products WHERE sku = 'EL-SAM-002'")
+                text("SELECT id FROM products WHERE sku = 'MOB-0004'")
             )
-            target_product_id = str(res.scalar_one())
+            row = res.scalar_one_or_none()
+            if not row:
+                res = await session.execute(text("SELECT id FROM products ORDER BY id ASC LIMIT 1"))
+                row = res.scalar_one()
+            target_product_id = str(row)
 
         # Reset stock to exactly 1 unit for the test
         await session.execute(
