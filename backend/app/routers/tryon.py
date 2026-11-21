@@ -1,17 +1,55 @@
-"""Try-On Router exposing calibration persistence and analytics events."""
+"""Try-On Router — calibration, analytics, and AI try-on (Decart realtime VTON)."""
 
 from __future__ import annotations
 
 import json
+import time
 import uuid
 from typing import Any, Dict, Optional
+import structlog
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
 from sqlalchemy import text
 
+from app.config import settings
 from app.database import async_session_factory
 
+logger = structlog.stdlib.get_logger(__name__)
+
 router = APIRouter(prefix="/api/tryon", tags=["tryon"])
+
+
+ALLOWED_EVENTS = [
+    "tryon_started",
+    "tryon_added_to_cart",
+    "tryon_ai_started",
+    "tryon_ai_swapped",
+    "tryon_recording_started",
+]
+
+# --- AI try-on token minting -------------------------------------------------
+# Simple in-memory per-IP limiter so a bot cannot burn the Decart budget.
+_TOKEN_HITS: Dict[str, list] = {}
+_TOKEN_LIMIT = 6        # tokens
+_TOKEN_WINDOW = 60.0    # per this many seconds
+
+
+def _client_ip(request: Request) -> str:
+    fwd = request.headers.get("x-forwarded-for")
+    if fwd:
+        return fwd.split(",")[0].strip()
+    return request.client.host if request.client else "unknown"
+
+
+def _rate_limited(ip: str) -> bool:
+    now = time.monotonic()
+    hits = [h for h in _TOKEN_HITS.get(ip, []) if now - h < _TOKEN_WINDOW]
+    if len(hits) >= _TOKEN_LIMIT:
+        _TOKEN_HITS[ip] = hits
+        return True
+    hits.append(now)
+    _TOKEN_HITS[ip] = hits
+    return False
 
 
 class CalibrationUpdateRequest(BaseModel):
@@ -19,7 +57,7 @@ class CalibrationUpdateRequest(BaseModel):
 
 
 class TryonEventRequest(BaseModel):
-    event_type: str  # 'tryon_started' | 'tryon_added_to_cart'
+    event_type: str
     product_id: str
     sku: Optional[str] = None
     tryon_type: Optional[str] = None
@@ -30,7 +68,6 @@ class TryonEventRequest(BaseModel):
 async def save_calibration(product_id: str, payload: CalibrationUpdateRequest):
     """Dev calibration endpoint: saves refined scale, offsets, rotation to product."""
     async with async_session_factory() as session:
-        # Check if product exists by id or sku
         res = await session.execute(
             text("SELECT id, sku, name, tryon_config FROM products WHERE id::text = :pid OR sku = :pid"),
             {"pid": product_id}
@@ -46,7 +83,6 @@ async def save_calibration(product_id: str, payload: CalibrationUpdateRequest):
             except Exception:
                 current_config = {}
 
-        # Merge new calibration values
         updated_config = {**current_config, **payload.tryon_config}
 
         await session.execute(
@@ -67,7 +103,7 @@ async def save_calibration(product_id: str, payload: CalibrationUpdateRequest):
 @router.post("/events")
 async def track_tryon_event(req: TryonEventRequest):
     """Analytics endpoint recording try-on engagement and add-to-cart conversions."""
-    if req.event_type not in ["tryon_started", "tryon_added_to_cart"]:
+    if req.event_type not in ALLOWED_EVENTS:
         raise HTTPException(status_code=400, detail="Invalid try-on event type.")
 
     event_payload = {
@@ -94,8 +130,7 @@ async def track_tryon_event(req: TryonEventRequest):
                 }
             )
             await session.commit()
-    except Exception as e:
-        # Fallback if outbox table has different schema
+    except Exception:
         pass
 
     return {"status": "recorded", "event": req.event_type, "product_id": req.product_id}
@@ -110,7 +145,7 @@ async def get_tryon_stats():
                 text("""
                     SELECT aggregate_id as product_id, event_type, count(*) as count
                     FROM outbox
-                    WHERE event_type IN ('tryon_started', 'tryon_added_to_cart')
+                    WHERE event_type IN ('tryon_started', 'tryon_added_to_cart', 'tryon_ai_started', 'tryon_ai_swapped')
                     GROUP BY aggregate_id, event_type
                 """)
             )
@@ -118,3 +153,51 @@ async def get_tryon_stats():
             return {"stats": [dict(r) for r in rows]}
     except Exception:
         return {"stats": []}
+
+
+@router.get("/config")
+async def ai_tryon_config():
+    """Tells the storefront whether AI try-on is available and which model to use."""
+    return {
+        "ai_enabled": bool(getattr(settings, "decart_api_key", None)),
+        "model": getattr(settings, "decart_vton_model", "vton-1"),
+        "maxSessionSeconds": getattr(settings, "ai_tryon_max_seconds", 120),
+    }
+
+
+@router.post("/token")
+async def create_ai_tryon_token(request: Request):
+    """Mint a short-lived Decart client token. The permanent key never leaves the server."""
+    api_key = getattr(settings, "decart_api_key", None)
+    if not api_key:
+        raise HTTPException(status_code=503, detail="AI try-on is not configured on this server.")
+    if _rate_limited(_client_ip(request)):
+        raise HTTPException(status_code=429, detail="Too many try-on requests. Please wait a minute.")
+
+    try:
+        from decart import DecartClient
+    except ImportError:
+        raise HTTPException(status_code=503, detail="The 'decart' package is not installed.")
+
+    max_secs = getattr(settings, "ai_tryon_max_seconds", 120)
+    allowed_origins_str = getattr(settings, "ai_tryon_allowed_origins", "")
+    kwargs: Dict[str, Any] = {
+        "expires_in": 60,
+        "constraints": {"realtime": {"maxSessionDuration": max_secs}},
+    }
+    origins = [o.strip() for o in allowed_origins_str.split(",") if o.strip()]
+    if origins:
+        kwargs["allowed_origins"] = origins
+
+    try:
+        async with DecartClient(api_key=api_key) as client:
+            token = await client.tokens.create(**kwargs)
+    except Exception as exc:
+        logger.error("decart_token_failed", error=str(exc))
+        raise HTTPException(status_code=502, detail="Could not start an AI try-on session.")
+
+    return {
+        "apiKey": token.api_key,
+        "expiresAt": str(getattr(token, "expires_at", "")),
+        "maxSessionSeconds": max_secs,
+    }

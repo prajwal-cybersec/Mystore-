@@ -704,6 +704,9 @@
       }
       emptyState.classList.add('hidden');
 
+      // Cache hits so the AI try-on outfit rail can suggest related Fashion items
+      window.__lastHits = data.hits;
+
       grid.innerHTML = data.hits.map(p => renderSingleCard(p, false)).join('');
     }
 
@@ -762,14 +765,27 @@
               <span class="absolute top-2 left-2 bg-gray-900/80 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-0.5 rounded">
                 ${p.brand}
               </span>
-              ${p.tryon_supported ? `
-                <button 
-                  onclick='event.stopPropagation(); startLiveTryon(${JSON.stringify(p).replace(/'/g, "&#39;")})'
-                  class="absolute top-2 right-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-md flex items-center gap-1 transition transform hover:scale-105 z-10"
-                  title="Live Camera Try-On"
-                >
-                  <i class="fa-solid fa-camera"></i> Try On
-                </button>
+              ${p.tryon_supported || /fashion/i.test(p.category || '') ? `
+                <div class="absolute top-2 right-2 flex flex-col gap-1 z-10">
+                  ${/fashion/i.test(p.category || '') ? `
+                    <button 
+                      onclick='event.stopPropagation(); startAiTryon(${JSON.stringify(p).replace(/'/g, "&#39;")})'
+                      class="bg-gradient-to-r from-fuchsia-600 to-orange-500 hover:opacity-90 text-white text-[9px] font-bold px-2 py-1 rounded-full shadow-md flex items-center gap-1 transition transform hover:scale-105"
+                      title="AI Realistic Try-On"
+                    >
+                      <i class="fa-solid fa-wand-magic-sparkles"></i> AI Try On
+                    </button>
+                  ` : ''}
+                  ${p.tryon_supported ? `
+                    <button 
+                      onclick='event.stopPropagation(); startLiveTryon(${JSON.stringify(p).replace(/'/g, "&#39;")})'
+                      class="bg-indigo-600/90 hover:bg-indigo-700 text-white text-[9px] font-bold px-2 py-1 rounded-full shadow-md flex items-center gap-1 transition transform hover:scale-105"
+                      title="Live Camera Overlay Try-On"
+                    >
+                      <i class="fa-solid fa-camera"></i> Try On
+                    </button>
+                  ` : ''}
+                </div>
               ` : ''}
               ${rating ? `
                 <span class="absolute bottom-2 right-2 bg-emerald-600/90 text-white text-[10px] font-bold px-1.5 py-0.5 rounded flex items-center gap-1 shadow-xs">
@@ -1810,8 +1826,8 @@
         // Ears are at eye/temple level, NOT at the skin centroid (nose level)
         const earY = cy - hh * 0.20;
         lm[10] = { x: cx, y: cy - hh * 0.68, z: 0 };  // Head top crown (well above forehead)
-        lm[234] = { x: cx - hw * 0.80, y: earY, z: 0 }; // Left ear (wider)
-        lm[454] = { x: cx + hw * 0.80, y: earY, z: 0 }; // Right ear (wider)
+        lm[234] = { x: cx - hw * 0.44, y: earY, z: 0 }; // Left ear
+        lm[454] = { x: cx + hw * 0.44, y: earY, z: 0 }; // Right ear
         lm[1] = { x: cx, y: cy + hh * 0.08, z: 0 };   // Nose tip
         lm[168] = { x: cx, y: cy - hh * 0.05, z: 0 }; // Nose bridge
         lm[116] = { x: cx - hw * 0.32, y: cy + hh * 0.12, z: 0 }; // Left cheek
@@ -1878,39 +1894,39 @@
     // Overlay 2: Photorealistic Front-View Headphones (boAt Rockerz 430)
     function renderHeadphonesOverlay(ctx, vw, vh, lm) {
       if (!tryonAssetImg || !tryonAssetImg.complete) return;
-      const earL = lm[234] || { x: 0.38, y: 0.38 };
-      const earR = lm[454] || { x: 0.62, y: 0.38 };
-      const headTop = lm[10] || { x: 0.50, y: 0.18 };
+      const earL = lm[234] || { x: 0.38, y: 0.32 };
+      const earR = lm[454] || { x: 0.62, y: 0.32 };
+      const headTop = lm[10] || { x: 0.50, y: 0.12 };
       const nose = lm[1] || lm[168] || { x: 0.50, y: 0.42 };
 
       const pEarL = { x: earL.x * vw, y: earL.y * vh };
       const pEarR = { x: earR.x * vw, y: earR.y * vh };
-      const pHeadTop = { x: headTop.x * vw, y: headTop.y * vh };
       const pNose = { x: nose.x * vw, y: nose.y * vh };
 
       // Ear-to-ear distance
       const earDist = Math.hypot(pEarR.x - pEarL.x, pEarR.y - pEarL.y);
-      // Head tilt angle in radians
+      // Head tilt angle
       const headAngle = Math.atan2(pEarR.y - pEarL.y, pEarR.x - pEarL.x);
 
-      // Over-ear headphones: earcups span 1.75× the inter-ear distance
-      // so the cushions sit OVER the outer ears, not inside them
-      const drawW = earDist * 1.75 * calConfig.scale * calConfig.scaleX;
+      // The headphone asset (816×926) has earcups that span the full width.
+      // earDist is the actual inter-ear span in pixels on canvas.
+      // The earcups should fit JUST over the ears, not blow up huge.
+      // Use 1.0× earDist so the earcup outer edges align with ear landmarks.
+      const drawW = earDist * 1.05 * calConfig.scale * calConfig.scaleX;
       const assetRatio = (tryonAssetImg.naturalHeight || tryonAssetImg.height) / (tryonAssetImg.naturalWidth || tryonAssetImg.width) || 1.135;
       const drawH = drawW * assetRatio * calConfig.scaleY;
 
       const earCenterY = (pEarL.y + pEarR.y) / 2;
       const earCenterX = (pEarL.x + pEarR.x) / 2;
 
-      // Vertical anchor: lift the headphone image up so the headband
-      // arches above the crown and earcups align with the ear landmarks.
-      // The ear cushions sit at ~65% from the top of the headphone image.
-      // So we offset by -0.32 * drawH to shift the image upward.
+      // The earcups sit at ~65% from the top of the asset image.
+      // So shift up by 0.15*drawH so the earcup centers align with ears,
+      // and the headband arches naturally above the head.
       const midX = earCenterX + calConfig.offsetX;
-      const midY = earCenterY - (drawH * 0.32) + calConfig.offsetY;
+      const midY = earCenterY - (drawH * 0.15) + calConfig.offsetY;
 
-      // Subtle yaw perspective shift when head rotates
-      const yawOffset = (pNose.x - earCenterX) * 0.12;
+      // Subtle yaw: when user turns head, shift headphones slightly
+      const yawOffset = (pNose.x - earCenterX) * 0.08;
 
       ctx.save();
       ctx.translate(midX + yawOffset, midY);
@@ -2267,6 +2283,9 @@
       }
     }
   </script>
+  <!-- AI Try-On (Decart realtime VTON) — loaded as module so it can use export/import -->
+  <script type="module" src="/static/tryon/ai-tryon.js"></script>
+
 </body>
 </html>
 

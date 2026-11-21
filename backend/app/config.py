@@ -30,6 +30,12 @@ class Settings(BaseSettings):
     )
     llm_fallback_enabled: bool = False
 
+    # --- Decart AI Try-On ---
+    decart_api_key: str = ""
+    decart_vton_model: str = "vton-1"
+    ai_tryon_max_seconds: int = 120
+    ai_tryon_allowed_origins: str = ""
+
     # --- App ---
     app_env: str = "development"
     log_level: str = "INFO"
