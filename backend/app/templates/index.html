@@ -1776,15 +1776,6 @@
         return lm;
       }
     }
-        // Lips inner
-        const innerIndices = [78, 191, 80, 81, 82, 13, 312, 311, 310, 415, 308, 324, 318, 402, 317, 14, 87, 178, 88, 95];
-        innerIndices.forEach((idx, i) => {
-          const ang = (i / innerIndices.length) * Math.PI * 2;
-          lm[idx] = { x: 0.50 + Math.cos(ang) * 0.03 + sway, y: 0.58 + Math.sin(ang) * 0.012, z: 0 };
-        });
-        return lm;
-      }
-    }
 
     // Overlay 1: Apparel (Shirt / T-Shirt / Kurta)
     function renderApparelOverlay(ctx, vw, vh, lm) {
