@@ -24,7 +24,7 @@ async def search_endpoint(
     mode: str = Query("hybrid", description="Search mode: hybrid, bm25, or vector"),
 ) -> Dict[str, Any]:
     """Execute hybrid search across products index."""
-    return search_hybrid(
+    return await search_hybrid(
         q=q,
         category=category,
         min_price=min_price,
@@ -44,5 +44,5 @@ async def suggest_endpoint(
     limit: int = Query(8, ge=1, le=20, description="Max suggestions to return"),
 ) -> List[Dict[str, Any]]:
     """Fast autocomplete suggestions for search bar."""
-    return suggest_autocomplete(query=q, limit=limit)
+    return await suggest_autocomplete(query=q, limit=limit)
 

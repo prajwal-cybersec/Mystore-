@@ -198,8 +198,8 @@
             Found <span id="totalResultsCount" class="font-bold text-gray-900">0</span> products in MyStore catalogue
           </div>
           <div class="text-xs text-gray-500 flex items-center gap-2">
-            <span class="inline-block w-2 h-2 rounded-full bg-green-500"></span>
-            Powered by OpenSearch 3.6.0 Hybrid kNN
+            <span id="engineDot" class="inline-block w-2 h-2 rounded-full bg-green-500"></span>
+            <span id="engineText">Powered by OpenSearch 3.6.0 Hybrid kNN</span>
           </div>
         </div>
 
@@ -380,6 +380,9 @@
 
       try {
         const res = await fetch(url);
+        if (!res.ok) {
+          throw new Error(`HTTP error ${res.status}`);
+        }
         const data = await res.json();
         renderProducts(data);
       } catch (err) {
@@ -394,6 +397,12 @@
       const bannerText = document.getElementById('queryRewrittenText');
 
       document.getElementById('totalResultsCount').textContent = data.total || 0;
+
+      // Update engine badge if returned
+      if (data.engine) {
+        const engineText = document.getElementById('engineText');
+        if (engineText) engineText.textContent = `Powered by ${data.engine}`;
+      }
 
       // Rewritten query banner
       if (data.query && data.query.showing_results_for) {

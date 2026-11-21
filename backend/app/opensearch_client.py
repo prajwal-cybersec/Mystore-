@@ -22,9 +22,9 @@ def get_opensearch_client() -> OpenSearch:
         settings.opensearch_url,
         verify_certs=False,
         ssl_show_warn=False,
-        timeout=15,
-        max_retries=3,
-        retry_on_timeout=True,
+        timeout=3,
+        max_retries=1,
+        retry_on_timeout=False,
     )
 
 
