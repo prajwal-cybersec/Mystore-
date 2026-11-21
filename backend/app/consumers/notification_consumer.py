@@ -110,6 +110,7 @@ async def handle_invoice_generated(event: Dict[str, Any]):
 
             grand_total = float(order["grand_total"] or order["total_inr"] or 0)
             city = order["city"]
+            master_inv_no = f"INV-2024-25-MST-{str(oid)[:8].upper()}"
             inv_numbers = [p["invoice_no"] for p in packages if p["invoice_no"]]
             inv_summary = ", ".join(inv_numbers)
 
@@ -118,8 +119,8 @@ async def handle_invoice_generated(event: Dict[str, Any]):
                 f"Namaste {cust_name}! Your MyStore order #{str(oid)[:8]} "
                 f"({len(packages)} packages from {len(packages)} sellers, Grand Total: Rs {grand_total:,.2f}) "
                 f"is confirmed for delivery in {city}. "
-                f"Tax Invoices: {inv_summary}. "
-                f"Download all invoices at mystore.in/orders/{str(oid)}"
+                f"Tax Invoice: {master_inv_no} (Invoices: {inv_summary}). "
+                f"Download your tax invoice at mystore.in/orders/{str(oid)}"
             )
 
             # Build Email
@@ -129,6 +130,7 @@ async def handle_invoice_generated(event: Dict[str, Any]):
                 f"Thank you for your order #{oid} on MyStore!",
                 f"Delivery City: {city}",
                 f"Grand Total Paid: Rs {grand_total:,.2f}",
+                f"Consolidated Tax Invoice No: {master_inv_no}",
                 "",
                 f"--- CONSOLIDATED PACKAGE & SELLER SUMMARY ({len(packages)} Packages) ---",
             ]

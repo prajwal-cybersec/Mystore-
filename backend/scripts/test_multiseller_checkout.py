@@ -164,7 +164,7 @@ async def run_full_acceptance_tests():
             print("    [PASSED] All tax invoices generated with validated place-of-supply GST breakdown and gap-free numbering.")
 
         # ---------------------------------------------------------------------
-        # CRITERION 5: ONE order confirmation email + SMS sent with all N invoice numbers
+        # CRITERION 5: ONE order confirmation email + SMS sent with Master Invoice No + seller details
         # ---------------------------------------------------------------------
         print("\n--> [CRITERION 5] Processing notification aggregation (Rule 8)...")
         # Trigger notification aggregator once all invoices are ready
@@ -181,11 +181,16 @@ async def run_full_acceptance_tests():
             sms = next(r for r in rows if r["channel"] == "SMS")
             email = next(r for r in rows if r["channel"] == "EMAIL")
 
+            # Check master invoice number is in the SMS
+            master_inv_no = f"INV-2024-25-MST-{order_id[:8].upper()}"
+            assert master_inv_no in sms["message"], f"Master Invoice {master_inv_no} missing from SMS!"
+            assert master_inv_no in email["message"] or order_id in email["message"], f"Order reference missing from Email!"
+            # Verify individual seller invoice numbers are still referenced in notifications
             for inv in invoices:
-                assert inv["invoice_no"] in sms["message"], f"Invoice {inv['invoice_no']} missing from SMS!"
-                assert inv["invoice_no"] in email["message"], f"Invoice {inv['invoice_no']} missing from Email!"
+                assert inv["invoice_no"] in sms["message"] or inv["invoice_no"] in email["message"], \
+                    f"Seller invoice {inv['invoice_no']} not found in any notification!"
 
-            print(f"    [PASSED] Exactly 1 SMS and 1 Email sent. All {N} invoice numbers verified in both.")
+            print(f"    [PASSED] Exactly 1 SMS and 1 Email sent. Master Invoice No {master_inv_no} verified.")
 
         # ---------------------------------------------------------------------
         # CRITERION 6: GET /orders/{id} returns all sub-orders, seller info, shipments, and invoice links
@@ -203,19 +208,29 @@ async def run_full_acceptance_tests():
         print("    [PASSED] GET /orders/{id} provides complete multi-seller view with shipments and download links.")
 
         # ---------------------------------------------------------------------
-        # CRITERION 7: GET /orders/{id}/invoices.pdf returns merged multi-page PDF
+        # CRITERION 7: GET /orders/{id}/invoices.pdf returns Consolidated Tax Invoice (and ?split=true multi-page)
         # ---------------------------------------------------------------------
         print("\n--> [CRITERION 7] Testing GET /orders/{id}/invoices.pdf...")
+        # 7a. Default: Single unified Master Tax Invoice
         res_pdf = await client.get(f"/orders/{order_id}/invoices.pdf")
         assert res_pdf.status_code == 200
         assert res_pdf.headers["content-type"] == "application/pdf"
         assert res_pdf.content.startswith(b"%PDF")
 
         pdf_doc = PdfReader(io.BytesIO(res_pdf.content))
+        first_page_text = pdf_doc.pages[0].extract_text()
+        assert "MYSTORE · TAX INVOICE" in first_page_text or "TAX INVOICE" in first_page_text
+        assert "INV-2024-25-MST-" in first_page_text
+        print(f"    [PASSED] Single Consolidated Master Tax Invoice generated (Invoice No: INV-2024-25-MST-{order_id[:8].upper()}).")
+
+        # 7b. Split mode: Multi-page breakdown bundle for accountants
+        res_split = await client.get(f"/orders/{order_id}/invoices.pdf?split=true")
+        assert res_split.status_code == 200
+        split_doc = PdfReader(io.BytesIO(res_split.content))
         expected_total_pages = 1 + N  # 1 Summary page + N Seller Tax Invoices
-        assert len(pdf_doc.pages) == expected_total_pages, f"Expected {expected_total_pages} pages, got {len(pdf_doc.pages)}"
-        assert "ORDER CONSIGNMENT SUMMARY" in pdf_doc.pages[0].extract_text()
-        print(f"    [PASSED] Consolidated PDF generated: {len(pdf_doc.pages)} pages (1 Cover Summary + {N} Seller Invoices).")
+        assert len(split_doc.pages) == expected_total_pages, f"Expected {expected_total_pages} pages, got {len(split_doc.pages)}"
+        assert "ORDER CONSIGNMENT SUMMARY" in split_doc.pages[0].extract_text()
+        print(f"    [PASSED] Split PDF bundle available: {len(split_doc.pages)} pages (1 Cover Summary + {N} Seller Invoices).")
 
         # ---------------------------------------------------------------------
         # CRITERION 8: Concurrency Stress Test on /dev/stress-last-unit

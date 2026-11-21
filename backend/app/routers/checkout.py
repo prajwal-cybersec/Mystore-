@@ -14,6 +14,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db, async_session_factory
 from app.checkout_service import execute_checkout_transaction
 from app.pdf_service import (
+    generate_consolidated_master_invoice_pdf,
     generate_single_invoice_pdf,
     generate_order_summary_pdf,
     merge_order_invoices_pdf,
@@ -230,6 +231,7 @@ async def get_order_endpoint(
     grand_tot = float(order["grand_total"] or order["total_inr"] or 0)
     invoices_exp = order["invoices_expected"] or len(sub_orders_payload)
     invoices_rdy = order["invoices_ready"] or sum(1 for so in sub_orders_payload if so.get("invoice"))
+    master_inv_no = f"INV-2024-25-MST-{str(order['id'])[:8].upper()}"
 
     return {
         "id": str(order["id"]),
@@ -238,6 +240,8 @@ async def get_order_endpoint(
         "status": order["status"],
         "total_inr": grand_tot,
         "grand_total": grand_tot,
+        "master_invoice_no": master_inv_no,
+        "invoice_no": master_inv_no,
         "invoices_expected": invoices_exp,
         "invoices_ready": invoices_rdy,
         "all_invoices_ready": invoices_rdy >= invoices_exp,
@@ -380,10 +384,11 @@ async def download_single_invoice_pdf(
 @router.get("/orders/{order_id}/invoices.pdf")
 async def download_all_order_invoices_pdf(
     order_id: str,
+    split: bool = False,
     db: AsyncSession = Depends(get_db),
 ):
-    """Download consolidated multi-page PDF (Order Summary + All Seller Tax Invoices).
-    Returns 409 Conflict if invoices are still being generated.
+    """Download single consolidated Master GST Tax Invoice PDF for all items in the order.
+    If split=True, returns the multi-page bundle (Summary + separate seller tax invoices).
     """
     order = await get_order_endpoint(order_id=order_id, db=db)
 
@@ -408,50 +413,58 @@ async def download_all_order_invoices_pdf(
 
     order_summary_data = {
         "order_id": order["id"],
+        "id": order["id"],
         "created_at": order["created_at"],
         "city": order["city"],
         "grand_total": order["grand_total"],
+        "total_inr": order["total_inr"],
         "customer": cust_dict,
         "sub_orders": order["sub_orders"],
     }
 
-    # 1. Generate Order Summary Sheet
-    summary_pdf_bytes = generate_order_summary_pdf(order_summary_data)
+    if split:
+        # Multi-page breakdown: 1 Summary Cover Sheet + N Seller Invoices
+        summary_pdf_bytes = generate_order_summary_pdf(order_summary_data)
+        invoice_pdfs: List[bytes] = []
+        for so in order["sub_orders"]:
+            inv = so.get("invoice")
+            if not inv:
+                continue
+            inv_dict = {
+                "invoice_no": inv["invoice_no"],
+                "issued_at": inv["issued_at"],
+                "order_id": order["id"],
+                "sub_order_id": so["sub_order_id"],
+                "delivery_city": order["city"],
+                "delivery_state": so["seller"]["state"],
+                "tracking_number": so["shipment"]["tracking_number"] if so.get("shipment") else "TRK-ASSIGNED",
+                "taxable_value": inv["taxable_value"],
+                "cgst": inv["cgst"],
+                "sgst": inv["sgst"],
+                "igst": inv["igst"],
+                "total": inv["total"],
+                "seller": so["seller"],
+                "customer": cust_dict,
+                "items": so["items"],
+            }
+            invoice_pdfs.append(generate_single_invoice_pdf(inv_dict))
 
-    # 2. Generate each seller's Tax Invoice PDF
-    invoice_pdfs: List[bytes] = []
-    for so in order["sub_orders"]:
-        inv = so.get("invoice")
-        if not inv:
-            continue
-        inv_dict = {
-            "invoice_no": inv["invoice_no"],
-            "issued_at": inv["issued_at"],
-            "order_id": order["id"],
-            "sub_order_id": so["sub_order_id"],
-            "delivery_city": order["city"],
-            "delivery_state": so["seller"]["state"],
-            "tracking_number": so["shipment"]["tracking_number"] if so.get("shipment") else "TRK-ASSIGNED",
-            "taxable_value": inv["taxable_value"],
-            "cgst": inv["cgst"],
-            "sgst": inv["sgst"],
-            "igst": inv["igst"],
-            "total": inv["total"],
-            "seller": so["seller"],
-            "customer": cust_dict,
-            "items": so["items"],
-        }
-        invoice_pdfs.append(generate_single_invoice_pdf(inv_dict))
-
-    # 3. Merge Summary + All Invoices into 1 multi-page PDF
-    merged_pdf = merge_order_invoices_pdf(summary_pdf_bytes, invoice_pdfs)
-
-    filename = f"order_{order['id'][:8]}_tax_invoices.pdf"
-    return Response(
-        content=merged_pdf,
-        media_type="application/pdf",
-        headers={"Content-Disposition": f"attachment; filename={filename}"},
-    )
+        merged_pdf = merge_order_invoices_pdf(summary_pdf_bytes, invoice_pdfs)
+        filename = f"order_{order['id'][:8]}_split_tax_invoices.pdf"
+        return Response(
+            content=merged_pdf,
+            media_type="application/pdf",
+            headers={"Content-Disposition": f"attachment; filename={filename}"},
+        )
+    else:
+        # Default: EXACTLY ONE Consolidated Master Tax Invoice for all items & sellers
+        master_pdf_bytes = generate_consolidated_master_invoice_pdf(order_summary_data)
+        filename = f"Invoice_INV_2024_25_MST_{order['id'][:8].upper()}.pdf"
+        return Response(
+            content=master_pdf_bytes,
+            media_type="application/pdf",
+            headers={"Content-Disposition": f"attachment; filename={filename}"},
+        )
 
 
 
