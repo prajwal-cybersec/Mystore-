@@ -113,7 +113,7 @@ async def list_customer_orders(
     # 1. Fetch orders
     orders_res = await session.execute(
         text("""
-            SELECT id, customer_id, city, status, total_inr, created_at, delivered_at
+            SELECT id, customer_id, city, status, total_inr, grand_total, created_at, delivered_at
             FROM orders
             WHERE customer_id = :cid
             ORDER BY created_at DESC
@@ -134,9 +134,9 @@ async def list_customer_orders(
                    p.name, p.image_url, p.category, p.attrs
             FROM order_items oi
             JOIN products p ON p.id = oi.product_id
-            WHERE oi.order_id = ANY(:oids::uuid[])
+            WHERE oi.order_id IN (SELECT id FROM orders WHERE customer_id = :cid)
         """),
-        {"oids": order_ids},
+        {"cid": customer_id},
     )
     all_items = items_res.mappings().all()
 
@@ -147,10 +147,10 @@ async def list_customer_orders(
                    reason_code, resolution, status, refund_amount_inr, exchange_size,
                    pickup_date, item_condition, created_at, updated_at
             FROM return_requests
-            WHERE order_id = ANY(:oids::uuid[])
+            WHERE order_id IN (SELECT id FROM orders WHERE customer_id = :cid)
             ORDER BY created_at DESC
         """),
-        {"oids": order_ids},
+        {"cid": customer_id},
     )
     all_returns = returns_res.mappings().all()
 
@@ -238,12 +238,14 @@ async def list_customer_orders(
                 "returns": item_returns,
             })
 
+        tot = float(o.get("grand_total") or o.get("total_inr") or 0)
         result_orders.append({
             "id": oid,
             "customer_id": str(o["customer_id"]),
             "city": o["city"],
             "status": o["status"],
-            "total_inr": float(o["total_inr"]),
+            "total_inr": tot,
+            "grand_total": tot,
             "created_at": o["created_at"].isoformat() if o["created_at"] else None,
             "delivered_at": delivered_at.isoformat() if delivered_at else None,
             "items": order_items_list,
