@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import json
 import re
 import time
@@ -10,7 +11,7 @@ import structlog
 from sqlalchemy import text
 
 from app.opensearch_client import get_opensearch_client, INDEX_NAME
-from app.embeddings import compute_embedding
+from app.embeddings import compute_embedding, get_embedding_async
 from app.query_understanding import normalize_hinglish_query
 from app.database import engine
 
@@ -50,37 +51,39 @@ CATEGORY_ALIASES = {
 }
 
 
-def build_bm25_query(
-    search_term: str,
+def prepare_search_query(
+    q: Optional[str] = None,
+    max_price: Optional[float] = None,
+    sort: Optional[str] = None,
+) -> tuple[Dict[str, Any], str, Optional[float], Optional[str], Optional[float]]:
+    """Shared query preprocessing across OpenSearch and PostgreSQL fallback engines."""
+    raw_query = (q or "").strip()
+    normalized = normalize_hinglish_query(raw_query)
+    effective_text = normalized["rewritten"] if normalized["rewritten"] else raw_query
+    extracted_price = normalized.get("extracted_price")
+    effective_max_price = max_price
+    if extracted_price and effective_max_price is None:
+        effective_max_price = float(extracted_price)
+
+    # Cheap / budget intent: sort ascending by price when no explicit sort given
+    effective_sort = sort
+    if normalized.get("low_cost_intent") and not effective_sort:
+        effective_sort = "price_asc"
+
+    price_intent_val = effective_max_price if extracted_price else None
+    return normalized, effective_text, effective_max_price, effective_sort, price_intent_val
+
+
+def build_filters(
     category: Optional[str] = None,
     min_price: Optional[float] = None,
     max_price: Optional[float] = None,
     city: Optional[str] = None,
     in_stock_only: bool = False,
-) -> Dict[str, Any]:
-    """Construct BM25 multi_match query with fuzziness, field boosting, and filters."""
-    must_clauses: List[Dict[str, Any]] = []
+) -> List[Dict[str, Any]]:
+    """Construct filter clauses once, reused across BM25 and kNN queries."""
     filter_clauses: List[Dict[str, Any]] = []
 
-    if search_term:
-        must_clauses.append({
-            "multi_match": {
-                "query": search_term,
-                "fields": [
-                    "brand^4",
-                    "name^3",
-                    "name.edge_ngram^2",
-                    "category^2",
-                    "description^1",
-                ],
-                "fuzziness": "AUTO",
-                "prefix_length": 2,
-            }
-        })
-    else:
-        must_clauses.append({"match_all": {}})
-
-    # Facet / Attribute filters
     if category:
         filter_clauses.append({"term": {"category": category}})
 
@@ -114,6 +117,48 @@ def build_bm25_query(
     elif in_stock_only:
         filter_clauses.append({"term": {"in_stock": True}})
 
+    return filter_clauses
+
+
+def build_bm25_query(
+    search_term: str,
+    category: Optional[str] = None,
+    min_price: Optional[float] = None,
+    max_price: Optional[float] = None,
+    city: Optional[str] = None,
+    in_stock_only: bool = False,
+    filter_clauses: Optional[List[Dict[str, Any]]] = None,
+) -> Dict[str, Any]:
+    """Construct BM25 multi_match query with fuzziness, field boosting, and filters."""
+    must_clauses: List[Dict[str, Any]] = []
+
+    if search_term:
+        must_clauses.append({
+            "multi_match": {
+                "query": search_term,
+                "fields": [
+                    "brand^4",
+                    "name^3",
+                    "name.edge_ngram^2",
+                    "category^2",
+                    "description^1",
+                ],
+                "fuzziness": "AUTO",
+                "prefix_length": 2,
+            }
+        })
+    else:
+        must_clauses.append({"match_all": {}})
+
+    if filter_clauses is None:
+        filter_clauses = build_filters(
+            category=category,
+            min_price=min_price,
+            max_price=max_price,
+            city=city,
+            in_stock_only=in_stock_only,
+        )
+
     return {
         "bool": {
             "must": must_clauses,
@@ -122,7 +167,30 @@ def build_bm25_query(
     }
 
 
-def _opensearch_search(
+def build_knn_query(
+    vector: List[float],
+    k: int,
+    filter_clauses: Optional[List[Dict[str, Any]]] = None,
+) -> Dict[str, Any]:
+    """Construct kNN vector query with efficient pre-filtering inside knn clause for Faiss."""
+    embedding_clause: Dict[str, Any] = {
+        "vector": vector,
+        "k": k,
+    }
+    if filter_clauses:
+        embedding_clause["filter"] = {
+            "bool": {
+                "filter": filter_clauses
+            }
+        }
+    return {
+        "knn": {
+            "embedding": embedding_clause
+        }
+    }
+
+
+async def _opensearch_search(
     q: Optional[str] = None,
     category: Optional[str] = None,
     min_price: Optional[float] = None,
@@ -134,32 +202,38 @@ def _opensearch_search(
     size: int = 20,
     search_mode: str = "hybrid",
 ) -> Dict[str, Any]:
-    """Execute hybrid search on OpenSearch cluster."""
+    """Execute hybrid search on OpenSearch cluster asynchronously without blocking the event loop."""
     client = get_opensearch_client()
-    raw_query = (q or "").strip()
 
-    # Step 1: Query Understanding & Hinglish Normalization
-    normalized = normalize_hinglish_query(raw_query)
-    effective_text = normalized["rewritten"] if normalized["rewritten"] else raw_query
-    price_intent = normalized.get("extracted_price")
-    if price_intent and max_price is None:
-        max_price = float(price_intent)
+    # Step 1: Query Understanding & Hinglish Normalization (shared with PG path)
+    normalized, effective_text, effective_max_price, effective_sort, price_intent_val = prepare_search_query(
+        q=q,
+        max_price=max_price,
+        sort=sort,
+    )
+    raw_query = normalized["original"]
 
     from_idx = max(0, (page - 1) * size)
-    bm25_body = build_bm25_query(
-        search_term=effective_text,
+
+    # Step 2: Build filters once to prevent filter leaks across BM25 and kNN queries
+    filter_clauses = build_filters(
         category=category,
         min_price=min_price,
-        max_price=max_price,
+        max_price=effective_max_price,
         city=city,
         in_stock_only=in_stock_only,
     )
 
+    bm25_body = build_bm25_query(
+        search_term=effective_text,
+        filter_clauses=filter_clauses,
+    )
+
     # Sort logic
     sort_body: List[Dict[str, Any]] = []
-    if sort == "price_asc":
+    if effective_sort == "price_asc":
         sort_body.append({"price_inr": {"order": "asc"}})
-    elif sort == "price_desc":
+    elif effective_sort == "price_desc":
         sort_body.append({"price_inr": {"order": "desc"}})
     else:
         sort_body.append({"_score": {"order": "desc"}})
@@ -171,9 +245,9 @@ def _opensearch_search(
         "price_stats": {"stats": {"field": "price_inr"}},
     }
 
-    # Vector search logic
-    vector = compute_embedding(effective_text) if effective_text else None
-    
+    # Vector search logic (computed in thread pool with 512-entry LRU cache)
+    vector = await get_embedding_async(effective_text) if effective_text else None
+
     if search_mode == "bm25" or not vector:
         query_payload = {
             "from": from_idx,
@@ -182,46 +256,69 @@ def _opensearch_search(
             "sort": sort_body,
             "aggs": aggs_body,
         }
-        res = client.search(index=INDEX_NAME, body=query_payload)
-        return _format_search_response(res, normalized, page, size)
+        res = await asyncio.to_thread(client.search, index=INDEX_NAME, body=query_payload)
+        out = _format_search_response(res, normalized, page, size)
+        out["total_is_capped"] = False
+        out["price_intent"] = price_intent_val
+        return out
 
     if search_mode == "vector":
         knn_query = {
             "size": size,
             "from": from_idx,
-            "query": {
-                "knn": {
-                    "embedding": {
-                        "vector": vector,
-                        "k": size,
-                    }
-                }
-            },
+            "query": build_knn_query(vector, size, filter_clauses),
             "aggs": aggs_body,
         }
-        res = client.search(index=INDEX_NAME, body=knn_query)
-        return _format_search_response(res, normalized, page, size)
+        res = await asyncio.to_thread(client.search, index=INDEX_NAME, body=knn_query)
+        out = _format_search_response(res, normalized, page, size)
+        out["total_is_capped"] = False
+        out["price_intent"] = price_intent_val
+        return out
 
-    # Hybrid Mode: RRF between BM25 and kNN
+    # Hybrid Mode: RRF between BM25 and kNN with concurrent execution
     cand_k = 50
-    bm25_res = client.search(index=INDEX_NAME, body={
+    # Include aggs_body in BM25 candidate search so facets are populated
+    # (Note: in hybrid mode, facet counts reflect the BM25 candidate set)
+    bm25_cand_body = {
         "size": cand_k,
         "query": bm25_body,
+        "aggs": aggs_body,
         "_source": ["id", "sku", "name", "brand", "category", "price_inr", "image_url", "in_stock", "city_stock", "description"],
-    })
-    
-    knn_res = client.search(index=INDEX_NAME, body={
+    }
+
+    knn_cand_body = {
         "size": cand_k,
-        "query": {
-            "knn": {
-                "embedding": {
-                    "vector": vector,
-                    "k": cand_k,
-                }
-            }
-        },
+        "query": build_knn_query(vector, cand_k, filter_clauses),
         "_source": ["id", "sku", "name", "brand", "category", "price_inr", "image_url", "in_stock", "city_stock", "description"],
-    })
+    }
+
+    # Run BM25 and kNN candidate queries concurrently via asyncio.gather
+    try:
+        bm25_res, knn_res = await asyncio.gather(
+            asyncio.to_thread(client.search, index=INDEX_NAME, body=bm25_cand_body),
+            asyncio.to_thread(client.search, index=INDEX_NAME, body=knn_cand_body),
+        )
+    except Exception as exc:
+        # Fall back to post-filter with larger k if the cluster rejects pre-filter inside knn clause
+        logger.warning(
+            "knn_prefilter_rejected_falling_back_to_postfilter",
+            error=str(exc),
+            info="Using post-filter with larger k (cand_k * 2) to maintain recall",
+        )
+        knn_postfilter_body = {
+            "size": cand_k * 2,
+            "query": {
+                "bool": {
+                    "must": [{"knn": {"embedding": {"vector": vector, "k": cand_k * 2}}}],
+                    "filter": filter_clauses,
+                }
+            },
+            "_source": ["id", "sku", "name", "brand", "category", "price_inr", "image_url", "in_stock", "city_stock", "description"],
+        }
+        bm25_res, knn_res = await asyncio.gather(
+            asyncio.to_thread(client.search, index=INDEX_NAME, body=bm25_cand_body),
+            asyncio.to_thread(client.search, index=INDEX_NAME, body=knn_postfilter_body),
+        )
 
     bm25_hits_count = len(bm25_res.get("hits", {}).get("hits", []))
     knn_top_score = (
@@ -244,24 +341,39 @@ def _opensearch_search(
     doc_store: Dict[str, Any] = {}
 
     if not is_not_found:
-        for rank, hit in enumerate(bm25_res["hits"]["hits"]):
+        for rank, hit in enumerate(bm25_res.get("hits", {}).get("hits", [])):
             doc_id = hit["_id"]
             doc_store[doc_id] = hit["_source"]
             rrf_scores[doc_id] = rrf_scores.get(doc_id, 0.0) + (1.0 / (rrf_k + rank + 1))
 
-        for rank, hit in enumerate(knn_res["hits"]["hits"]):
+        for rank, hit in enumerate(knn_res.get("hits", {}).get("hits", [])):
             doc_id = hit["_id"]
             doc_store[doc_id] = hit["_source"]
             rrf_scores[doc_id] = rrf_scores.get(doc_id, 0.0) + (1.0 / (rrf_k + rank + 1))
 
-    sorted_doc_ids = sorted(rrf_scores.keys(), key=lambda did: rrf_scores[did], reverse=True)
+    # Sort candidates: when sort is price_asc or price_desc, sort merged candidate list by price; otherwise keep RRF order
+    if effective_sort == "price_asc":
+        sorted_doc_ids = sorted(
+            doc_store.keys(),
+            key=lambda did: (float(doc_store[did].get("price_inr") or 0.0), -rrf_scores.get(did, 0.0))
+        )
+    elif effective_sort == "price_desc":
+        sorted_doc_ids = sorted(
+            doc_store.keys(),
+            key=lambda did: (float(doc_store[did].get("price_inr") or 0.0), rrf_scores.get(did, 0.0)),
+            reverse=True
+        )
+    else:
+        sorted_doc_ids = sorted(doc_store.keys(), key=lambda did: rrf_scores[did], reverse=True)
+
     paged_ids = sorted_doc_ids[from_idx : from_idx + size]
     hits = []
     for did in paged_ids:
         doc = doc_store[did]
-        doc["score"] = rrf_scores[did]
+        doc["score"] = rrf_scores.get(did, 0.0)
         hits.append(doc)
 
+    # In hybrid mode, total is honestly capped at the number of retrieved candidates (at most 2 * cand_k)
     total_hits = len(sorted_doc_ids)
     aggs = bm25_res.get("aggregations", {})
 
@@ -271,10 +383,12 @@ def _opensearch_search(
             "rewritten": normalized["rewritten"],
             "showing_results_for": normalized["rewritten"] if normalized["rewritten"] != raw_query else None,
             "brand_detected": normalized["brand_preserved"],
-            "price_intent": max_price if price_intent else None,
+            "price_intent": price_intent_val,
             "not_found": is_not_found,
         },
         "total": 0 if is_not_found else total_hits,
+        "total_is_capped": True,
+        "price_intent": price_intent_val,
         "page": page,
         "size": size,
         "hits": hits,
@@ -300,17 +414,12 @@ async def _pg_fallback_search(
     size: int = 20,
 ) -> Dict[str, Any]:
     """Execute resilient PostgreSQL full-text fallback search."""
+    normalized, effective_text, effective_max_price, effective_sort, price_intent_val = prepare_search_query(
+        q=q, max_price=max_price, sort=sort
+    )
     raw_query = (q or "").strip()
-    normalized = normalize_hinglish_query(raw_query)
-    effective_text = normalized["rewritten"] if normalized["rewritten"] else raw_query
-    price_intent = normalized.get("extracted_price")
-    if price_intent and max_price is None:
-        max_price = float(price_intent)
-
-    # Detect budget intent from normalizer (covers Hindi + Hinglish)
-    low_cost_intent = normalized.get("low_cost_intent", False)
-    if low_cost_intent and not sort:
-        sort = "price_asc"
+    max_price = effective_max_price
+    sort = effective_sort
 
     offset = max(0, (page - 1) * size)
 
@@ -545,10 +654,12 @@ async def _pg_fallback_search(
             "rewritten": normalized["rewritten"],
             "showing_results_for": normalized["rewritten"] if normalized["rewritten"] != raw_query else None,
             "brand_detected": normalized["brand_preserved"],
-            "price_intent": max_price if price_intent else None,
+            "price_intent": price_intent_val,
             "not_found": is_not_found,
         },
         "total": total,
+        "total_is_capped": False,
+        "price_intent": price_intent_val,
         "page": page,
         "size": size,
         "hits": hits,
@@ -582,7 +693,7 @@ async def search_hybrid(
 
     if can_try_opensearch:
         try:
-            res = _opensearch_search(
+            res = await _opensearch_search(
                 q=q,
                 category=category,
                 min_price=min_price,

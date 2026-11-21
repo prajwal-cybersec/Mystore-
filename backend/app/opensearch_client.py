@@ -3,13 +3,11 @@
 from __future__ import annotations
 
 import structlog
-import urllib3
 from typing import Any, Dict
 from opensearchpy import OpenSearch
 
 from app.config import settings
 
-urllib3.disable_warnings()
 logger = structlog.stdlib.get_logger(__name__)
 
 INDEX_NAME = "products"
@@ -18,14 +16,15 @@ EMBEDDING_DIM = 384
 
 def get_opensearch_client() -> OpenSearch:
     """Return configured OpenSearch client instance."""
-    return OpenSearch(
-        settings.opensearch_url,
-        verify_certs=False,
-        ssl_show_warn=False,
-        timeout=3,
-        max_retries=1,
-        retry_on_timeout=False,
-    )
+    kwargs: Dict[str, Any] = {
+        "verify_certs": settings.opensearch_verify_certs,
+        "timeout": 10,
+        "max_retries": 1,
+        "retry_on_timeout": False,
+    }
+    if settings.opensearch_ca:
+        kwargs["ca_certs"] = settings.opensearch_ca
+    return OpenSearch(settings.opensearch_url, **kwargs)
 
 
 INDEX_MAPPING: Dict[str, Any] = {

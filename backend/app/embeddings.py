@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import asyncio
+from functools import lru_cache
 import structlog
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 logger = structlog.stdlib.get_logger(__name__)
 
@@ -37,6 +39,21 @@ def compute_embedding(text: str) -> Optional[List[float]]:
     except Exception as exc:
         logger.error("compute_embedding_failed", error=str(exc))
     return None
+
+
+@lru_cache(maxsize=512)
+def get_cached_embedding(text: str) -> Optional[Tuple[float, ...]]:
+    """LRU-cached query embedding (size 512) keyed by rewritten query text."""
+    emb = compute_embedding(text)
+    return tuple(emb) if emb is not None else None
+
+
+async def get_embedding_async(text: str) -> Optional[List[float]]:
+    """Non-blocking async wrapper computing embedding in thread pool with 512-entry LRU cache."""
+    if not text:
+        return None
+    cached = await asyncio.to_thread(get_cached_embedding, text)
+    return list(cached) if cached is not None else None
 
 
 def compute_batch_embeddings(texts: List[str]) -> List[Optional[List[float]]]:

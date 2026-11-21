@@ -17,6 +17,8 @@ class Settings(BaseSettings):
     # --- Data stores ---
     pg_url: str
     opensearch_url: str
+    opensearch_ca: str | None = None
+    opensearch_verify_certs: bool = True
 
     # --- Kafka ---
     kafka_broker: str

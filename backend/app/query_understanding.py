@@ -20,7 +20,7 @@ PROTECTED_BRANDS: Set[str] = {
     "nescafe", "bru", "dabur", "saffola", "daawat", "catch", "kissan", "real", "kelloggs",
     "quaker", "patanjali", "cadbury", "horlicks", "red label", "taj mahal", "chings",
     "nutella", "sundrop", "24 mantra", "allen solly", "peter england", "levis", "levi's",
-    "biba", "w", "nike", "puma", "titan", "fastrack", "fabindia", "manyavar", "mohey",
+    "biba", "nike", "puma", "titan", "fastrack", "fabindia", "manyavar", "mohey",
     "bata", "hush puppies", "crocs", "wildcraft", "van heusen", "jockey", "sparx", "campus",
     "red tape", "lenskart", "vincent chase", "caprese", "lavie", "skybags", "american tourister",
     "safari", "vip", "zaveri pearls", "sukkhi", "voylla", "prestige", "hawkins", "pigeon",
@@ -36,13 +36,13 @@ PROTECTED_BRANDS: Set[str] = {
 HINDI_STOPWORDS: Set[str] = {
     # Hindi / Devanagari fillers
     "दिखाइए", "दिखाओ", "दिखाना", "दिखाएं", "दिखा", "बताइए", "बताओ", "खोजो", "ढूंढो", "ढूंढिए",
-    "लाओ", "लाइए", "चाहिए", "देना", "दे दो", "दे", "दो", "करो", "कीजिए",
+    "लाओ", "लाइए", "चाहिए", "देना", "दे दो", "करो", "कीजिए",
     "मुझे", "हमे", "हमको", "मेरे", "लिए", "वाला", "वाली", "वाले",
     "का", "की", "के", "में", "से", "को", "पर", "और", "या", "तक", "अंदर",
     "कम", "ज्यादा", "से कम", "से ज्यादा", "के अंदर",
     "रूपये", "रुपये", "रुपए", "रुपिया", "कहाँ", "कौन", "क्या", "है", "हैं", "था", "थी", "थे", "प्लीज", "जरा",
     # Hinglish fillers
-    "dikhao", "dikhaye", "dikhana", "chahiye", "batao", "lao", "de", "do", "mujhe", "hame", "hamko", "mere", "liye",
+    "dikhao", "dikhaye", "dikhana", "chahiye", "batao", "lao", "mujhe", "hame", "hamko", "mere", "liye",
     "wala", "wali", "wale", "karo", "please", "me", "mein", "se", "ko", "par", "hai", "hain", "ke", "ki", "ka",
     "bhi", "tha", "the", "thi", "kya", "andar", "tak", "kam", "jyada", "under", "below"
 }
@@ -134,6 +134,8 @@ PHRASE_MAPPINGS: dict[str, str] = {
     "ऐप्पल आईफोन": "apple iphone",
     "रियल मी": "realme",
     "वन प्लस": "oneplus",
+    "one plus": "oneplus",
+    "1 plus": "oneplus",
     "एलन सोली": "allen solly",
     "एलन सॉली": "allen solly",
     "फैब इंडिया": "fabindia",
@@ -147,6 +149,12 @@ PHRASE_MAPPINGS: dict[str, str] = {
     "कम कीमत": "cheap budget",
     "कम रेट": "cheap budget",
     "कम पैसे": "cheap budget",
+    "kam keemat": "cheap budget",
+    "kam kimat": "cheap budget",
+    "kam daam": "cheap budget",
+    "kam dam": "cheap budget",
+    "kam rate": "cheap budget",
+    "kam paise": "cheap budget",
     "सस्ता वाला": "cheap budget",
     "सस्ती वाली": "cheap budget",
     "सस्ते में": "cheap budget",
@@ -427,6 +435,18 @@ PRICE_SKIP_TOKENS: Set[str] = {
     "under", "below", "tak", "kam", "se", "andar", "तक", "कम", "से", "अंदर"
 }
 
+QUANTITY_UNITS: Set[str] = {
+    "kg", "kilo", "kilogram", "kilograms", "g", "gm", "gram", "grams",
+    "ml", "l", "ltr", "liter", "litre", "litres",
+    "pack", "packs", "packet", "packets",
+    "inch", "inches", "pc", "pcs", "piece", "pieces",
+}
+
+PRICE_WORDS: Set[str] = {
+    "hajar", "hazar", "हजार", "हज़ार", "हज़ार", "sau", "सौ", "lakh", "लाख", "k",
+    "rupaye", "rupee", "rupees", "rs", "inr"
+}
+
 
 def normalize_hinglish_query(query: str) -> dict[str, Any]:
     """Clean, transliterate, and normalize a Hindi/Hinglish query with brand protection."""
@@ -448,7 +468,7 @@ def normalize_hinglish_query(query: str) -> dict[str, Any]:
 
     # Step 2: Detect budget / low-cost intent
     budget_terms = [
-        "sasta", "saste", "sasti", "kam daam", "kam keemat", "kam kimat", "kam rate",
+        "sasta", "saste", "sasti", "kam daam", "kam keemat", "kam kimat", "kam rate", "kam dam", "kam paise",
         "budget", "cheap", "low price", "सस्ता", "सस्ते", "सस्ती", "कम दाम", "कम कीमत", "कम रेट", "कम पैसे"
     ]
     low_cost_intent = any(bt in cleaned for bt in budget_terms)
@@ -481,24 +501,41 @@ def normalize_hinglish_query(query: str) -> dict[str, Any]:
             extracted_price = float(num_match.group(1))
             extracted_number_str = num_match.group(1)
 
-    # Step 4: Multi-word phrase mapping (Devanagari & Hinglish)
+    # Step 4: Multi-word phrase mapping using word boundaries (so short phrase never rewrites middle of a word)
     rewritten = cleaned
     for phrase, target in sorted(PHRASE_MAPPINGS.items(), key=lambda x: len(x[0]), reverse=True):
-        if phrase in rewritten:
-            rewritten = rewritten.replace(phrase, f" {target} ")
+        pattern = r"(?<![\w\u0900-\u097F])" + re.escape(phrase) + r"(?![\w\u0900-\u097F])"
+        rewritten = re.sub(pattern, f" {target} ", rewritten)
 
     rewritten = re.sub(r"\s+", " ", rewritten).strip()
 
-    # Step 5: Word-by-word replacement with Brand Protection
+    # Step 5: Word-by-word replacement with Brand Protection & Quantity Unit conversion
     raw_tokens = rewritten.split()
     translated_tokens: List[str] = []
     preserved_brand: Optional[str] = None
 
-    for token in raw_tokens:
+    for i, token in enumerate(raw_tokens):
         # Check if already a protected brand in English
         if token in PROTECTED_BRANDS:
             preserved_brand = token
             translated_tokens.append(token)
+            continue
+
+        # Check if next token is a quantity unit
+        next_tok = raw_tokens[i + 1] if i + 1 < len(raw_tokens) else ""
+        if next_tok in QUANTITY_UNITS and token in HINDI_NUMBERS:
+            translated_tokens.append(str(HINDI_NUMBERS[token]))
+            continue
+
+        # If token is 'do' or 'ek', only treat as number when followed by a unit or price word
+        if token in ("do", "ek"):
+            if next_tok in QUANTITY_UNITS:
+                translated_tokens.append(str(HINDI_NUMBERS[token]))
+            elif next_tok in PRICE_WORDS:
+                translated_tokens.append(str(HINDI_NUMBERS[token]))
+            else:
+                # Keep as English word (e.g. 'do not disturb')
+                translated_tokens.append(token)
             continue
 
         # Check WORD_MAPPINGS
@@ -510,23 +547,36 @@ def normalize_hinglish_query(query: str) -> dict[str, Any]:
 
     # Step 6: Filter out conversational stopwords and price-only artifacts
     final_tokens: List[str] = []
-    for token in translated_tokens:
+    for idx, token in enumerate(translated_tokens):
+        is_unit_digit = False
+        if token.isdigit():
+            # Check if adjacent to a quantity unit
+            prev_tok = translated_tokens[idx - 1] if idx > 0 else ""
+            next_tok = translated_tokens[idx + 1] if idx + 1 < len(translated_tokens) else ""
+            if prev_tok in QUANTITY_UNITS or next_tok in QUANTITY_UNITS:
+                is_unit_digit = True
+
         if token in HINDI_STOPWORDS:
             continue
         if token in PRICE_SKIP_TOKENS:
             continue
-        if extracted_number_str and token == extracted_number_str:
+        if extracted_number_str and token == extracted_number_str and not is_unit_digit:
             continue
-        if token.isdigit() and extracted_price and float(token) == extracted_price:
+        if token.isdigit() and extracted_price and float(token) == extracted_price and not is_unit_digit:
             continue
-        if len(token) <= 1:
+        if len(token) <= 1 and not (token.isdigit() and is_unit_digit):
             continue
         final_tokens.append(token)
 
-    # Step 7: Check preserved brand after word mapping
+    # Step 7: Check preserved brand after word mapping with strict word boundaries
     if not preserved_brand:
+        final_str = " ".join(final_tokens)
         for b in sorted(PROTECTED_BRANDS, key=len, reverse=True):
-            if b in final_tokens or b in " ".join(final_tokens):
+            if b in final_tokens:
+                preserved_brand = b
+                break
+            pattern = r"(?<![\w\u0900-\u097F])" + re.escape(b) + r"(?![\w\u0900-\u097F])"
+            if re.search(pattern, final_str):
                 preserved_brand = b
                 break
 

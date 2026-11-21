@@ -1,0 +1,2589 @@
+{
+  "summary": {
+    "tuning": [
+      {
+        "mode": "BM25 Only",
+        "recall_at_5": 0.7333,
+        "mrr": 0.5889
+      },
+      {
+        "mode": "Vector Only",
+        "recall_at_5": 0.7333,
+        "mrr": 0.5889
+      },
+      {
+        "mode": "Hybrid (BM25 + kNN)",
+        "recall_at_5": 0.7333,
+        "mrr": 0.5889
+      }
+    ],
+    "held_out": [
+      {
+        "mode": "BM25 Only",
+        "recall_at_5": 0.8667,
+        "mrr": 0.7833
+      },
+      {
+        "mode": "Vector Only",
+        "recall_at_5": 0.8667,
+        "mrr": 0.7833
+      },
+      {
+        "mode": "Hybrid (BM25 + kNN)",
+        "recall_at_5": 0.8667,
+        "mrr": 0.7833
+      }
+    ],
+    "combined": [
+      {
+        "mode": "BM25 Only",
+        "recall_at_5": 0.8,
+        "mrr": 0.6861
+      },
+      {
+        "mode": "Vector Only",
+        "recall_at_5": 0.8,
+        "mrr": 0.6861
+      },
+      {
+        "mode": "Hybrid (BM25 + kNN)",
+        "recall_at_5": 0.8,
+        "mrr": 0.6861
+      }
+    ]
+  },
+  "results": {
+    "tuning": {
+      "bm25": {
+        "mode": "bm25",
+        "total_queries": 15,
+        "recall_at_5": 0.7333,
+        "mrr": 0.5889,
+        "details": [
+          {
+            "query": "bluetoth earphones",
+            "type": "typo",
+            "expected": [
+              "EL-BOA",
+              "EL-NOI",
+              "EL-JBL",
+              "EL-1PL"
+            ],
+            "top_hits": [
+              "EL-BOA-006",
+              "EL-BOA-004",
+              "ELE-0002"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "samsng galxy",
+            "type": "typo",
+            "expected": [
+              "EL-SAM"
+            ],
+            "top_hits": [],
+            "rank": null
+          },
+          {
+            "query": "iphon 15",
+            "type": "typo",
+            "expected": [
+              "EL-APP"
+            ],
+            "top_hits": [
+              "EL-APP-001",
+              "EL-APP-002",
+              "PC-HIM-004"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "hedphones",
+            "type": "typo",
+            "expected": [
+              "EL-SON",
+              "EL-JBL",
+              "EL-BOA"
+            ],
+            "top_hits": [],
+            "rank": null
+          },
+          {
+            "query": "ashirvad ata",
+            "type": "typo",
+            "expected": [
+              "GR-AAS"
+            ],
+            "top_hits": [
+              "GR-PAT-002",
+              "GR-TAT-002",
+              "GR-TAT-003"
+            ],
+            "rank": null
+          },
+          {
+            "query": "sasta atta",
+            "type": "hinglish",
+            "expected": [
+              "GR-AAS"
+            ],
+            "top_hits": [
+              "GR-AAS-002",
+              "GR-AAS-001",
+              "FA-BIB-002"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "sasta phone",
+            "type": "hinglish",
+            "expected": [
+              "EL-SAM-001",
+              "EL-REL",
+              "EL-XIA",
+              "EL-1PL"
+            ],
+            "top_hits": [
+              "EL-BOA-006",
+              "EL-NOI-004",
+              "EL-NOI-005"
+            ],
+            "rank": null
+          },
+          {
+            "query": "kam daam rice",
+            "type": "hinglish",
+            "expected": [
+              "GR-FOR",
+              "GR-DAA"
+            ],
+            "top_hits": [
+              "GR-FOR-005",
+              "GR-DAA-001",
+              "GR-FOR-004"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "nahane ka sabun",
+            "type": "hinglish",
+            "expected": [
+              "PC-DOV",
+              "PC-DET",
+              "PC-LIF"
+            ],
+            "top_hits": [
+              "PC-LIF-001",
+              "PC-DET-001",
+              "PC-DOV-002"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "chai patti",
+            "type": "hinglish",
+            "expected": [
+              "GR-TAT",
+              "GR-RED",
+              "GR-TAJ"
+            ],
+            "top_hits": [
+              "GR-BRI-003",
+              "GR-TAT-006",
+              "GR-TAJ-001"
+            ],
+            "rank": 2
+          },
+          {
+            "query": "wireless earbuds with anc",
+            "type": "synonym",
+            "expected": [
+              "EL-1PL-003",
+              "EL-BOA-005",
+              "EL-REL-003",
+              "EL-APP-003"
+            ],
+            "top_hits": [
+              "EL-NOI-002",
+              "EL-BOU-001",
+              "EL-BOA-005"
+            ],
+            "rank": 3
+          },
+          {
+            "query": "gaming laptop rtx",
+            "type": "synonym",
+            "expected": [
+              "EL-LEN-002",
+              "EL-HP-002"
+            ],
+            "top_hits": [
+              "EL-LEN-002",
+              "EL-HP-002",
+              "EL-EVO-001"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "smartwatch bluetooth calling",
+            "type": "synonym",
+            "expected": [
+              "EL-BOA",
+              "EL-NOI",
+              "FA-FAS-001"
+            ],
+            "top_hits": [
+              "EL-FIR-001",
+              "EL-BOA-003",
+              "EL-BOA-004"
+            ],
+            "rank": 2
+          },
+          {
+            "query": "mustard oil cold pressed",
+            "type": "synonym",
+            "expected": [
+              "GR-FOR-002"
+            ],
+            "top_hits": [
+              "GR-24M-002",
+              "GR-FOR-002",
+              "PC-BAJ-004"
+            ],
+            "rank": 2
+          },
+          {
+            "query": "basmati rice biryani",
+            "type": "synonym",
+            "expected": [
+              "GR-FOR-004",
+              "GR-DAA-002"
+            ],
+            "top_hits": [
+              "GR-FOR-004",
+              "GR-DAA-002",
+              "GR-FOR-005"
+            ],
+            "rank": 1
+          }
+        ]
+      },
+      "vector": {
+        "mode": "vector",
+        "total_queries": 15,
+        "recall_at_5": 0.7333,
+        "mrr": 0.5889,
+        "details": [
+          {
+            "query": "bluetoth earphones",
+            "type": "typo",
+            "expected": [
+              "EL-BOA",
+              "EL-NOI",
+              "EL-JBL",
+              "EL-1PL"
+            ],
+            "top_hits": [
+              "EL-BOA-006",
+              "ELE-0002",
+              "EL-BOA-004"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "samsng galxy",
+            "type": "typo",
+            "expected": [
+              "EL-SAM"
+            ],
+            "top_hits": [],
+            "rank": null
+          },
+          {
+            "query": "iphon 15",
+            "type": "typo",
+            "expected": [
+              "EL-APP"
+            ],
+            "top_hits": [
+              "EL-APP-001",
+              "EL-APP-002",
+              "PC-HIM-004"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "hedphones",
+            "type": "typo",
+            "expected": [
+              "EL-SON",
+              "EL-JBL",
+              "EL-BOA"
+            ],
+            "top_hits": [],
+            "rank": null
+          },
+          {
+            "query": "ashirvad ata",
+            "type": "typo",
+            "expected": [
+              "GR-AAS"
+            ],
+            "top_hits": [
+              "GR-PAT-002",
+              "GR-TAT-002",
+              "GR-TAT-003"
+            ],
+            "rank": null
+          },
+          {
+            "query": "sasta atta",
+            "type": "hinglish",
+            "expected": [
+              "GR-AAS"
+            ],
+            "top_hits": [
+              "GR-AAS-002",
+              "GR-AAS-001",
+              "FA-BIB-002"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "sasta phone",
+            "type": "hinglish",
+            "expected": [
+              "EL-SAM-001",
+              "EL-REL",
+              "EL-XIA",
+              "EL-1PL"
+            ],
+            "top_hits": [
+              "EL-BOA-006",
+              "EL-NOI-004",
+              "EL-NOI-005"
+            ],
+            "rank": null
+          },
+          {
+            "query": "kam daam rice",
+            "type": "hinglish",
+            "expected": [
+              "GR-FOR",
+              "GR-DAA"
+            ],
+            "top_hits": [
+              "GR-FOR-005",
+              "GR-DAA-001",
+              "GR-FOR-004"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "nahane ka sabun",
+            "type": "hinglish",
+            "expected": [
+              "PC-DOV",
+              "PC-DET",
+              "PC-LIF"
+            ],
+            "top_hits": [
+              "PC-LIF-001",
+              "PC-DET-001",
+              "PC-DOV-002"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "chai patti",
+            "type": "hinglish",
+            "expected": [
+              "GR-TAT",
+              "GR-RED",
+              "GR-TAJ"
+            ],
+            "top_hits": [
+              "GR-BRI-003",
+              "GR-TAT-006",
+              "GR-TAJ-001"
+            ],
+            "rank": 2
+          },
+          {
+            "query": "wireless earbuds with anc",
+            "type": "synonym",
+            "expected": [
+              "EL-1PL-003",
+              "EL-BOA-005",
+              "EL-REL-003",
+              "EL-APP-003"
+            ],
+            "top_hits": [
+              "EL-NOI-002",
+              "EL-BOU-001",
+              "EL-BOA-005"
+            ],
+            "rank": 3
+          },
+          {
+            "query": "gaming laptop rtx",
+            "type": "synonym",
+            "expected": [
+              "EL-LEN-002",
+              "EL-HP-002"
+            ],
+            "top_hits": [
+              "EL-LEN-002",
+              "EL-HP-002",
+              "EL-EVO-001"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "smartwatch bluetooth calling",
+            "type": "synonym",
+            "expected": [
+              "EL-BOA",
+              "EL-NOI",
+              "FA-FAS-001"
+            ],
+            "top_hits": [
+              "EL-FIR-001",
+              "EL-BOA-003",
+              "ELE-0002"
+            ],
+            "rank": 2
+          },
+          {
+            "query": "mustard oil cold pressed",
+            "type": "synonym",
+            "expected": [
+              "GR-FOR-002"
+            ],
+            "top_hits": [
+              "GR-24M-002",
+              "GR-FOR-002",
+              "PC-BAJ-004"
+            ],
+            "rank": 2
+          },
+          {
+            "query": "basmati rice biryani",
+            "type": "synonym",
+            "expected": [
+              "GR-FOR-004",
+              "GR-DAA-002"
+            ],
+            "top_hits": [
+              "GR-FOR-004",
+              "GR-DAA-002",
+              "GR-FOR-005"
+            ],
+            "rank": 1
+          }
+        ]
+      },
+      "hybrid": {
+        "mode": "hybrid",
+        "total_queries": 15,
+        "recall_at_5": 0.7333,
+        "mrr": 0.5889,
+        "details": [
+          {
+            "query": "bluetoth earphones",
+            "type": "typo",
+            "expected": [
+              "EL-BOA",
+              "EL-NOI",
+              "EL-JBL",
+              "EL-1PL"
+            ],
+            "top_hits": [
+              "EL-BOA-006",
+              "ELE-0002",
+              "EL-BOA-004"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "samsng galxy",
+            "type": "typo",
+            "expected": [
+              "EL-SAM"
+            ],
+            "top_hits": [],
+            "rank": null
+          },
+          {
+            "query": "iphon 15",
+            "type": "typo",
+            "expected": [
+              "EL-APP"
+            ],
+            "top_hits": [
+              "EL-APP-001",
+              "EL-APP-002",
+              "PC-HIM-004"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "hedphones",
+            "type": "typo",
+            "expected": [
+              "EL-SON",
+              "EL-JBL",
+              "EL-BOA"
+            ],
+            "top_hits": [],
+            "rank": null
+          },
+          {
+            "query": "ashirvad ata",
+            "type": "typo",
+            "expected": [
+              "GR-AAS"
+            ],
+            "top_hits": [
+              "GR-PAT-002",
+              "GR-TAT-002",
+              "GR-TAT-003"
+            ],
+            "rank": null
+          },
+          {
+            "query": "sasta atta",
+            "type": "hinglish",
+            "expected": [
+              "GR-AAS"
+            ],
+            "top_hits": [
+              "GR-AAS-002",
+              "GR-AAS-001",
+              "FA-BIB-002"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "sasta phone",
+            "type": "hinglish",
+            "expected": [
+              "EL-SAM-001",
+              "EL-REL",
+              "EL-XIA",
+              "EL-1PL"
+            ],
+            "top_hits": [
+              "EL-BOA-006",
+              "EL-NOI-004",
+              "EL-NOI-005"
+            ],
+            "rank": null
+          },
+          {
+            "query": "kam daam rice",
+            "type": "hinglish",
+            "expected": [
+              "GR-FOR",
+              "GR-DAA"
+            ],
+            "top_hits": [
+              "GR-FOR-005",
+              "GR-DAA-001",
+              "GR-FOR-004"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "nahane ka sabun",
+            "type": "hinglish",
+            "expected": [
+              "PC-DOV",
+              "PC-DET",
+              "PC-LIF"
+            ],
+            "top_hits": [
+              "PC-LIF-001",
+              "PC-DET-001",
+              "PC-DOV-002"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "chai patti",
+            "type": "hinglish",
+            "expected": [
+              "GR-TAT",
+              "GR-RED",
+              "GR-TAJ"
+            ],
+            "top_hits": [
+              "GR-BRI-003",
+              "GR-TAT-006",
+              "GR-TAJ-001"
+            ],
+            "rank": 2
+          },
+          {
+            "query": "wireless earbuds with anc",
+            "type": "synonym",
+            "expected": [
+              "EL-1PL-003",
+              "EL-BOA-005",
+              "EL-REL-003",
+              "EL-APP-003"
+            ],
+            "top_hits": [
+              "EL-NOI-002",
+              "EL-BOU-001",
+              "EL-BOA-005"
+            ],
+            "rank": 3
+          },
+          {
+            "query": "gaming laptop rtx",
+            "type": "synonym",
+            "expected": [
+              "EL-LEN-002",
+              "EL-HP-002"
+            ],
+            "top_hits": [
+              "EL-LEN-002",
+              "EL-HP-002",
+              "EL-EVO-001"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "smartwatch bluetooth calling",
+            "type": "synonym",
+            "expected": [
+              "EL-BOA",
+              "EL-NOI",
+              "FA-FAS-001"
+            ],
+            "top_hits": [
+              "EL-FIR-001",
+              "EL-BOA-003",
+              "ELE-0002"
+            ],
+            "rank": 2
+          },
+          {
+            "query": "mustard oil cold pressed",
+            "type": "synonym",
+            "expected": [
+              "GR-FOR-002"
+            ],
+            "top_hits": [
+              "GR-24M-002",
+              "GR-FOR-002",
+              "PC-BAJ-004"
+            ],
+            "rank": 2
+          },
+          {
+            "query": "basmati rice biryani",
+            "type": "synonym",
+            "expected": [
+              "GR-FOR-004",
+              "GR-DAA-002"
+            ],
+            "top_hits": [
+              "GR-FOR-004",
+              "GR-DAA-002",
+              "GR-FOR-005"
+            ],
+            "rank": 1
+          }
+        ]
+      }
+    },
+    "held_out": {
+      "bm25": {
+        "mode": "bm25",
+        "total_queries": 15,
+        "recall_at_5": 0.8667,
+        "mrr": 0.7833,
+        "details": [
+          {
+            "query": "parle g biskut",
+            "type": "typo",
+            "expected": [
+              "GR-PAR"
+            ],
+            "top_hits": [
+              "GR-PAR-003",
+              "GR-PAR-001",
+              "GR-PAR-002"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "leves jeans",
+            "type": "typo",
+            "expected": [
+              "FA-LEV"
+            ],
+            "top_hits": [
+              "FAS-0006",
+              "FA-LEV-001",
+              "FA-LEV-002"
+            ],
+            "rank": 2
+          },
+          {
+            "query": "himalya neem",
+            "type": "typo",
+            "expected": [
+              "PC-HIM"
+            ],
+            "top_hits": [
+              "PC-HIM-004",
+              "PC-HIM-001"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "prestig cooker",
+            "type": "typo",
+            "expected": [
+              "HO-PRE"
+            ],
+            "top_hits": [
+              "HO-PRE-001",
+              "HO-PRE-004",
+              "HO-PRE-003"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "bata shoes",
+            "type": "typo",
+            "expected": [
+              "FA-BAT"
+            ],
+            "top_hits": [
+              "FA-BAT-001",
+              "FA-BAT-002",
+              "FA-SPA-001"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "sarso ka tel",
+            "type": "hinglish",
+            "expected": [
+              "GR-FOR-002"
+            ],
+            "top_hits": [
+              "PC-BAJ-004",
+              "GR-FOR-003",
+              "GR-SUN-001"
+            ],
+            "rank": null
+          },
+          {
+            "query": "doodh powder",
+            "type": "hinglish",
+            "expected": [
+              "GR-NES-001"
+            ],
+            "top_hits": [
+              "GR-NES-001",
+              "GR-AMU-001",
+              "GR-MDH-004"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "daant ka paste",
+            "type": "hinglish",
+            "expected": [
+              "PC-COL",
+              "PC-SEN",
+              "PC-HIM",
+              "GR-PAT-002"
+            ],
+            "top_hits": [
+              "GR-PAT-002",
+              "PC-HIM-004",
+              "PC-COL-001"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "khana pakane ka bartan",
+            "type": "hinglish",
+            "expected": [
+              "HO-PRE",
+              "HO-HAW"
+            ],
+            "top_hits": [],
+            "rank": null
+          },
+          {
+            "query": "juta sports",
+            "type": "hinglish",
+            "expected": [
+              "FA-NIK",
+              "FA-PUM",
+              "FA-SPA",
+              "FA-CAM"
+            ],
+            "top_hits": [
+              "FA-SPA-001",
+              "FA-NIK-003",
+              "FA-PUM-002"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "cotton kurta women",
+            "type": "synonym",
+            "expected": [
+              "FA-BIB",
+              "FA-WWO"
+            ],
+            "top_hits": [
+              "FA-BIB-001",
+              "FA-JOC-002",
+              "FAS-0002"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "men formal suit navy",
+            "type": "synonym",
+            "expected": [
+              "FA-PET-003"
+            ],
+            "top_hits": [
+              "FA-PET-001",
+              "FA-BAT-001",
+              "FA-VAN-001"
+            ],
+            "rank": 4
+          },
+          {
+            "query": "non stick kadhai",
+            "type": "synonym",
+            "expected": [
+              "HO-HAW-002",
+              "HO-PRE-003"
+            ],
+            "top_hits": [
+              "HO-HAW-002",
+              "PC-BAJ-004",
+              "HO-BAJ-002"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "hair fall control oil",
+            "type": "synonym",
+            "expected": [
+              "PC-HIM-002",
+              "PC-MAM-001",
+              "PC-PAR-005"
+            ],
+            "top_hits": [
+              "PC-HIM-002",
+              "PC-BAJ-004",
+              "PC-BIO-001"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "anti dandruff shampoo",
+            "type": "synonym",
+            "expected": [
+              "PC-HNS",
+              "PC-TRE"
+            ],
+            "top_hits": [
+              "PC-HNS-001",
+              "PC-HNS-002",
+              "GR-PAT-002"
+            ],
+            "rank": 1
+          }
+        ]
+      },
+      "vector": {
+        "mode": "vector",
+        "total_queries": 15,
+        "recall_at_5": 0.8667,
+        "mrr": 0.7833,
+        "details": [
+          {
+            "query": "parle g biskut",
+            "type": "typo",
+            "expected": [
+              "GR-PAR"
+            ],
+            "top_hits": [
+              "GR-PAR-003",
+              "GR-PAR-001",
+              "GR-PAR-002"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "leves jeans",
+            "type": "typo",
+            "expected": [
+              "FA-LEV"
+            ],
+            "top_hits": [
+              "FAS-0006",
+              "FA-LEV-001",
+              "FA-LEV-002"
+            ],
+            "rank": 2
+          },
+          {
+            "query": "himalya neem",
+            "type": "typo",
+            "expected": [
+              "PC-HIM"
+            ],
+            "top_hits": [
+              "PC-HIM-004",
+              "PC-HIM-001"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "prestig cooker",
+            "type": "typo",
+            "expected": [
+              "HO-PRE"
+            ],
+            "top_hits": [
+              "HO-PRE-001",
+              "HO-PRE-004",
+              "HO-PRE-003"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "bata shoes",
+            "type": "typo",
+            "expected": [
+              "FA-BAT"
+            ],
+            "top_hits": [
+              "FA-BAT-001",
+              "FA-BAT-002",
+              "FA-SPA-001"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "sarso ka tel",
+            "type": "hinglish",
+            "expected": [
+              "GR-FOR-002"
+            ],
+            "top_hits": [
+              "PC-BAJ-004",
+              "GR-FOR-003",
+              "GR-SUN-001"
+            ],
+            "rank": null
+          },
+          {
+            "query": "doodh powder",
+            "type": "hinglish",
+            "expected": [
+              "GR-NES-001"
+            ],
+            "top_hits": [
+              "GR-NES-001",
+              "GR-AMU-001",
+              "GR-MDH-004"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "daant ka paste",
+            "type": "hinglish",
+            "expected": [
+              "PC-COL",
+              "PC-SEN",
+              "PC-HIM",
+              "GR-PAT-002"
+            ],
+            "top_hits": [
+              "GR-PAT-002",
+              "PC-HIM-004",
+              "PC-COL-001"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "khana pakane ka bartan",
+            "type": "hinglish",
+            "expected": [
+              "HO-PRE",
+              "HO-HAW"
+            ],
+            "top_hits": [],
+            "rank": null
+          },
+          {
+            "query": "juta sports",
+            "type": "hinglish",
+            "expected": [
+              "FA-NIK",
+              "FA-PUM",
+              "FA-SPA",
+              "FA-CAM"
+            ],
+            "top_hits": [
+              "FA-SPA-001",
+              "FA-NIK-003",
+              "FA-PUM-002"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "cotton kurta women",
+            "type": "synonym",
+            "expected": [
+              "FA-BIB",
+              "FA-WWO"
+            ],
+            "top_hits": [
+              "FA-BIB-001",
+              "FA-JOC-002",
+              "FAS-0002"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "men formal suit navy",
+            "type": "synonym",
+            "expected": [
+              "FA-PET-003"
+            ],
+            "top_hits": [
+              "FA-PET-001",
+              "FA-BAT-001",
+              "FA-VAN-001"
+            ],
+            "rank": 4
+          },
+          {
+            "query": "non stick kadhai",
+            "type": "synonym",
+            "expected": [
+              "HO-HAW-002",
+              "HO-PRE-003"
+            ],
+            "top_hits": [
+              "HO-HAW-002",
+              "PC-BAJ-004",
+              "HO-BAJ-002"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "hair fall control oil",
+            "type": "synonym",
+            "expected": [
+              "PC-HIM-002",
+              "PC-MAM-001",
+              "PC-PAR-005"
+            ],
+            "top_hits": [
+              "PC-HIM-002",
+              "PC-BAJ-004",
+              "PC-BIO-001"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "anti dandruff shampoo",
+            "type": "synonym",
+            "expected": [
+              "PC-HNS",
+              "PC-TRE"
+            ],
+            "top_hits": [
+              "PC-HNS-001",
+              "PC-HNS-002",
+              "GR-PAT-002"
+            ],
+            "rank": 1
+          }
+        ]
+      },
+      "hybrid": {
+        "mode": "hybrid",
+        "total_queries": 15,
+        "recall_at_5": 0.8667,
+        "mrr": 0.7833,
+        "details": [
+          {
+            "query": "parle g biskut",
+            "type": "typo",
+            "expected": [
+              "GR-PAR"
+            ],
+            "top_hits": [
+              "GR-PAR-003",
+              "GR-PAR-001",
+              "GR-PAR-002"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "leves jeans",
+            "type": "typo",
+            "expected": [
+              "FA-LEV"
+            ],
+            "top_hits": [
+              "FAS-0006",
+              "FA-LEV-001",
+              "FA-LEV-002"
+            ],
+            "rank": 2
+          },
+          {
+            "query": "himalya neem",
+            "type": "typo",
+            "expected": [
+              "PC-HIM"
+            ],
+            "top_hits": [
+              "PC-HIM-004",
+              "PC-HIM-001"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "prestig cooker",
+            "type": "typo",
+            "expected": [
+              "HO-PRE"
+            ],
+            "top_hits": [
+              "HO-PRE-001",
+              "HO-PRE-004",
+              "HO-PRE-003"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "bata shoes",
+            "type": "typo",
+            "expected": [
+              "FA-BAT"
+            ],
+            "top_hits": [
+              "FA-BAT-001",
+              "FA-BAT-002",
+              "FA-SPA-001"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "sarso ka tel",
+            "type": "hinglish",
+            "expected": [
+              "GR-FOR-002"
+            ],
+            "top_hits": [
+              "PC-BAJ-004",
+              "GR-FOR-003",
+              "GR-SUN-001"
+            ],
+            "rank": null
+          },
+          {
+            "query": "doodh powder",
+            "type": "hinglish",
+            "expected": [
+              "GR-NES-001"
+            ],
+            "top_hits": [
+              "GR-NES-001",
+              "GR-AMU-001",
+              "GR-MDH-004"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "daant ka paste",
+            "type": "hinglish",
+            "expected": [
+              "PC-COL",
+              "PC-SEN",
+              "PC-HIM",
+              "GR-PAT-002"
+            ],
+            "top_hits": [
+              "GR-PAT-002",
+              "PC-HIM-004",
+              "PC-COL-001"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "khana pakane ka bartan",
+            "type": "hinglish",
+            "expected": [
+              "HO-PRE",
+              "HO-HAW"
+            ],
+            "top_hits": [],
+            "rank": null
+          },
+          {
+            "query": "juta sports",
+            "type": "hinglish",
+            "expected": [
+              "FA-NIK",
+              "FA-PUM",
+              "FA-SPA",
+              "FA-CAM"
+            ],
+            "top_hits": [
+              "FA-SPA-001",
+              "FA-NIK-003",
+              "FA-PUM-002"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "cotton kurta women",
+            "type": "synonym",
+            "expected": [
+              "FA-BIB",
+              "FA-WWO"
+            ],
+            "top_hits": [
+              "FA-BIB-001",
+              "FA-JOC-002",
+              "FAS-0002"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "men formal suit navy",
+            "type": "synonym",
+            "expected": [
+              "FA-PET-003"
+            ],
+            "top_hits": [
+              "FA-PET-001",
+              "FA-BAT-001",
+              "FA-VAN-001"
+            ],
+            "rank": 4
+          },
+          {
+            "query": "non stick kadhai",
+            "type": "synonym",
+            "expected": [
+              "HO-HAW-002",
+              "HO-PRE-003"
+            ],
+            "top_hits": [
+              "HO-HAW-002",
+              "PC-BAJ-004",
+              "HO-BAJ-002"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "hair fall control oil",
+            "type": "synonym",
+            "expected": [
+              "PC-HIM-002",
+              "PC-MAM-001",
+              "PC-PAR-005"
+            ],
+            "top_hits": [
+              "PC-HIM-002",
+              "PC-BAJ-004",
+              "PC-BIO-001"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "anti dandruff shampoo",
+            "type": "synonym",
+            "expected": [
+              "PC-HNS",
+              "PC-TRE"
+            ],
+            "top_hits": [
+              "PC-HNS-001",
+              "PC-HNS-002",
+              "GR-PAT-002"
+            ],
+            "rank": 1
+          }
+        ]
+      }
+    },
+    "combined": {
+      "bm25": {
+        "mode": "bm25",
+        "total_queries": 30,
+        "recall_at_5": 0.8,
+        "mrr": 0.6861,
+        "details": [
+          {
+            "query": "bluetoth earphones",
+            "type": "typo",
+            "expected": [
+              "EL-BOA",
+              "EL-NOI",
+              "EL-JBL",
+              "EL-1PL"
+            ],
+            "top_hits": [
+              "EL-BOA-006",
+              "ELE-0002",
+              "EL-BOA-004"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "samsng galxy",
+            "type": "typo",
+            "expected": [
+              "EL-SAM"
+            ],
+            "top_hits": [],
+            "rank": null
+          },
+          {
+            "query": "iphon 15",
+            "type": "typo",
+            "expected": [
+              "EL-APP"
+            ],
+            "top_hits": [
+              "EL-APP-001",
+              "EL-APP-002",
+              "PC-HIM-004"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "hedphones",
+            "type": "typo",
+            "expected": [
+              "EL-SON",
+              "EL-JBL",
+              "EL-BOA"
+            ],
+            "top_hits": [],
+            "rank": null
+          },
+          {
+            "query": "ashirvad ata",
+            "type": "typo",
+            "expected": [
+              "GR-AAS"
+            ],
+            "top_hits": [
+              "GR-PAT-002",
+              "GR-TAT-002",
+              "GR-TAT-003"
+            ],
+            "rank": null
+          },
+          {
+            "query": "parle g biskut",
+            "type": "typo",
+            "expected": [
+              "GR-PAR"
+            ],
+            "top_hits": [
+              "GR-PAR-003",
+              "GR-PAR-001",
+              "GR-PAR-002"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "leves jeans",
+            "type": "typo",
+            "expected": [
+              "FA-LEV"
+            ],
+            "top_hits": [
+              "FAS-0006",
+              "FA-LEV-001",
+              "FA-LEV-002"
+            ],
+            "rank": 2
+          },
+          {
+            "query": "himalya neem",
+            "type": "typo",
+            "expected": [
+              "PC-HIM"
+            ],
+            "top_hits": [
+              "PC-HIM-004",
+              "PC-HIM-001"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "prestig cooker",
+            "type": "typo",
+            "expected": [
+              "HO-PRE"
+            ],
+            "top_hits": [
+              "HO-PRE-001",
+              "HO-PRE-004",
+              "HO-PRE-003"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "bata shoes",
+            "type": "typo",
+            "expected": [
+              "FA-BAT"
+            ],
+            "top_hits": [
+              "FA-BAT-001",
+              "FA-BAT-002",
+              "FA-SPA-001"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "sasta atta",
+            "type": "hinglish",
+            "expected": [
+              "GR-AAS"
+            ],
+            "top_hits": [
+              "GR-AAS-002",
+              "GR-AAS-001",
+              "FA-BIB-002"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "sasta phone",
+            "type": "hinglish",
+            "expected": [
+              "EL-SAM-001",
+              "EL-REL",
+              "EL-XIA",
+              "EL-1PL"
+            ],
+            "top_hits": [
+              "EL-BOA-006",
+              "EL-NOI-004",
+              "EL-NOI-005"
+            ],
+            "rank": null
+          },
+          {
+            "query": "kam daam rice",
+            "type": "hinglish",
+            "expected": [
+              "GR-FOR",
+              "GR-DAA"
+            ],
+            "top_hits": [
+              "GR-FOR-005",
+              "GR-DAA-001",
+              "GR-FOR-004"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "nahane ka sabun",
+            "type": "hinglish",
+            "expected": [
+              "PC-DOV",
+              "PC-DET",
+              "PC-LIF"
+            ],
+            "top_hits": [
+              "PC-LIF-001",
+              "PC-DET-001",
+              "PC-DOV-002"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "chai patti",
+            "type": "hinglish",
+            "expected": [
+              "GR-TAT",
+              "GR-RED",
+              "GR-TAJ"
+            ],
+            "top_hits": [
+              "GR-BRI-003",
+              "GR-TAT-006",
+              "GR-TAJ-001"
+            ],
+            "rank": 2
+          },
+          {
+            "query": "sarso ka tel",
+            "type": "hinglish",
+            "expected": [
+              "GR-FOR-002"
+            ],
+            "top_hits": [
+              "PC-BAJ-004",
+              "GR-FOR-003",
+              "GR-SUN-001"
+            ],
+            "rank": null
+          },
+          {
+            "query": "doodh powder",
+            "type": "hinglish",
+            "expected": [
+              "GR-NES-001"
+            ],
+            "top_hits": [
+              "GR-NES-001",
+              "GR-AMU-001",
+              "GR-MDH-004"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "daant ka paste",
+            "type": "hinglish",
+            "expected": [
+              "PC-COL",
+              "PC-SEN",
+              "PC-HIM",
+              "GR-PAT-002"
+            ],
+            "top_hits": [
+              "GR-PAT-002",
+              "PC-HIM-004",
+              "PC-COL-001"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "khana pakane ka bartan",
+            "type": "hinglish",
+            "expected": [
+              "HO-PRE",
+              "HO-HAW"
+            ],
+            "top_hits": [],
+            "rank": null
+          },
+          {
+            "query": "juta sports",
+            "type": "hinglish",
+            "expected": [
+              "FA-NIK",
+              "FA-PUM",
+              "FA-SPA",
+              "FA-CAM"
+            ],
+            "top_hits": [
+              "FA-SPA-001",
+              "FA-NIK-003",
+              "FA-PUM-002"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "wireless earbuds with anc",
+            "type": "synonym",
+            "expected": [
+              "EL-1PL-003",
+              "EL-BOA-005",
+              "EL-REL-003",
+              "EL-APP-003"
+            ],
+            "top_hits": [
+              "EL-NOI-002",
+              "EL-BOU-001",
+              "EL-BOA-005"
+            ],
+            "rank": 3
+          },
+          {
+            "query": "gaming laptop rtx",
+            "type": "synonym",
+            "expected": [
+              "EL-LEN-002",
+              "EL-HP-002"
+            ],
+            "top_hits": [
+              "EL-LEN-002",
+              "EL-HP-002",
+              "EL-EVO-001"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "smartwatch bluetooth calling",
+            "type": "synonym",
+            "expected": [
+              "EL-BOA",
+              "EL-NOI",
+              "FA-FAS-001"
+            ],
+            "top_hits": [
+              "EL-FIR-001",
+              "EL-BOA-003",
+              "ELE-0002"
+            ],
+            "rank": 2
+          },
+          {
+            "query": "mustard oil cold pressed",
+            "type": "synonym",
+            "expected": [
+              "GR-FOR-002"
+            ],
+            "top_hits": [
+              "GR-24M-002",
+              "GR-FOR-002",
+              "PC-BAJ-004"
+            ],
+            "rank": 2
+          },
+          {
+            "query": "basmati rice biryani",
+            "type": "synonym",
+            "expected": [
+              "GR-FOR-004",
+              "GR-DAA-002"
+            ],
+            "top_hits": [
+              "GR-FOR-004",
+              "GR-DAA-002",
+              "GR-FOR-005"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "cotton kurta women",
+            "type": "synonym",
+            "expected": [
+              "FA-BIB",
+              "FA-WWO"
+            ],
+            "top_hits": [
+              "FA-BIB-001",
+              "FA-JOC-002",
+              "FAS-0002"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "men formal suit navy",
+            "type": "synonym",
+            "expected": [
+              "FA-PET-003"
+            ],
+            "top_hits": [
+              "FA-PET-001",
+              "FA-BAT-001",
+              "FA-VAN-001"
+            ],
+            "rank": 4
+          },
+          {
+            "query": "non stick kadhai",
+            "type": "synonym",
+            "expected": [
+              "HO-HAW-002",
+              "HO-PRE-003"
+            ],
+            "top_hits": [
+              "HO-HAW-002",
+              "PC-BAJ-004",
+              "HO-BAJ-002"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "hair fall control oil",
+            "type": "synonym",
+            "expected": [
+              "PC-HIM-002",
+              "PC-MAM-001",
+              "PC-PAR-005"
+            ],
+            "top_hits": [
+              "PC-HIM-002",
+              "PC-BAJ-004",
+              "PC-BIO-001"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "anti dandruff shampoo",
+            "type": "synonym",
+            "expected": [
+              "PC-HNS",
+              "PC-TRE"
+            ],
+            "top_hits": [
+              "PC-HNS-001",
+              "PC-HNS-002",
+              "GR-PAT-002"
+            ],
+            "rank": 1
+          }
+        ]
+      },
+      "vector": {
+        "mode": "vector",
+        "total_queries": 30,
+        "recall_at_5": 0.8,
+        "mrr": 0.6861,
+        "details": [
+          {
+            "query": "bluetoth earphones",
+            "type": "typo",
+            "expected": [
+              "EL-BOA",
+              "EL-NOI",
+              "EL-JBL",
+              "EL-1PL"
+            ],
+            "top_hits": [
+              "EL-BOA-006",
+              "ELE-0002",
+              "EL-BOA-004"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "samsng galxy",
+            "type": "typo",
+            "expected": [
+              "EL-SAM"
+            ],
+            "top_hits": [],
+            "rank": null
+          },
+          {
+            "query": "iphon 15",
+            "type": "typo",
+            "expected": [
+              "EL-APP"
+            ],
+            "top_hits": [
+              "EL-APP-001",
+              "EL-APP-002",
+              "PC-HIM-004"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "hedphones",
+            "type": "typo",
+            "expected": [
+              "EL-SON",
+              "EL-JBL",
+              "EL-BOA"
+            ],
+            "top_hits": [],
+            "rank": null
+          },
+          {
+            "query": "ashirvad ata",
+            "type": "typo",
+            "expected": [
+              "GR-AAS"
+            ],
+            "top_hits": [
+              "GR-PAT-002",
+              "GR-TAT-002",
+              "GR-TAT-003"
+            ],
+            "rank": null
+          },
+          {
+            "query": "parle g biskut",
+            "type": "typo",
+            "expected": [
+              "GR-PAR"
+            ],
+            "top_hits": [
+              "GR-PAR-003",
+              "GR-PAR-001",
+              "GR-PAR-002"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "leves jeans",
+            "type": "typo",
+            "expected": [
+              "FA-LEV"
+            ],
+            "top_hits": [
+              "FAS-0006",
+              "FA-LEV-001",
+              "FA-LEV-002"
+            ],
+            "rank": 2
+          },
+          {
+            "query": "himalya neem",
+            "type": "typo",
+            "expected": [
+              "PC-HIM"
+            ],
+            "top_hits": [
+              "PC-HIM-004",
+              "PC-HIM-001"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "prestig cooker",
+            "type": "typo",
+            "expected": [
+              "HO-PRE"
+            ],
+            "top_hits": [
+              "HO-PRE-001",
+              "HO-PRE-004",
+              "HO-PRE-003"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "bata shoes",
+            "type": "typo",
+            "expected": [
+              "FA-BAT"
+            ],
+            "top_hits": [
+              "FA-BAT-001",
+              "FA-BAT-002",
+              "FA-SPA-001"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "sasta atta",
+            "type": "hinglish",
+            "expected": [
+              "GR-AAS"
+            ],
+            "top_hits": [
+              "GR-AAS-002",
+              "GR-AAS-001",
+              "FA-BIB-002"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "sasta phone",
+            "type": "hinglish",
+            "expected": [
+              "EL-SAM-001",
+              "EL-REL",
+              "EL-XIA",
+              "EL-1PL"
+            ],
+            "top_hits": [
+              "EL-BOA-006",
+              "EL-NOI-004",
+              "EL-NOI-005"
+            ],
+            "rank": null
+          },
+          {
+            "query": "kam daam rice",
+            "type": "hinglish",
+            "expected": [
+              "GR-FOR",
+              "GR-DAA"
+            ],
+            "top_hits": [
+              "GR-FOR-005",
+              "GR-DAA-001",
+              "GR-FOR-004"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "nahane ka sabun",
+            "type": "hinglish",
+            "expected": [
+              "PC-DOV",
+              "PC-DET",
+              "PC-LIF"
+            ],
+            "top_hits": [
+              "PC-LIF-001",
+              "PC-DET-001",
+              "PC-DOV-002"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "chai patti",
+            "type": "hinglish",
+            "expected": [
+              "GR-TAT",
+              "GR-RED",
+              "GR-TAJ"
+            ],
+            "top_hits": [
+              "GR-BRI-003",
+              "GR-TAT-006",
+              "GR-TAJ-001"
+            ],
+            "rank": 2
+          },
+          {
+            "query": "sarso ka tel",
+            "type": "hinglish",
+            "expected": [
+              "GR-FOR-002"
+            ],
+            "top_hits": [
+              "PC-BAJ-004",
+              "GR-FOR-003",
+              "GR-SUN-001"
+            ],
+            "rank": null
+          },
+          {
+            "query": "doodh powder",
+            "type": "hinglish",
+            "expected": [
+              "GR-NES-001"
+            ],
+            "top_hits": [
+              "GR-NES-001",
+              "GR-AMU-001",
+              "GR-MDH-004"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "daant ka paste",
+            "type": "hinglish",
+            "expected": [
+              "PC-COL",
+              "PC-SEN",
+              "PC-HIM",
+              "GR-PAT-002"
+            ],
+            "top_hits": [
+              "GR-PAT-002",
+              "PC-HIM-004",
+              "PC-COL-001"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "khana pakane ka bartan",
+            "type": "hinglish",
+            "expected": [
+              "HO-PRE",
+              "HO-HAW"
+            ],
+            "top_hits": [],
+            "rank": null
+          },
+          {
+            "query": "juta sports",
+            "type": "hinglish",
+            "expected": [
+              "FA-NIK",
+              "FA-PUM",
+              "FA-SPA",
+              "FA-CAM"
+            ],
+            "top_hits": [
+              "FA-SPA-001",
+              "FA-NIK-003",
+              "FA-PUM-002"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "wireless earbuds with anc",
+            "type": "synonym",
+            "expected": [
+              "EL-1PL-003",
+              "EL-BOA-005",
+              "EL-REL-003",
+              "EL-APP-003"
+            ],
+            "top_hits": [
+              "EL-NOI-002",
+              "EL-BOU-001",
+              "EL-BOA-005"
+            ],
+            "rank": 3
+          },
+          {
+            "query": "gaming laptop rtx",
+            "type": "synonym",
+            "expected": [
+              "EL-LEN-002",
+              "EL-HP-002"
+            ],
+            "top_hits": [
+              "EL-LEN-002",
+              "EL-HP-002",
+              "EL-EVO-001"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "smartwatch bluetooth calling",
+            "type": "synonym",
+            "expected": [
+              "EL-BOA",
+              "EL-NOI",
+              "FA-FAS-001"
+            ],
+            "top_hits": [
+              "EL-FIR-001",
+              "EL-BOA-003",
+              "ELE-0002"
+            ],
+            "rank": 2
+          },
+          {
+            "query": "mustard oil cold pressed",
+            "type": "synonym",
+            "expected": [
+              "GR-FOR-002"
+            ],
+            "top_hits": [
+              "GR-24M-002",
+              "GR-FOR-002",
+              "PC-BAJ-004"
+            ],
+            "rank": 2
+          },
+          {
+            "query": "basmati rice biryani",
+            "type": "synonym",
+            "expected": [
+              "GR-FOR-004",
+              "GR-DAA-002"
+            ],
+            "top_hits": [
+              "GR-FOR-004",
+              "GR-DAA-002",
+              "GR-FOR-005"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "cotton kurta women",
+            "type": "synonym",
+            "expected": [
+              "FA-BIB",
+              "FA-WWO"
+            ],
+            "top_hits": [
+              "FA-BIB-001",
+              "FA-JOC-002",
+              "FAS-0002"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "men formal suit navy",
+            "type": "synonym",
+            "expected": [
+              "FA-PET-003"
+            ],
+            "top_hits": [
+              "FA-PET-001",
+              "FA-BAT-001",
+              "FA-VAN-001"
+            ],
+            "rank": 4
+          },
+          {
+            "query": "non stick kadhai",
+            "type": "synonym",
+            "expected": [
+              "HO-HAW-002",
+              "HO-PRE-003"
+            ],
+            "top_hits": [
+              "HO-HAW-002",
+              "PC-BAJ-004",
+              "HO-BAJ-002"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "hair fall control oil",
+            "type": "synonym",
+            "expected": [
+              "PC-HIM-002",
+              "PC-MAM-001",
+              "PC-PAR-005"
+            ],
+            "top_hits": [
+              "PC-HIM-002",
+              "PC-BAJ-004",
+              "PC-BIO-001"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "anti dandruff shampoo",
+            "type": "synonym",
+            "expected": [
+              "PC-HNS",
+              "PC-TRE"
+            ],
+            "top_hits": [
+              "PC-HNS-001",
+              "PC-HNS-002",
+              "GR-PAT-002"
+            ],
+            "rank": 1
+          }
+        ]
+      },
+      "hybrid": {
+        "mode": "hybrid",
+        "total_queries": 30,
+        "recall_at_5": 0.8,
+        "mrr": 0.6861,
+        "details": [
+          {
+            "query": "bluetoth earphones",
+            "type": "typo",
+            "expected": [
+              "EL-BOA",
+              "EL-NOI",
+              "EL-JBL",
+              "EL-1PL"
+            ],
+            "top_hits": [
+              "EL-BOA-006",
+              "ELE-0002",
+              "EL-BOA-004"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "samsng galxy",
+            "type": "typo",
+            "expected": [
+              "EL-SAM"
+            ],
+            "top_hits": [],
+            "rank": null
+          },
+          {
+            "query": "iphon 15",
+            "type": "typo",
+            "expected": [
+              "EL-APP"
+            ],
+            "top_hits": [
+              "EL-APP-001",
+              "EL-APP-002",
+              "PC-HIM-004"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "hedphones",
+            "type": "typo",
+            "expected": [
+              "EL-SON",
+              "EL-JBL",
+              "EL-BOA"
+            ],
+            "top_hits": [],
+            "rank": null
+          },
+          {
+            "query": "ashirvad ata",
+            "type": "typo",
+            "expected": [
+              "GR-AAS"
+            ],
+            "top_hits": [
+              "GR-PAT-002",
+              "GR-TAT-002",
+              "GR-TAT-003"
+            ],
+            "rank": null
+          },
+          {
+            "query": "parle g biskut",
+            "type": "typo",
+            "expected": [
+              "GR-PAR"
+            ],
+            "top_hits": [
+              "GR-PAR-003",
+              "GR-PAR-001",
+              "GR-PAR-002"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "leves jeans",
+            "type": "typo",
+            "expected": [
+              "FA-LEV"
+            ],
+            "top_hits": [
+              "FAS-0006",
+              "FA-LEV-001",
+              "FA-LEV-002"
+            ],
+            "rank": 2
+          },
+          {
+            "query": "himalya neem",
+            "type": "typo",
+            "expected": [
+              "PC-HIM"
+            ],
+            "top_hits": [
+              "PC-HIM-004",
+              "PC-HIM-001"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "prestig cooker",
+            "type": "typo",
+            "expected": [
+              "HO-PRE"
+            ],
+            "top_hits": [
+              "HO-PRE-001",
+              "HO-PRE-004",
+              "HO-PRE-003"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "bata shoes",
+            "type": "typo",
+            "expected": [
+              "FA-BAT"
+            ],
+            "top_hits": [
+              "FA-BAT-001",
+              "FA-BAT-002",
+              "FA-SPA-001"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "sasta atta",
+            "type": "hinglish",
+            "expected": [
+              "GR-AAS"
+            ],
+            "top_hits": [
+              "GR-AAS-002",
+              "GR-AAS-001",
+              "FA-BIB-002"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "sasta phone",
+            "type": "hinglish",
+            "expected": [
+              "EL-SAM-001",
+              "EL-REL",
+              "EL-XIA",
+              "EL-1PL"
+            ],
+            "top_hits": [
+              "EL-BOA-006",
+              "EL-NOI-004",
+              "EL-NOI-005"
+            ],
+            "rank": null
+          },
+          {
+            "query": "kam daam rice",
+            "type": "hinglish",
+            "expected": [
+              "GR-FOR",
+              "GR-DAA"
+            ],
+            "top_hits": [
+              "GR-FOR-005",
+              "GR-DAA-001",
+              "GR-FOR-004"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "nahane ka sabun",
+            "type": "hinglish",
+            "expected": [
+              "PC-DOV",
+              "PC-DET",
+              "PC-LIF"
+            ],
+            "top_hits": [
+              "PC-LIF-001",
+              "PC-DET-001",
+              "PC-DOV-002"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "chai patti",
+            "type": "hinglish",
+            "expected": [
+              "GR-TAT",
+              "GR-RED",
+              "GR-TAJ"
+            ],
+            "top_hits": [
+              "GR-BRI-003",
+              "GR-TAT-006",
+              "GR-TAJ-001"
+            ],
+            "rank": 2
+          },
+          {
+            "query": "sarso ka tel",
+            "type": "hinglish",
+            "expected": [
+              "GR-FOR-002"
+            ],
+            "top_hits": [
+              "PC-BAJ-004",
+              "GR-FOR-003",
+              "GR-SUN-001"
+            ],
+            "rank": null
+          },
+          {
+            "query": "doodh powder",
+            "type": "hinglish",
+            "expected": [
+              "GR-NES-001"
+            ],
+            "top_hits": [
+              "GR-NES-001",
+              "GR-AMU-001",
+              "GR-MDH-004"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "daant ka paste",
+            "type": "hinglish",
+            "expected": [
+              "PC-COL",
+              "PC-SEN",
+              "PC-HIM",
+              "GR-PAT-002"
+            ],
+            "top_hits": [
+              "GR-PAT-002",
+              "PC-HIM-004",
+              "PC-COL-001"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "khana pakane ka bartan",
+            "type": "hinglish",
+            "expected": [
+              "HO-PRE",
+              "HO-HAW"
+            ],
+            "top_hits": [],
+            "rank": null
+          },
+          {
+            "query": "juta sports",
+            "type": "hinglish",
+            "expected": [
+              "FA-NIK",
+              "FA-PUM",
+              "FA-SPA",
+              "FA-CAM"
+            ],
+            "top_hits": [
+              "FA-SPA-001",
+              "FA-NIK-003",
+              "FA-PUM-002"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "wireless earbuds with anc",
+            "type": "synonym",
+            "expected": [
+              "EL-1PL-003",
+              "EL-BOA-005",
+              "EL-REL-003",
+              "EL-APP-003"
+            ],
+            "top_hits": [
+              "EL-NOI-002",
+              "EL-BOU-001",
+              "EL-BOA-005"
+            ],
+            "rank": 3
+          },
+          {
+            "query": "gaming laptop rtx",
+            "type": "synonym",
+            "expected": [
+              "EL-LEN-002",
+              "EL-HP-002"
+            ],
+            "top_hits": [
+              "EL-LEN-002",
+              "EL-HP-002",
+              "EL-EVO-001"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "smartwatch bluetooth calling",
+            "type": "synonym",
+            "expected": [
+              "EL-BOA",
+              "EL-NOI",
+              "FA-FAS-001"
+            ],
+            "top_hits": [
+              "EL-FIR-001",
+              "EL-BOA-003",
+              "ELE-0002"
+            ],
+            "rank": 2
+          },
+          {
+            "query": "mustard oil cold pressed",
+            "type": "synonym",
+            "expected": [
+              "GR-FOR-002"
+            ],
+            "top_hits": [
+              "GR-24M-002",
+              "GR-FOR-002",
+              "PC-BAJ-004"
+            ],
+            "rank": 2
+          },
+          {
+            "query": "basmati rice biryani",
+            "type": "synonym",
+            "expected": [
+              "GR-FOR-004",
+              "GR-DAA-002"
+            ],
+            "top_hits": [
+              "GR-FOR-004",
+              "GR-DAA-002",
+              "GR-FOR-005"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "cotton kurta women",
+            "type": "synonym",
+            "expected": [
+              "FA-BIB",
+              "FA-WWO"
+            ],
+            "top_hits": [
+              "FA-BIB-001",
+              "FA-JOC-002",
+              "FAS-0002"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "men formal suit navy",
+            "type": "synonym",
+            "expected": [
+              "FA-PET-003"
+            ],
+            "top_hits": [
+              "FA-PET-001",
+              "FA-BAT-001",
+              "FA-VAN-001"
+            ],
+            "rank": 4
+          },
+          {
+            "query": "non stick kadhai",
+            "type": "synonym",
+            "expected": [
+              "HO-HAW-002",
+              "HO-PRE-003"
+            ],
+            "top_hits": [
+              "HO-HAW-002",
+              "PC-BAJ-004",
+              "HO-BAJ-002"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "hair fall control oil",
+            "type": "synonym",
+            "expected": [
+              "PC-HIM-002",
+              "PC-MAM-001",
+              "PC-PAR-005"
+            ],
+            "top_hits": [
+              "PC-HIM-002",
+              "PC-BAJ-004",
+              "PC-BIO-001"
+            ],
+            "rank": 1
+          },
+          {
+            "query": "anti dandruff shampoo",
+            "type": "synonym",
+            "expected": [
+              "PC-HNS",
+              "PC-TRE"
+            ],
+            "top_hits": [
+              "PC-HNS-001",
+              "PC-HNS-002",
+              "GR-PAT-002"
+            ],
+            "rank": 1
+          }
+        ]
+      }
+    }
+  }
+}

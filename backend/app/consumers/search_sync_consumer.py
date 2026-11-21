@@ -62,7 +62,6 @@ async def handle_inventory_changed(event: Dict[str, Any]):
                     "in_stock": in_stock_flag,
                 }
             },
-            refresh=True,
         )
         logger.info(
             "opensearch_inventory_synced",

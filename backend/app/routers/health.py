@@ -7,17 +7,14 @@ from typing import Any
 from urllib.parse import urlparse
 
 import structlog
-import urllib3
 from aiokafka import AIOKafkaProducer
 from fastapi import APIRouter
-from opensearchpy import OpenSearch
 from sqlalchemy import text
 
 from app.config import settings
 from app.database import engine
 from app.kafka_utils import kafka_common_config
-
-urllib3.disable_warnings()
+from app.opensearch_client import get_opensearch_client
 
 router = APIRouter(tags=["health"])
 logger = structlog.stdlib.get_logger(__name__)
@@ -49,11 +46,7 @@ async def _check_kafka() -> str:
 def _check_opensearch_sync() -> str:
     """Ping the OpenSearch cluster synchronously."""
     try:
-        client = OpenSearch(
-            settings.opensearch_url,
-            verify_certs=False,
-            ssl_show_warn=False,
-        )
+        client = get_opensearch_client()
         client.info()
         return "ok"
     except Exception as exc:
