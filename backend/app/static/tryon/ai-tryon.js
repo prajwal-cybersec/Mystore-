@@ -35,7 +35,12 @@ function parseAttrs(p) {
 }
 
 export function isAiTryonEligible(p) {
-  return !!p && /fashion/i.test(p.category || '');
+  if (!p) return false;
+  const cat = (p.category || '').toLowerCase();
+  const name = (p.name || '').toLowerCase();
+  return /fashion|beauty/i.test(cat) || 
+         /headphone|headset|earphone|earbuds|rockerz|lipstick|blush|rouge/i.test(name) || 
+         Boolean(p.tryon_supported);
 }
 
 /**
@@ -60,12 +65,24 @@ function buildPrompt(p) {
     action = 'Substitute the footwear with';
   } else if (/\bcap\b|\bhat\b|beanie/.test(hay)) {
     action = 'Substitute the hat with';
+  } else if (/headphone|headset|earphone|earbuds|rockerz/.test(hay)) {
+    action = 'Wear the over-ear headphones on the head and ears';
+  } else if (/lipstick|lip color|lip tint|lip gloss/.test(hay)) {
+    action = 'Apply the lipstick shade to the lips';
+  } else if (/blush|powder blush|rouge/.test(hay)) {
+    action = 'Apply the blush makeup shade to the cheeks';
   } else {
     action = 'Substitute the upper body garment with';
   }
 
   const desc = (p.description || '').trim();
-  let prompt = `${action} ${name}${desc ? `. ${desc}` : ''}. Match the garment shown in the reference image exactly.`;
+  let matchTarget = 'the garment';
+  if (/headphone|headset|earphone|rockerz/.test(hay)) {
+    matchTarget = 'the headphones';
+  } else if (/lipstick|lip color|blush|rouge/.test(hay)) {
+    matchTarget = 'the cosmetics product';
+  }
+  let prompt = `${action} ${name}${desc ? `. ${desc}` : ''}. Match ${matchTarget} shown in the reference image exactly.`;
   // Decart prompts have a length cap (~750 chars). Stay well under it.
   if (prompt.length > 600) prompt = prompt.slice(0, 597) + '...';
   return prompt;
@@ -141,7 +158,7 @@ function ensureModal() {
       <div id="aiConsent" class="max-w-md text-center space-y-4 p-4">
         <div class="text-3xl">✨</div>
         <h4 class="font-extrabold text-lg">See it on you, realistically</h4>
-        <p class="text-sm text-gray-300">AI try-on re-draws the clothing on your live camera feed, so sarees, kurtas and dresses drape the way they would on you.</p>
+        <p class="text-sm text-gray-300">AI try-on realistically renders the product on your live camera feed so you can see how it looks on you in real time.</p>
         <p class="text-xs text-amber-300/90 bg-amber-400/10 border border-amber-400/20 rounded-xl p-3">
           Unlike our on-device overlay try-on, your camera video is streamed to our AI partner (Decart) to generate this view. We do not store it.
           Sessions end automatically after <span id="aiConsentSecs">2 minutes</span>.
@@ -260,7 +277,7 @@ function paintProduct(p) {
 // ───────────────────────── session ─────────────────────────
 
 export async function startAiTryon(product) {
-  if (!isAiTryonEligible(product)) { alert('AI try-on is available for Fashion items.'); return; }
+  if (!isAiTryonEligible(product)) { alert('AI try-on is not available for this item.'); return; }
   active = product;
   ensureModal();
   modalEl.classList.remove('hidden');

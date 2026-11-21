@@ -765,7 +765,7 @@
               <span class="absolute top-2 left-2 bg-gray-900/80 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-0.5 rounded">
                 ${p.brand}
               </span>
-              ${/fashion/i.test(p.category || '') ? `
+              ${(/fashion|beauty/i.test(p.category || '') || /headphone|earphone|lipstick|blush/i.test(p.name || '') || p.tryon_supported) ? `
                 <div class="absolute top-2 right-2 z-10">
                   <button 
                     onclick='event.stopPropagation(); startAiTryon(${JSON.stringify(p).replace(/'/g, "&#39;")})'
@@ -1042,7 +1042,7 @@
           <div class="lg:w-2/5 flex-shrink-0">
             <div class="bg-gray-50 rounded-2xl overflow-hidden border border-gray-100 aspect-square flex items-center justify-center relative group">
               <img id="pdmMainImage" src="${p.image_url}" alt="${p.name}" class="w-full h-full object-contain p-4 transition-transform duration-500 group-hover:scale-110" />
-              ${/fashion/i.test(p.category || '') ? `
+              ${(/fashion|beauty/i.test(p.category || '') || /headphone|earphone|lipstick|blush/i.test(p.name || '') || p.tryon_supported) ? `
                 <div class="absolute bottom-3 left-3 right-3">
                   <button onclick="event.stopPropagation(); startAiTryon(currentDetailProduct)" class="w-full py-2.5 bg-gradient-to-r from-fuchsia-600 to-orange-500 hover:opacity-95 text-white rounded-xl text-xs font-bold shadow-lg shadow-orange-500/20 transition flex items-center justify-center gap-2">
                     <i class="fa-solid fa-wand-magic-sparkles"></i> AI Realistic Try-On
