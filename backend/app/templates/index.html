@@ -393,6 +393,12 @@
       <span id="tryonGuidanceText">Position yourself in front of the camera</span>
     </div>
 
+    <!-- Recording Indicator Badge -->
+    <div id="tryonRecordingBadge" class="hidden absolute top-20 right-4 z-40 bg-red-600 text-white text-xs px-3.5 py-1.5 rounded-full flex items-center gap-2 shadow-xl animate-pulse font-mono font-bold border border-white/30">
+      <span class="w-2 h-2 rounded-full bg-white animate-ping"></span>
+      <span id="tryonRecordTimer">REC 00:05</span>
+    </div>
+
     <!-- Camera / Viewport Container -->
     <div class="relative w-full h-full max-w-4xl max-h-[82vh] flex items-center justify-center overflow-hidden rounded-2xl">
       <!-- Loading / Permission State -->
@@ -477,14 +483,19 @@
         <!-- Injected dynamically -->
       </div>
 
-      <div class="flex items-center gap-3">
+      <div class="flex items-center gap-2.5 flex-wrap justify-center">
         <!-- Capture Snapshot Button -->
-        <button onclick="captureTryonPhoto()" class="px-4 py-2.5 bg-white/15 hover:bg-white/25 text-white rounded-xl text-xs font-bold backdrop-blur-md transition flex items-center gap-2 border border-white/20 shadow-md">
-          <i class="fa-solid fa-camera"></i> Capture Photo
+        <button onclick="captureTryonPhoto()" class="px-3.5 py-2.5 bg-white/15 hover:bg-white/25 text-white rounded-xl text-xs font-bold backdrop-blur-md transition flex items-center gap-2 border border-white/20 shadow-md">
+          <i class="fa-solid fa-camera"></i> <span>Photo</span>
+        </button>
+        <!-- Record 3D Live Clip Button -->
+        <button id="tryonRecordBtn" onclick="toggleTryonRecording()" class="px-4 py-2.5 bg-red-600/90 hover:bg-red-600 text-white rounded-xl text-xs font-bold backdrop-blur-md transition flex items-center gap-2 border border-red-400/40 shadow-lg shadow-red-600/25">
+          <span id="recordStatusDot" class="w-2.5 h-2.5 rounded-full bg-white animate-pulse"></span>
+          <span id="recordBtnText">Record 3D Clip</span>
         </button>
         <!-- Add to Cart Directly -->
-        <button onclick="addTryonProductToCart()" class="px-5 py-2.5 bg-orange-600 hover:bg-orange-700 text-white rounded-xl text-xs font-bold transition shadow-lg shadow-orange-600/30 flex items-center gap-2">
-          <i class="fa-solid fa-cart-plus"></i> Add to Cart
+        <button onclick="addTryonProductToCart()" class="px-4 py-2.5 bg-orange-600 hover:bg-orange-700 text-white rounded-xl text-xs font-bold transition shadow-lg shadow-orange-600/30 flex items-center gap-2">
+          <i class="fa-solid fa-cart-plus"></i> <span>Add to Cart</span>
         </button>
       </div>
 
@@ -492,6 +503,42 @@
       <div class="text-[11px] text-gray-400 flex items-center gap-1.5">
         <i class="fa-solid fa-shield-halved text-emerald-400"></i>
         <span>Your camera feed stays on your device — never uploaded or stored.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3D RECORDING PREVIEW & DOWNLOAD MODAL -->
+  <div id="videoPreviewModal" class="hidden fixed inset-0 bg-black/90 z-60 flex flex-col items-center justify-center p-4">
+    <div class="bg-gray-900 border border-white/20 rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl animate-in zoom-in-95">
+      <!-- Header -->
+      <div class="p-4 bg-gray-800/80 border-b border-gray-700 flex items-center justify-between text-white">
+        <div class="flex items-center gap-2 font-bold text-sm">
+          <i class="fa-solid fa-circle-play text-red-500"></i>
+          <span>Your 3D Try-On Video Clip</span>
+        </div>
+        <button onclick="closeVideoPreview()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Video Player -->
+      <div class="relative aspect-video bg-black flex items-center justify-center overflow-hidden">
+        <video id="tryonRecordedVideo" autoplay loop playsinline controls class="w-full h-full object-contain"></video>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="p-4 bg-gray-900 flex flex-wrap items-center justify-between gap-2 border-t border-gray-800">
+        <button onclick="closeVideoPreview()" class="px-4 py-2.5 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-xl text-xs font-semibold transition">
+          <i class="fa-solid fa-rotate-left mr-1"></i> Retake
+        </button>
+        <div class="flex items-center gap-2">
+          <a id="downloadVideoBtn" href="#" download="MyStore_3D_TryOn.webm" class="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-md">
+            <i class="fa-solid fa-download"></i> Save Video
+          </a>
+          <button onclick="addTryonProductToCart(); closeVideoPreview();" class="px-4 py-2.5 bg-orange-600 hover:bg-orange-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-md">
+            <i class="fa-solid fa-cart-plus"></i> Add to Cart
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -1349,7 +1396,9 @@
       'lipstick': 'Align your face and lips within frame for virtual shade preview',
       'blush': 'Position your face in natural light for soft cheek tint preview',
       'watch': 'Hold the back of your wrist in front of the camera',
-      'glasses': 'Center your face and eye level with the camera'
+      'glasses': 'Center your face and eye level with the camera',
+      'handheld_device': 'Stay in frame — the device appears beside you for size reference',
+      'room_ar': 'Point camera at the wall or space where you want to place the product'
     };
 
     // Default variant color palettes
@@ -1724,6 +1773,10 @@
         renderLipstickOverlay(tryonCtx, vw, vh, smoothedLandmarks);
       } else if (type === 'blush') {
         renderBlushOverlay(tryonCtx, vw, vh, smoothedLandmarks);
+      } else if (type === 'handheld_device') {
+        renderHandheldOverlay(tryonCtx, vw, vh, smoothedLandmarks);
+      } else if (type === 'room_ar') {
+        renderRoomArOverlay(tryonCtx, vw, vh, smoothedLandmarks);
       }
 
       // Render debug landmarks if enabled in dev panel
@@ -1744,18 +1797,21 @@
 
       if (type === 'shirt' || type === 'tshirt') {
         const lm = new Array(33).fill(null).map(() => ({ x: cx, y: cy, z: 0 }));
-        const shY = cy + hh * 0.72;
-        const shSpread = hw * 1.35;
+        // Shoulders sit at the bottom edge of the detected head region
+        const shY = cy + hh * 0.55;
+        const shSpread = hw * 1.50;
         lm[11] = { x: cx - shSpread, y: shY, z: 0 }; // Left shoulder
         lm[12] = { x: cx + shSpread, y: shY, z: 0 }; // Right shoulder
-        lm[23] = { x: cx - shSpread * 0.75, y: shY + hh * 1.5, z: 0 }; // Left hip
-        lm[24] = { x: cx + shSpread * 0.75, y: shY + hh * 1.5, z: 0 }; // Right hip
+        lm[23] = { x: cx - shSpread * 0.80, y: shY + hh * 1.8, z: 0 }; // Left hip
+        lm[24] = { x: cx + shSpread * 0.80, y: shY + hh * 1.8, z: 0 }; // Right hip
         return lm;
       } else {
         const lm = new Array(478).fill(null).map(() => ({ x: cx, y: cy, z: 0 }));
-        lm[10] = { x: cx, y: cy - hh * 0.52, z: 0 }; // Head top crown
-        lm[234] = { x: cx - hw * 0.55, y: cy, z: 0 }; // Left ear
-        lm[454] = { x: cx + hw * 0.55, y: cy, z: 0 }; // Right ear
+        // Ears are at eye/temple level, NOT at the skin centroid (nose level)
+        const earY = cy - hh * 0.20;
+        lm[10] = { x: cx, y: cy - hh * 0.68, z: 0 };  // Head top crown (well above forehead)
+        lm[234] = { x: cx - hw * 0.80, y: earY, z: 0 }; // Left ear (wider)
+        lm[454] = { x: cx + hw * 0.80, y: earY, z: 0 }; // Right ear (wider)
         lm[1] = { x: cx, y: cy + hh * 0.08, z: 0 };   // Nose tip
         lm[168] = { x: cx, y: cy - hh * 0.05, z: 0 }; // Nose bridge
         lm[116] = { x: cx - hw * 0.32, y: cy + hh * 0.12, z: 0 }; // Left cheek
@@ -1782,13 +1838,9 @@
       if (!tryonAssetImg || !tryonAssetImg.complete) return;
       const shL = lm[11] || { x: 0.32, y: 0.45 };
       const shR = lm[12] || { x: 0.68, y: 0.45 };
-      const hipL = lm[23] || { x: shL.x, y: shL.y + 0.38, z: 0 };
-      const hipR = lm[24] || { x: shR.x, y: shR.y + 0.38, z: 0 };
 
       const pShL = { x: shL.x * vw, y: shL.y * vh };
       const pShR = { x: shR.x * vw, y: shR.y * vh };
-      const pHipL = { x: hipL.x * vw, y: hipL.y * vh };
-      const pHipR = { x: hipR.x * vw, y: hipR.y * vh };
 
       // Distance and angles
       const shDist = Math.hypot(pShR.x - pShL.x, pShR.y - pShL.y);
@@ -1803,13 +1855,16 @@
       }
       if (fadeOpacity <= 0.02) return;
 
-      const drawW = shDist * 1.50 * calConfig.scale * calConfig.scaleX * turnFactor;
+      // Width: 1.68× shoulder distance covers shoulders + upper arms naturally
+      const drawW = shDist * 1.68 * calConfig.scale * calConfig.scaleX * turnFactor;
       const assetRatio = (tryonAssetImg.naturalHeight || tryonAssetImg.height) / (tryonAssetImg.naturalWidth || tryonAssetImg.width) || 1.18;
       const drawH = drawW * assetRatio * calConfig.scaleY;
 
-      // Collar sits near the shoulder line, body extends down
+      // Collar anchor: the top ~15% of the garment image is collar/neckline.
+      // Place the center of the image so the collar lands at shoulder level.
+      // midY = shoulder midpoint + 35% of drawH pushes the collar up to neck base.
       const midX = (pShL.x + pShR.x) / 2 + calConfig.offsetX;
-      const midY = (pShL.y + pShR.y) / 2 + (drawH * 0.44) + calConfig.offsetY;
+      const midY = (pShL.y + pShR.y) / 2 + (drawH * 0.35) + calConfig.offsetY;
 
       ctx.save();
       ctx.translate(midX, midY);
@@ -1838,17 +1893,21 @@
       // Head tilt angle in radians
       const headAngle = Math.atan2(pEarR.y - pEarL.y, pEarR.x - pEarL.x);
 
-      // Over-ear headphones span across both earcups (~1.38x the inter-ear distance)
-      const drawW = earDist * 1.38 * calConfig.scale * calConfig.scaleX;
+      // Over-ear headphones: earcups span 1.75× the inter-ear distance
+      // so the cushions sit OVER the outer ears, not inside them
+      const drawW = earDist * 1.75 * calConfig.scale * calConfig.scaleX;
       const assetRatio = (tryonAssetImg.naturalHeight || tryonAssetImg.height) / (tryonAssetImg.naturalWidth || tryonAssetImg.width) || 1.135;
       const drawH = drawW * assetRatio * calConfig.scaleY;
 
       const earCenterY = (pEarL.y + pEarR.y) / 2;
       const earCenterX = (pEarL.x + pEarR.x) / 2;
 
-      // Vertical anchor: Earcups are in lower 68% of the image, headband arches over headTop
+      // Vertical anchor: lift the headphone image up so the headband
+      // arches above the crown and earcups align with the ear landmarks.
+      // The ear cushions sit at ~65% from the top of the headphone image.
+      // So we offset by -0.32 * drawH to shift the image upward.
       const midX = earCenterX + calConfig.offsetX;
-      const midY = earCenterY - (drawH * 0.18) + calConfig.offsetY;
+      const midY = earCenterY - (drawH * 0.32) + calConfig.offsetY;
 
       // Subtle yaw perspective shift when head rotates
       const yawOffset = (pNose.x - earCenterX) * 0.12;
@@ -2006,6 +2065,8 @@
 
     // Teardown and close
     function closeLiveTryon() {
+      // Stop recording if active
+      if (isTryonRecording) stopTryonRecording();
       if (tryonAnimId) {
         cancelAnimationFrame(tryonAnimId);
         tryonAnimId = null;
@@ -2029,6 +2090,182 @@
       setCity('Bengaluru');
       initDevCalibrateUI();
     });
+
+    // Overlay 5: Handheld Device (iPhone, etc.) - floating near user's hand region
+    function renderHandheldOverlay(ctx, vw, vh, lm) {
+      if (!tryonAssetImg || !tryonAssetImg.complete) return;
+      // Position the device near the lower-right of the frame with a gentle bob
+      const t = performance.now() / 1000;
+      const bobY = Math.sin(t * 1.5) * 8;
+      const bobRot = Math.sin(t * 0.8) * 0.03;
+
+      const drawH = vh * 0.45 * calConfig.scale * calConfig.scaleY;
+      const assetRatio = (tryonAssetImg.naturalWidth || tryonAssetImg.width) / (tryonAssetImg.naturalHeight || tryonAssetImg.height) || 0.806;
+      const drawW = drawH * assetRatio * calConfig.scaleX;
+
+      const cx = vw * 0.72 + calConfig.offsetX;
+      const cy = vh * 0.52 + bobY + calConfig.offsetY;
+
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(bobRot + (calConfig.rotation * Math.PI) / 180);
+      ctx.globalAlpha = calConfig.opacity * 0.92;
+      // Subtle drop shadow
+      ctx.shadowColor = 'rgba(0,0,0,0.35)';
+      ctx.shadowBlur = 18;
+      ctx.shadowOffsetY = 6;
+      ctx.drawImage(tryonAssetImg, -drawW / 2, -drawH / 2, drawW, drawH);
+      ctx.restore();
+    }
+
+    // Overlay 6: Room AR (TV, Appliance) - positioned on the wall behind user
+    function renderRoomArOverlay(ctx, vw, vh, lm) {
+      if (!tryonAssetImg || !tryonAssetImg.complete) return;
+      const drawW = vw * 0.40 * calConfig.scale * calConfig.scaleX;
+      const assetRatio = (tryonAssetImg.naturalHeight || tryonAssetImg.height) / (tryonAssetImg.naturalWidth || tryonAssetImg.width) || 0.666;
+      const drawH = drawW * assetRatio * calConfig.scaleY;
+
+      const cx = vw * 0.50 + calConfig.offsetX;
+      const cy = vh * 0.22 + calConfig.offsetY;
+
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate((calConfig.rotation * Math.PI) / 180);
+      ctx.globalAlpha = calConfig.opacity * 0.85;
+      ctx.shadowColor = 'rgba(0,0,0,0.25)';
+      ctx.shadowBlur = 20;
+      ctx.shadowOffsetY = 4;
+      ctx.drawImage(tryonAssetImg, -drawW / 2, -drawH / 2, drawW, drawH);
+      ctx.restore();
+    }
+
+    // ─── 3D LIVE VIDEO CLIP RECORDING ──────────────────────────────────
+    let tryonMediaRecorder = null;
+    let tryonRecordedChunks = [];
+    let tryonRecordingTimer = null;
+    let tryonRecordStartTime = 0;
+    let isTryonRecording = false;
+
+    function toggleTryonRecording() {
+      if (isTryonRecording) {
+        stopTryonRecording();
+      } else {
+        startTryonRecording();
+      }
+    }
+
+    function startTryonRecording() {
+      if (!tryonVideoEl || !tryonCanvasEl) return;
+      isTryonRecording = true;
+      tryonRecordedChunks = [];
+
+      // Create an offscreen composite canvas (un-mirrored for natural playback)
+      const compCanvas = document.createElement('canvas');
+      const vw = tryonVideoEl.videoWidth || 640;
+      const vh = tryonVideoEl.videoHeight || 480;
+      compCanvas.width = vw;
+      compCanvas.height = vh;
+      const compCtx = compCanvas.getContext('2d');
+
+      // Composite render loop for recording
+      let recAnimId = null;
+      function drawComposite() {
+        if (!isTryonRecording) return;
+        compCtx.clearRect(0, 0, vw, vh);
+        // Mirror the video feed for natural orientation
+        compCtx.save();
+        compCtx.scale(-1, 1);
+        compCtx.drawImage(tryonVideoEl, -vw, 0, vw, vh);
+        compCtx.restore();
+        // Overlay the tryon canvas (mirrored to match)
+        compCtx.save();
+        compCtx.scale(-1, 1);
+        compCtx.drawImage(tryonCanvasEl, -vw, 0, vw, vh);
+        compCtx.restore();
+        recAnimId = requestAnimationFrame(drawComposite);
+      }
+      drawComposite();
+
+      // Capture stream from composite canvas
+      const stream = compCanvas.captureStream(30);
+      const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
+        ? 'video/webm;codecs=vp9'
+        : 'video/webm';
+      tryonMediaRecorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 4000000 });
+
+      tryonMediaRecorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) tryonRecordedChunks.push(e.data);
+      };
+
+      tryonMediaRecorder.onstop = () => {
+        if (recAnimId) cancelAnimationFrame(recAnimId);
+        const blob = new Blob(tryonRecordedChunks, { type: mimeType });
+        const url = URL.createObjectURL(blob);
+        const videoPreview = document.getElementById('tryonRecordedVideo');
+        videoPreview.src = url;
+        const dlBtn = document.getElementById('downloadVideoBtn');
+        dlBtn.href = url;
+        dlBtn.download = `MyStore_3D_TryOn_${tryonActiveProduct ? tryonActiveProduct.sku : 'clip'}.webm`;
+        document.getElementById('videoPreviewModal').classList.remove('hidden');
+      };
+
+      tryonMediaRecorder.start(100);
+
+      // Update UI
+      const badge = document.getElementById('tryonRecordingBadge');
+      badge.classList.remove('hidden');
+      const btn = document.getElementById('tryonRecordBtn');
+      btn.classList.remove('bg-red-600/90', 'hover:bg-red-600');
+      btn.classList.add('bg-white/20', 'hover:bg-white/30');
+      document.getElementById('recordBtnText').textContent = 'Stop';
+      document.getElementById('recordStatusDot').classList.add('bg-red-500');
+      document.getElementById('recordStatusDot').classList.remove('bg-white');
+
+      // Auto-countdown from 6 seconds
+      tryonRecordStartTime = Date.now();
+      const maxDuration = 6000;
+      tryonRecordingTimer = setInterval(() => {
+        const elapsed = Date.now() - tryonRecordStartTime;
+        const remaining = Math.max(0, Math.ceil((maxDuration - elapsed) / 1000));
+        const secs = String(Math.min(6, Math.floor(elapsed / 1000))).padStart(2, '0');
+        document.getElementById('tryonRecordTimer').textContent = `REC 00:0${secs}`;
+        if (elapsed >= maxDuration) {
+          stopTryonRecording();
+        }
+      }, 200);
+
+      emitTryonEvent('tryon_recording_started');
+    }
+
+    function stopTryonRecording() {
+      isTryonRecording = false;
+      if (tryonRecordingTimer) {
+        clearInterval(tryonRecordingTimer);
+        tryonRecordingTimer = null;
+      }
+      if (tryonMediaRecorder && tryonMediaRecorder.state !== 'inactive') {
+        tryonMediaRecorder.stop();
+      }
+      // Reset UI
+      const badge = document.getElementById('tryonRecordingBadge');
+      badge.classList.add('hidden');
+      const btn = document.getElementById('tryonRecordBtn');
+      btn.classList.add('bg-red-600/90', 'hover:bg-red-600');
+      btn.classList.remove('bg-white/20', 'hover:bg-white/30');
+      document.getElementById('recordBtnText').textContent = 'Record 3D Clip';
+      document.getElementById('recordStatusDot').classList.remove('bg-red-500');
+      document.getElementById('recordStatusDot').classList.add('bg-white');
+    }
+
+    function closeVideoPreview() {
+      const modal = document.getElementById('videoPreviewModal');
+      modal.classList.add('hidden');
+      const videoEl = document.getElementById('tryonRecordedVideo');
+      if (videoEl.src) {
+        URL.revokeObjectURL(videoEl.src);
+        videoEl.src = '';
+      }
+    }
   </script>
 </body>
 </html>
