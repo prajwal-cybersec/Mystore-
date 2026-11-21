@@ -307,8 +307,8 @@ async def _pg_fallback_search(
     if price_intent and max_price is None:
         max_price = float(price_intent)
 
-    # Detect budget intent from words like "cheap", "sasta", "saste"
-    low_cost_intent = bool(re.search(r"\b(cheap|sasta|saste|budget|kam daam|low price)\b", (raw_query + " " + effective_text).lower()))
+    # Detect budget intent from normalizer (covers Hindi + Hinglish)
+    low_cost_intent = normalized.get("low_cost_intent", False)
     if low_cost_intent and not sort:
         sort = "price_asc"
 
@@ -332,40 +332,68 @@ async def _pg_fallback_search(
         where_clauses.append("p.price_inr <= :max_price")
         params["max_price"] = max_price
 
-    # Stopwords to exclude from strict keyword filters
-    stopwords = {"cheap", "sasta", "saste", "sasti", "wala", "wali", "wale", "me", "mein", "ka", "ki", "ke", "best", "quality", "low", "price", "budget"}
-    all_query_words = set(raw_query.lower().split() + effective_text.lower().split())
-    search_tokens = [w for w in all_query_words if w not in stopwords and len(w) > 1]
+    search_tokens = normalized.get("tokens") or [w for w in effective_text.lower().split() if len(w) > 1]
+
+    rel_clauses = []
+    count_clauses = []
+    token_filter_clauses = []
 
     if search_tokens:
-        token_clauses = []
         for idx, token in enumerate(search_tokens):
-            param_name = f"token_{idx}"
-            token_clauses.append(f"""
-                (p.name ILIKE :{param_name} 
-                 OR p.brand ILIKE :{param_name} 
-                 OR p.category ILIKE :{param_name} 
-                 OR p.description ILIKE :{param_name})
+            p_name = f"tok_{idx}"
+            params[p_name] = f"%{token}%"
+            extra_mobiles = "OR p.category ILIKE '%mobiles%'" if token in ("phone", "mobile") else ""
+
+            rel_clauses.append(f"""
+                (CASE WHEN p.brand ILIKE :{p_name} THEN 15 ELSE 0 END +
+                 CASE WHEN p.attrs->>'subcategory' ILIKE :{p_name} THEN 12 ELSE 0 END +
+                 CASE WHEN p.name ILIKE :{p_name} THEN 10 ELSE 0 END +
+                 CASE WHEN (p.category ILIKE :{p_name} {extra_mobiles}) THEN 8 ELSE 0 END +
+                 CASE WHEN p.description ILIKE :{p_name} THEN 3 ELSE 0 END)
             """)
-            params[param_name] = f"%{token}%"
-        where_clauses.append("(" + " OR ".join(token_clauses) + ")")
+
+            count_clauses.append(f"""
+                (CASE WHEN (p.name ILIKE :{p_name} 
+                            OR p.brand ILIKE :{p_name} 
+                            OR p.category ILIKE :{p_name} 
+                            {extra_mobiles}
+                            OR p.attrs->>'subcategory' ILIKE :{p_name} 
+                            OR p.description ILIKE :{p_name}) 
+                      THEN 1 ELSE 0 END)
+            """)
+
+            token_filter_clauses.append(f"""
+                (p.name ILIKE :{p_name} 
+                 OR p.brand ILIKE :{p_name} 
+                 OR p.category ILIKE :{p_name} 
+                 {extra_mobiles}
+                 OR p.attrs->>'subcategory' ILIKE :{p_name} 
+                 OR p.description ILIKE :{p_name})
+            """)
+
+        where_clauses.append("(" + " OR ".join(token_filter_clauses) + ")")
+        rel_expr = " + ".join(rel_clauses)
+        match_count_expr = " + ".join(count_clauses)
+    else:
+        rel_expr = "0"
+        match_count_expr = "0"
 
     if in_stock_only and city:
         where_clauses.append("COALESCE(cur_city.qty, 0) > 0")
 
     # Order priority
-    matched_order = "CASE WHEN city_qty > 0 THEN 0 ELSE 1 END, created_at ASC"
-    outer_order = "CASE WHEN city_qty > 0 THEN 0 ELSE 1 END, created_at ASC"
     if sort == "price_asc":
-        matched_order = "price_inr ASC"
-        outer_order = "price_inr ASC"
+        matched_order = "match_count DESC, price_inr ASC, rel_score DESC"
+        outer_order = "match_count DESC, price_inr ASC, rel_score DESC"
     elif sort == "price_desc":
-        matched_order = "price_inr DESC"
-        outer_order = "price_inr DESC"
+        matched_order = "match_count DESC, price_inr DESC, rel_score DESC"
+        outer_order = "match_count DESC, price_inr DESC, rel_score DESC"
     elif search_tokens:
-        matched_order = "CASE WHEN name ILIKE :first_token THEN 0 WHEN brand ILIKE :first_token THEN 1 ELSE 2 END, price_inr ASC"
-        outer_order = "CASE WHEN name ILIKE :first_token THEN 0 WHEN brand ILIKE :first_token THEN 1 ELSE 2 END, price_inr ASC"
-        params["first_token"] = f"%{search_tokens[0]}%"
+        matched_order = "match_count DESC, rel_score DESC, CASE WHEN city_qty > 0 THEN 0 ELSE 1 END, price_inr ASC"
+        outer_order = "match_count DESC, rel_score DESC, CASE WHEN city_qty > 0 THEN 0 ELSE 1 END, price_inr ASC"
+    else:
+        matched_order = "CASE WHEN city_qty > 0 THEN 0 ELSE 1 END, created_at ASC"
+        outer_order = "CASE WHEN city_qty > 0 THEN 0 ELSE 1 END, created_at ASC"
 
     where_sql = " AND ".join(where_clauses)
 
@@ -374,7 +402,9 @@ async def _pg_fallback_search(
             SELECT 
                 p.id, p.sku, p.name, p.brand, p.category, p.description, 
                 p.price_inr, p.image_url, p.attrs, p.created_at,
-                COALESCE(cur_city.qty, 0) as city_qty
+                COALESCE(cur_city.qty, 0) as city_qty,
+                ({rel_expr}) as rel_score,
+                ({match_count_expr}) as match_count
             FROM products p
             LEFT JOIN store_stock cur_city ON cur_city.product_id = p.id AND cur_city.city = :city_param
             WHERE {where_sql}
@@ -400,7 +430,8 @@ async def _pg_fallback_search(
         FROM paged_products pp
         LEFT JOIN store_stock ss ON ss.product_id = pp.id
         GROUP BY pp.id, pp.sku, pp.name, pp.brand, pp.category, pp.description, 
-                 pp.price_inr, pp.image_url, pp.attrs, pp.created_at, pp.city_qty, full_total
+                 pp.price_inr, pp.image_url, pp.attrs, pp.created_at, pp.city_qty, 
+                 pp.rel_score, pp.match_count, full_total
         ORDER BY {outer_order}
     """
     params["city_param"] = city or "Bengaluru"
