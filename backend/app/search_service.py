@@ -402,6 +402,7 @@ async def _pg_fallback_search(
             SELECT 
                 p.id, p.sku, p.name, p.brand, p.category, p.description, 
                 p.price_inr, p.image_url, p.attrs, p.created_at,
+                p.tryon_supported, p.tryon_type, p.tryon_asset, p.tryon_config,
                 COALESCE(cur_city.qty, 0) as city_qty,
                 ({rel_expr}) as rel_score,
                 ({match_count_expr}) as match_count
@@ -431,6 +432,7 @@ async def _pg_fallback_search(
         LEFT JOIN store_stock ss ON ss.product_id = pp.id
         GROUP BY pp.id, pp.sku, pp.name, pp.brand, pp.category, pp.description, 
                  pp.price_inr, pp.image_url, pp.attrs, pp.created_at, pp.city_qty, 
+                 pp.tryon_supported, pp.tryon_type, pp.tryon_asset, pp.tryon_config,
                  pp.rel_score, pp.match_count, full_total
         ORDER BY {outer_order}
     """
@@ -472,6 +474,10 @@ async def _pg_fallback_search(
                 "price_inr": float(r.price_inr),
                 "image_url": r.image_url,
                 "attrs": attrs or {},
+                "tryon_supported": bool(r.tryon_supported),
+                "tryon_type": r.tryon_type,
+                "tryon_asset": r.tryon_asset,
+                "tryon_config": r.tryon_config or {},
                 "in_stock": cur_city_in_stock if city else (total_qty > 0),
                 "total_stock": total_qty,
                 "city_stock": city_stock_list,

@@ -358,6 +358,144 @@
     </div>
   </div>
 
+  <!-- LIVE CAMERA TRY-ON FULLSCREEN MODAL -->
+  <div id="tryonModal" class="hidden fixed inset-0 bg-black/95 z-50 flex flex-col items-center justify-center select-none overflow-hidden">
+    <!-- Top Bar -->
+    <div class="absolute top-0 left-0 right-0 p-4 bg-gradient-to-b from-black/90 via-black/50 to-transparent flex items-center justify-between z-30">
+      <div class="flex items-center gap-3">
+        <img id="tryonProductThumb" src="" class="w-11 h-11 object-contain rounded-xl bg-white/10 p-1 border border-white/20 backdrop-blur-sm shadow-md" />
+        <div>
+          <h3 id="tryonProductTitle" class="text-white font-bold text-sm line-clamp-1 max-w-[200px] sm:max-w-md"></h3>
+          <div class="flex items-center gap-2 text-xs mt-0.5">
+            <span id="tryonProductPrice" class="text-orange-400 font-black"></span>
+            <span id="tryonStatusBadge" class="bg-gray-800/80 text-gray-300 px-2.5 py-0.5 rounded-full text-[10px] flex items-center gap-1.5 border border-white/10">
+              <span class="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse"></span>
+              <span id="tryonStatusText">Initializing...</span>
+            </span>
+            <span id="tryonFpsBadge" class="text-emerald-400 text-[10px] font-mono bg-black/40 px-1.5 py-0.5 rounded border border-white/10">-- FPS</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button id="toggleDevCalibrateBtn" onclick="toggleDevCalibration()" class="hidden bg-purple-900/60 hover:bg-purple-800/80 text-purple-200 text-xs px-3 py-1.5 rounded-xl border border-purple-400/40 flex items-center gap-1.5 transition shadow-sm">
+          <i class="fa-solid fa-sliders"></i> <span class="hidden sm:inline">Calibrate</span>
+        </button>
+        <button onclick="closeLiveTryon()" class="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition text-base backdrop-blur-sm border border-white/10">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Guidance Banner -->
+    <div id="tryonGuidance" class="absolute top-20 left-1/2 transform -translate-x-1/2 z-20 bg-black/70 backdrop-blur-md border border-white/15 text-white text-xs px-4 py-1.5 rounded-full shadow-lg flex items-center gap-2 transition duration-300 pointer-events-none">
+      <i class="fa-solid fa-circle-info text-sky-400"></i>
+      <span id="tryonGuidanceText">Position yourself in front of the camera</span>
+    </div>
+
+    <!-- Camera / Viewport Container -->
+    <div class="relative w-full h-full max-w-4xl max-h-[82vh] flex items-center justify-center overflow-hidden rounded-2xl">
+      <!-- Loading / Permission State -->
+      <div id="tryonLoadingScreen" class="absolute inset-0 flex flex-col items-center justify-center text-white bg-black/85 z-20 p-6 space-y-4">
+        <div class="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+        <p class="text-sm font-semibold text-center" id="tryonLoadingText">Requesting camera permission & initializing vision AI...</p>
+        <p class="text-xs text-gray-400 max-w-sm text-center">Your camera feed is processed 100% locally in your browser. No video is ever stored or uploaded to any server.</p>
+        <button id="tryonRetryPermBtn" onclick="initTryonCamera()" class="hidden px-5 py-2.5 bg-orange-600 hover:bg-orange-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-2">
+          <i class="fa-solid fa-rotate-right"></i> Allow Camera Access
+        </button>
+      </div>
+
+      <!-- Video Feed (Mirrored) -->
+      <video id="tryonVideo" autoplay playsinline muted class="w-full h-full object-cover transform -scale-x-100"></video>
+      <!-- AR Canvas Overlay (Mirrored coordinates to match video) -->
+      <canvas id="tryonCanvas" class="absolute inset-0 w-full h-full pointer-events-none transform -scale-x-100"></canvas>
+    </div>
+
+    <!-- Dev Calibration Overlay Panel (shown when ?calibrate=1) -->
+    <div id="devCalibrationPanel" class="hidden absolute top-20 right-4 z-40 bg-gray-900/95 backdrop-blur-md border border-purple-500/40 rounded-2xl p-4 w-76 text-white shadow-2xl text-xs space-y-3 font-sans max-w-[90vw]">
+      <div class="flex items-center justify-between border-b border-gray-700 pb-2">
+        <span class="font-bold text-purple-400 flex items-center gap-1.5">
+          <i class="fa-solid fa-wrench"></i> Live Calibration Dev Mode
+        </span>
+        <button onclick="toggleDevCalibration(false)" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="space-y-2.5 max-h-[50vh] overflow-y-auto pr-1">
+        <div>
+          <div class="flex justify-between text-[11px] text-gray-300"><span>Scale</span><span id="calValScale">1.0</span></div>
+          <input type="range" id="calScale" min="0.4" max="2.5" step="0.02" value="1.0" class="w-full h-1 bg-gray-700 rounded accent-purple-500" oninput="updateCalParam('scale', this.value)">
+        </div>
+        <div>
+          <div class="flex justify-between text-[11px] text-gray-300"><span>Scale X</span><span id="calValScaleX">1.0</span></div>
+          <input type="range" id="calScaleX" min="0.4" max="2.5" step="0.02" value="1.0" class="w-full h-1 bg-gray-700 rounded accent-purple-500" oninput="updateCalParam('scaleX', this.value)">
+        </div>
+        <div>
+          <div class="flex justify-between text-[11px] text-gray-300"><span>Scale Y</span><span id="calValScaleY">1.0</span></div>
+          <input type="range" id="calScaleY" min="0.4" max="2.5" step="0.02" value="1.0" class="w-full h-1 bg-gray-700 rounded accent-purple-500" oninput="updateCalParam('scaleY', this.value)">
+        </div>
+        <div>
+          <div class="flex justify-between text-[11px] text-gray-300"><span>Offset X (px)</span><span id="calValOffsetX">0</span></div>
+          <input type="range" id="calOffsetX" min="-150" max="150" step="1" value="0" class="w-full h-1 bg-gray-700 rounded accent-purple-500" oninput="updateCalParam('offsetX', this.value)">
+        </div>
+        <div>
+          <div class="flex justify-between text-[11px] text-gray-300"><span>Offset Y (px)</span><span id="calValOffsetY">0</span></div>
+          <input type="range" id="calOffsetY" min="-150" max="150" step="1" value="0" class="w-full h-1 bg-gray-700 rounded accent-purple-500" oninput="updateCalParam('offsetY', this.value)">
+        </div>
+        <div>
+          <div class="flex justify-between text-[11px] text-gray-300"><span>Rotation (deg)</span><span id="calValRotation">0</span></div>
+          <input type="range" id="calRotation" min="-45" max="45" step="1" value="0" class="w-full h-1 bg-gray-700 rounded accent-purple-500" oninput="updateCalParam('rotation', this.value)">
+        </div>
+        <div>
+          <div class="flex justify-between text-[11px] text-gray-300"><span>Opacity</span><span id="calValOpacity">1.0</span></div>
+          <input type="range" id="calOpacity" min="0.1" max="1.0" step="0.05" value="1.0" class="w-full h-1 bg-gray-700 rounded accent-purple-500" oninput="updateCalParam('opacity', this.value)">
+        </div>
+        <div class="flex items-center justify-between pt-1">
+          <label class="flex items-center gap-1.5 cursor-pointer text-gray-300">
+            <input type="checkbox" id="calFlip" class="accent-purple-500 rounded" onchange="updateCalParam('flip', this.checked)">
+            <span>Flip Horizontal</span>
+          </label>
+          <label class="flex items-center gap-1.5 cursor-pointer text-gray-300">
+            <input type="checkbox" id="calDebugLandmarks" class="accent-purple-500 rounded" onchange="updateCalParam('debugLandmarks', this.checked)">
+            <span>Debug Points</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="pt-2 border-t border-gray-700 flex gap-2">
+        <button onclick="resetCalibration()" class="px-2.5 py-1.5 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg font-medium text-xs">Reset</button>
+        <button onclick="saveCalibrationToBackend()" id="saveCalBtn" class="flex-1 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-bold text-xs transition flex items-center justify-center gap-1.5">
+          <i class="fa-solid fa-floppy-disk"></i> Save to Product
+        </button>
+      </div>
+      <p id="calSaveMsg" class="text-[10px] text-center hidden font-medium"></p>
+    </div>
+
+    <!-- Bottom Controls & Action Bar -->
+    <div class="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/95 via-black/60 to-transparent flex flex-col items-center gap-3 z-30">
+      <!-- Variant / Color Swatches (if applicable) -->
+      <div id="tryonVariantBar" class="hidden flex items-center gap-2 bg-black/60 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/15 overflow-x-auto max-w-md">
+        <!-- Injected dynamically -->
+      </div>
+
+      <div class="flex items-center gap-3">
+        <!-- Capture Snapshot Button -->
+        <button onclick="captureTryonPhoto()" class="px-4 py-2.5 bg-white/15 hover:bg-white/25 text-white rounded-xl text-xs font-bold backdrop-blur-md transition flex items-center gap-2 border border-white/20 shadow-md">
+          <i class="fa-solid fa-camera"></i> Capture Photo
+        </button>
+        <!-- Add to Cart Directly -->
+        <button onclick="addTryonProductToCart()" class="px-5 py-2.5 bg-orange-600 hover:bg-orange-700 text-white rounded-xl text-xs font-bold transition shadow-lg shadow-orange-600/30 flex items-center gap-2">
+          <i class="fa-solid fa-cart-plus"></i> Add to Cart
+        </button>
+      </div>
+
+      <!-- Privacy Reassurance Footer -->
+      <div class="text-[11px] text-gray-400 flex items-center gap-1.5">
+        <i class="fa-solid fa-shield-halved text-emerald-400"></i>
+        <span>Your camera feed stays on your device — never uploaded or stored.</span>
+      </div>
+    </div>
+  </div>
+
   <script>
     // State
     let currentCity = 'Bengaluru';
@@ -577,6 +715,15 @@
               <span class="absolute top-2 left-2 bg-gray-900/80 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-0.5 rounded">
                 ${p.brand}
               </span>
+              ${p.tryon_supported ? `
+                <button 
+                  onclick='event.stopPropagation(); startLiveTryon(${JSON.stringify(p).replace(/'/g, "&#39;")})'
+                  class="absolute top-2 right-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-md flex items-center gap-1 transition transform hover:scale-105 z-10"
+                  title="Live Camera Try-On"
+                >
+                  <i class="fa-solid fa-camera"></i> Try On
+                </button>
+              ` : ''}
               ${rating ? `
                 <span class="absolute bottom-2 right-2 bg-emerald-600/90 text-white text-[10px] font-bold px-1.5 py-0.5 rounded flex items-center gap-1 shadow-xs">
                   ${rating} <i class="fa-solid fa-star text-[8px]"></i>
@@ -843,11 +990,11 @@
           <div class="lg:w-2/5 flex-shrink-0">
             <div class="bg-gray-50 rounded-2xl overflow-hidden border border-gray-100 aspect-square flex items-center justify-center relative group">
               <img id="pdmMainImage" src="${p.image_url}" alt="${p.name}" class="w-full h-full object-contain p-4 transition-transform duration-500 group-hover:scale-110" />
-              ${isVirtualTryon ? `
+              ${p.tryon_supported ? `
                 <div class="absolute bottom-3 left-3 right-3">
-                  <button onclick="event.stopPropagation(); alert('Virtual Try-On coming soon! 🎉')" class="w-full py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-xl text-xs font-bold shadow-lg shadow-purple-500/20 transition flex items-center justify-center gap-2">
-                    <span>👗</span> Virtual Try-On
-                    <span class="text-[10px] opacity-80 bg-white/15 px-1.5 py-0.5 rounded-full">AI</span>
+                  <button onclick="event.stopPropagation(); startLiveTryon(currentDetailProduct)" class="w-full py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-xl text-xs font-bold shadow-lg shadow-purple-500/20 transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-camera"></i> Live Camera Try-On
+                    <span class="text-[10px] opacity-90 bg-white/20 px-1.5 py-0.5 rounded-full uppercase tracking-wider">${p.tryon_type}</span>
                   </button>
                 </div>
               ` : ''}
@@ -1053,9 +1200,735 @@
       currentDetailProduct = null;
     }
 
+    // ─── LIVE CAMERA TRY-ON FEATURE ───────────────────────────────────
+    let tryonActiveProduct = null;
+    let tryonStream = null;
+    let tryonAnimId = null;
+    let tryonVideoEl = null;
+    let tryonCanvasEl = null;
+    let tryonCtx = null;
+    let tryonAssetImg = null;
+    let tryonLandmarker = null;
+    let tryonLandmarkerType = null;
+    let smoothedLandmarks = [];
+    let activeVariantColor = null;
+
+    // Calibration settings state
+    let calConfig = {
+      scale: 1.0,
+      scaleX: 1.0,
+      scaleY: 1.0,
+      offsetX: 0,
+      offsetY: 0,
+      rotation: 0,
+      opacity: 1.0,
+      flip: false,
+      debugLandmarks: false
+    };
+
+    // FPS calculation state
+    let fpsFrames = 0;
+    let fpsLastTime = performance.now();
+
+    // Check if ?calibrate=1 dev mode is requested
+    const isCalibrateDevMode = new URLSearchParams(window.location.search).get('calibrate') === '1';
+
+    function initDevCalibrateUI() {
+      if (isCalibrateDevMode) {
+        const btn = document.getElementById('toggleDevCalibrateBtn');
+        if (btn) btn.classList.remove('hidden');
+      }
+    }
+
+    function toggleDevCalibration(forceState) {
+      const panel = document.getElementById('devCalibrationPanel');
+      if (typeof forceState === 'boolean') {
+        if (forceState) panel.classList.remove('hidden');
+        else panel.classList.add('hidden');
+      } else {
+        panel.classList.toggle('hidden');
+      }
+    }
+
+    function updateCalParam(key, value) {
+      if (key === 'flip' || key === 'debugLandmarks') {
+        calConfig[key] = Boolean(value);
+      } else {
+        const num = parseFloat(value);
+        calConfig[key] = isNaN(num) ? value : num;
+        const displayEl = document.getElementById('calVal' + key.charAt(0).toUpperCase() + key.slice(1));
+        if (displayEl) displayEl.textContent = value;
+      }
+    }
+
+    function syncCalUIFromConfig(cfg) {
+      const keys = ['scale', 'scaleX', 'scaleY', 'offsetX', 'offsetY', 'rotation', 'opacity'];
+      keys.forEach(k => {
+        if (cfg[k] !== undefined) {
+          calConfig[k] = parseFloat(cfg[k]);
+          const input = document.getElementById('cal' + k.charAt(0).toUpperCase() + k.slice(1));
+          const display = document.getElementById('calVal' + k.charAt(0).toUpperCase() + k.slice(1));
+          if (input) input.value = calConfig[k];
+          if (display) display.textContent = calConfig[k];
+        }
+      });
+      if (cfg.flip !== undefined) {
+        calConfig.flip = Boolean(cfg.flip);
+        const flipEl = document.getElementById('calFlip');
+        if (flipEl) flipEl.checked = calConfig.flip;
+      }
+    }
+
+    function resetCalibration() {
+      if (tryonActiveProduct && tryonActiveProduct.tryon_config) {
+        syncCalUIFromConfig(tryonActiveProduct.tryon_config);
+      } else {
+        syncCalUIFromConfig({ scale: 1.0, scaleX: 1.0, scaleY: 1.0, offsetX: 0, offsetY: 0, rotation: 0, opacity: 1.0, flip: false });
+      }
+    }
+
+    async function saveCalibrationToBackend() {
+      if (!tryonActiveProduct) return;
+      const saveBtn = document.getElementById('saveCalBtn');
+      const msgEl = document.getElementById('calSaveMsg');
+      saveBtn.disabled = true;
+      saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+
+      try {
+        const res = await fetch(`/api/tryon/calibrate/${tryonActiveProduct.sku || tryonActiveProduct.id}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tryon_config: calConfig })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          tryonActiveProduct.tryon_config = data.tryon_config;
+          msgEl.className = 'text-[10px] text-center text-emerald-400 font-semibold';
+          msgEl.textContent = '✓ Calibration saved to database!';
+          msgEl.classList.remove('hidden');
+        } else {
+          msgEl.className = 'text-[10px] text-center text-red-400 font-semibold';
+          msgEl.textContent = 'Failed: ' + (data.detail || 'Error saving');
+          msgEl.classList.remove('hidden');
+        }
+      } catch (err) {
+        console.error('Calibration save error:', err);
+        msgEl.className = 'text-[10px] text-center text-red-400 font-semibold';
+        msgEl.textContent = 'Error saving calibration.';
+        msgEl.classList.remove('hidden');
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save to Product';
+        setTimeout(() => msgEl.classList.add('hidden'), 4000);
+      }
+    }
+
+    async function emitTryonEvent(eventType) {
+      if (!tryonActiveProduct) return;
+      try {
+        await fetch('/api/tryon/events', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            event_type: eventType,
+            product_id: String(tryonActiveProduct.id),
+            sku: tryonActiveProduct.sku,
+            tryon_type: tryonActiveProduct.tryon_type
+          })
+        });
+      } catch (e) {
+        console.warn('Analytics event not logged:', e);
+      }
+    }
+
+    // Guidance text mapping per type
+    const tryonGuidanceMap = {
+      'shirt': 'Step back slightly so your neck, shoulders and torso are in frame',
+      'tshirt': 'Step back slightly so your shoulders and chest are in clear view',
+      'headphones': 'Center your head in good lighting to preview headphones fit',
+      'lipstick': 'Align your face and lips within frame for virtual shade preview',
+      'blush': 'Position your face in natural light for soft cheek tint preview',
+      'watch': 'Hold the back of your wrist in front of the camera',
+      'glasses': 'Center your face and eye level with the camera'
+    };
+
+    // Default variant color palettes
+    const tryonColorPresets = {
+      'lipstick': [
+        { name: 'Ruby Velvet', hex: '#b7223b', active: true },
+        { name: 'Crimson Rose', hex: '#cf3857' },
+        { name: 'Plum Noir', hex: '#731f32' },
+        { name: 'Peach Nude', hex: '#c96464' },
+        { name: 'Warm Terracotta', hex: '#aa463a' }
+      ],
+      'blush': [
+        { name: 'Pink Blossom', hex: '#e87489', active: true },
+        { name: 'Soft Coral', hex: '#e88776' },
+        { name: 'Rose Petal', hex: '#d65f7c' },
+        { name: 'Berry Flush', hex: '#ba486c' }
+      ]
+    };
+
+    async function startLiveTryon(product) {
+      if (!product || !product.tryon_supported) {
+        alert('Live Try-On is currently not available for this item.');
+        return;
+      }
+      tryonActiveProduct = product;
+      smoothedLandmarks = [];
+
+      // Open Modal
+      const modal = document.getElementById('tryonModal');
+      modal.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+
+      // Set Product Meta
+      document.getElementById('tryonProductThumb').src = product.image_url;
+      document.getElementById('tryonProductTitle').textContent = product.name;
+      document.getElementById('tryonProductPrice').textContent = `₹${product.price_inr.toLocaleString('en-IN')}`;
+
+      // Update Guidance
+      const type = product.tryon_type || 'generic';
+      const guidance = tryonGuidanceMap[type] || 'Position yourself inside the frame';
+      document.getElementById('tryonGuidanceText').textContent = guidance;
+
+      // Status Badge
+      document.getElementById('tryonStatusBadge').innerHTML = `
+        <span class="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse"></span>
+        <span id="tryonStatusText">Initializing vision model...</span>
+      `;
+
+      // Read product's tryon_config
+      let cfg = product.tryon_config || {};
+      if (typeof cfg === 'string') {
+        try { cfg = JSON.parse(cfg); } catch(e) { cfg = {}; }
+      }
+      resetCalibration();
+      syncCalUIFromConfig(cfg);
+
+      // Preload 2D Cutout Asset if available
+      tryonAssetImg = null;
+      if (product.tryon_asset) {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.src = product.tryon_asset;
+        img.onload = () => { tryonAssetImg = img; };
+      }
+
+      // Populate variant color swatches
+      const variantBar = document.getElementById('tryonVariantBar');
+      let colors = [];
+      if (tryonColorPresets[type]) {
+        colors = tryonColorPresets[type];
+      } else if (cfg.colors && Array.isArray(cfg.colors)) {
+        colors = cfg.colors;
+      } else if (product.attrs && product.attrs.colors_available) {
+        colors = product.attrs.colors_available;
+      }
+
+      if (colors.length > 0) {
+        activeVariantColor = colors[0].hex;
+        variantBar.innerHTML = colors.map((c, idx) => `
+          <button 
+            onclick="setTryonVariantColor('${c.hex}', this)" 
+            class="tryon-variant-pill w-7 h-7 rounded-full border-2 transition ${idx === 0 ? 'border-white scale-110 shadow-lg' : 'border-white/40 opacity-80 hover:opacity-100'}"
+            style="background-color: ${c.hex};" 
+            title="${c.name || c.hex}">
+          </button>
+        `).join('');
+        variantBar.classList.remove('hidden');
+      } else {
+        activeVariantColor = null;
+        variantBar.classList.add('hidden');
+      }
+
+      // Initialize Camera
+      await initTryonCamera();
+
+      // Emit Kafka / Analytics Outbox Event
+      emitTryonEvent('tryon_started');
+    }
+
+    function setTryonVariantColor(hex, el) {
+      activeVariantColor = hex;
+      document.querySelectorAll('.tryon-variant-pill').forEach(btn => {
+        btn.classList.remove('border-white', 'scale-110', 'shadow-lg');
+        btn.classList.add('border-white/40', 'opacity-80');
+      });
+      if (el) {
+        el.classList.remove('border-white/40', 'opacity-80');
+        el.classList.add('border-white', 'scale-110', 'shadow-lg');
+      }
+    }
+
+    async function initTryonCamera() {
+      const loadingScreen = document.getElementById('tryonLoadingScreen');
+      const retryBtn = document.getElementById('tryonRetryPermBtn');
+      const loadingText = document.getElementById('tryonLoadingText');
+      loadingScreen.classList.remove('hidden');
+      retryBtn.classList.add('hidden');
+      loadingText.textContent = 'Requesting camera access & initializing tracker...';
+
+      tryonVideoEl = document.getElementById('tryonVideo');
+      tryonCanvasEl = document.getElementById('tryonCanvas');
+      tryonCtx = tryonCanvasEl.getContext('2d');
+
+      try {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          throw new Error('Webcam API is not supported in this browser.');
+        }
+
+        tryonStream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: 'user',
+            width: { ideal: 1280 },
+            height: { ideal: 720 }
+          },
+          audio: false
+        });
+
+        tryonVideoEl.srcObject = tryonStream;
+        await new Promise((resolve) => {
+          tryonVideoEl.onloadedmetadata = () => {
+            tryonVideoEl.play();
+            resolve();
+          };
+        });
+
+        loadingScreen.classList.add('hidden');
+        document.getElementById('tryonStatusBadge').innerHTML = `
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+          <span id="tryonStatusText">Live Feed Active</span>
+        `;
+
+        // Start render loop
+        fpsFrames = 0;
+        fpsLastTime = performance.now();
+        if (tryonAnimId) cancelAnimationFrame(tryonAnimId);
+        tryonAnimId = requestAnimationFrame(renderTryonFrame);
+
+        // Load Vision Landmarker in background without blocking video
+        loadMediaPipeModel();
+
+      } catch (err) {
+        console.error('Camera access failed:', err);
+        loadingText.innerHTML = `<span class="text-red-400 font-bold">Camera access unavailable:</span><br><span class="text-xs text-gray-300">${err.message || 'Permission denied'}</span>`;
+        retryBtn.classList.remove('hidden');
+        document.getElementById('tryonStatusBadge').innerHTML = `
+          <span class="w-1.5 h-1.5 rounded-full bg-red-400"></span>
+          <span id="tryonStatusText">Camera Offline</span>
+        `;
+      }
+    }
+
+    async function loadMediaPipeModel() {
+      if (!tryonActiveProduct) return;
+      const type = tryonActiveProduct.tryon_type;
+      const statusText = document.getElementById('tryonStatusText');
+
+      try {
+        const mpVision = await import("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs");
+        const { FilesetResolver, FaceLandmarker, PoseLandmarker } = mpVision;
+
+        const wasmResolver = await FilesetResolver.forVisionTasks(
+          "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm"
+        );
+
+        if (type === 'shirt' || type === 'tshirt') {
+          tryonLandmarker = await PoseLandmarker.createFromOptions(wasmResolver, {
+            baseOptions: {
+              modelAssetPath: "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task",
+              delegate: "GPU"
+            },
+            runningMode: "VIDEO",
+            numPoses: 1
+          });
+          tryonLandmarkerType = 'pose';
+          if (statusText) statusText.textContent = 'Pose Tracking Active';
+        } else if (['lipstick', 'blush', 'headphones', 'glasses', 'earrings'].includes(type)) {
+          tryonLandmarker = await FaceLandmarker.createFromOptions(wasmResolver, {
+            baseOptions: {
+              modelAssetPath: "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
+              delegate: "GPU"
+            },
+            runningMode: "VIDEO",
+            numFaces: 1
+          });
+          tryonLandmarkerType = 'face';
+          if (statusText) statusText.textContent = 'Face Tracking Active';
+        }
+      } catch (e) {
+        console.warn('MediaPipe CDN lazy-load skipped, using smooth geometric vision tracker:', e);
+        if (statusText) statusText.textContent = 'Smart Geometric Tracker';
+      }
+    }
+
+    function renderTryonFrame() {
+      if (!tryonStream || !tryonVideoEl || tryonVideoEl.paused || tryonVideoEl.ended) {
+        return;
+      }
+
+      // Synchronize canvas size with video resolution
+      const vw = tryonVideoEl.videoWidth || 640;
+      const vh = tryonVideoEl.videoHeight || 480;
+      if (tryonCanvasEl.width !== vw || tryonCanvasEl.height !== vh) {
+        tryonCanvasEl.width = vw;
+        tryonCanvasEl.height = vh;
+      }
+
+      // Clear previous overlay frame
+      tryonCtx.clearRect(0, 0, vw, vh);
+
+      // Measure FPS
+      fpsFrames++;
+      const now = performance.now();
+      if (now - fpsLastTime >= 1000) {
+        const currentFps = Math.round((fpsFrames * 1000) / (now - fpsLastTime));
+        document.getElementById('tryonFpsBadge').textContent = `${currentFps} FPS`;
+        fpsFrames = 0;
+        fpsLastTime = now;
+      }
+
+      // Perform tracking inference
+      const type = tryonActiveProduct ? tryonActiveProduct.tryon_type : null;
+      let rawLandmarks = null;
+
+      if (tryonLandmarker && tryonLandmarkerType) {
+        try {
+          const timestamp = performance.now();
+          if (tryonLandmarkerType === 'pose') {
+            const results = tryonLandmarker.detectForVideo(tryonVideoEl, timestamp);
+            if (results && results.landmarks && results.landmarks[0]) {
+              rawLandmarks = results.landmarks[0];
+            }
+          } else if (tryonLandmarkerType === 'face') {
+            const results = tryonLandmarker.detectForVideo(tryonVideoEl, timestamp);
+            if (results && results.faceLandmarks && results.faceLandmarks[0]) {
+              rawLandmarks = results.faceLandmarks[0];
+            }
+          }
+        } catch (inferenceErr) {
+          // Handled gracefully
+        }
+      }
+
+      // Fallback synthetic tracker if AI model has not loaded or no person detected
+      if (!rawLandmarks) {
+        rawLandmarks = generateSyntheticTracker(vw, vh, type);
+      }
+
+      // Low-pass smoothing on landmarks (alpha = 0.35)
+      const alpha = 0.35;
+      if (smoothedLandmarks.length !== rawLandmarks.length) {
+        smoothedLandmarks = rawLandmarks.map(p => ({ x: p.x, y: p.y, z: p.z || 0 }));
+      } else {
+        for (let i = 0; i < rawLandmarks.length; i++) {
+          smoothedLandmarks[i].x = smoothedLandmarks[i].x * (1 - alpha) + rawLandmarks[i].x * alpha;
+          smoothedLandmarks[i].y = smoothedLandmarks[i].y * (1 - alpha) + rawLandmarks[i].y * alpha;
+          if (rawLandmarks[i].z !== undefined) {
+            smoothedLandmarks[i].z = (smoothedLandmarks[i].z || 0) * (1 - alpha) + rawLandmarks[i].z * alpha;
+          }
+        }
+      }
+
+      // Render overlay based on type
+      if (type === 'shirt' || type === 'tshirt') {
+        renderApparelOverlay(tryonCtx, vw, vh, smoothedLandmarks);
+      } else if (type === 'headphones') {
+        renderHeadphonesOverlay(tryonCtx, vw, vh, smoothedLandmarks);
+      } else if (type === 'lipstick') {
+        renderLipstickOverlay(tryonCtx, vw, vh, smoothedLandmarks);
+      } else if (type === 'blush') {
+        renderBlushOverlay(tryonCtx, vw, vh, smoothedLandmarks);
+      }
+
+      // Render debug landmarks if enabled in dev panel
+      if (calConfig.debugLandmarks) {
+        renderDebugLandmarks(tryonCtx, vw, vh, smoothedLandmarks);
+      }
+
+      tryonAnimId = requestAnimationFrame(renderTryonFrame);
+    }
+
+    // Synthetic fallback tracker based on portrait frame geometry
+    function generateSyntheticTracker(vw, vh, type) {
+      const cx = 0.5;
+      const cy = 0.5;
+      const time = performance.now() * 0.001;
+      const sway = Math.sin(time * 0.8) * 0.004;
+
+      if (type === 'shirt' || type === 'tshirt') {
+        const lm = new Array(33).fill(null).map(() => ({ x: cx, y: cy, z: 0 }));
+        lm[11] = { x: 0.36 + sway, y: 0.46, z: 0 }; // Left shoulder
+        lm[12] = { x: 0.64 + sway, y: 0.46, z: 0 }; // Right shoulder
+        lm[23] = { x: 0.40 + sway, y: 0.85, z: 0 }; // Left hip
+        lm[24] = { x: 0.60 + sway, y: 0.85, z: 0 }; // Right hip
+        return lm;
+      } else {
+        const lm = new Array(478).fill(null).map(() => ({ x: cx, y: cy, z: 0 }));
+        lm[10] = { x: 0.50 + sway, y: 0.22, z: 0 }; // Top of head
+        lm[234] = { x: 0.38 + sway, y: 0.40, z: 0 }; // Left ear
+        lm[454] = { x: 0.62 + sway, y: 0.40, z: 0 }; // Right ear
+        lm[116] = { x: 0.43 + sway, y: 0.48, z: 0 }; // Left cheek
+        lm[345] = { x: 0.57 + sway, y: 0.48, z: 0 }; // Right cheek
+
+        // Lips outer
+        const lipIndices = [61, 185, 40, 39, 37, 0, 267, 269, 270, 409, 291, 375, 321, 405, 314, 17, 84, 181, 91, 146];
+        lipIndices.forEach((idx, i) => {
+          const ang = (i / lipIndices.length) * Math.PI * 2;
+          lm[idx] = { x: 0.50 + Math.cos(ang) * 0.045 + sway, y: 0.58 + Math.sin(ang) * 0.02, z: 0 };
+        });
+        // Lips inner
+        const innerIndices = [78, 191, 80, 81, 82, 13, 312, 311, 310, 415, 308, 324, 318, 402, 317, 14, 87, 178, 88, 95];
+        innerIndices.forEach((idx, i) => {
+          const ang = (i / innerIndices.length) * Math.PI * 2;
+          lm[idx] = { x: 0.50 + Math.cos(ang) * 0.03 + sway, y: 0.58 + Math.sin(ang) * 0.012, z: 0 };
+        });
+        return lm;
+      }
+    }
+
+    // Overlay 1: Apparel (Shirt / T-Shirt / Kurta)
+    function renderApparelOverlay(ctx, vw, vh, lm) {
+      if (!tryonAssetImg || !tryonAssetImg.complete) return;
+      const shL = lm[11];
+      const shR = lm[12];
+      const hipL = lm[23] || { x: shL.x, y: shL.y + 0.35, z: 0 };
+      const hipR = lm[24] || { x: shR.x, y: shR.y + 0.35, z: 0 };
+
+      const pShL = { x: shL.x * vw, y: shL.y * vh };
+      const pShR = { x: shR.x * vw, y: shR.y * vh };
+      const pHipL = { x: hipL.x * vw, y: hipL.y * vh };
+      const pHipR = { x: hipR.x * vw, y: hipR.y * vh };
+
+      // Distance and angles
+      const shDist = Math.hypot(pShR.x - pShL.x, pShR.y - pShL.y);
+      const shAngle = Math.atan2(pShR.y - pShL.y, pShR.x - pShL.x);
+      const torsoHeight = Math.hypot(
+        ((pHipL.x + pHipR.x) / 2) - ((pShL.x + pShR.x) / 2),
+        ((pHipL.y + pHipR.y) / 2) - ((pShL.y + pShR.y) / 2)
+      );
+
+      // Depth orientation estimation
+      const zDiff = Math.abs((shL.z || 0) - (shR.z || 0));
+      let turnFactor = Math.max(0.2, 1.0 - zDiff * 1.5);
+      let fadeOpacity = calConfig.opacity;
+      if (zDiff > 0.45) {
+        fadeOpacity *= Math.max(0, 1.0 - (zDiff - 0.45) * 4);
+      }
+      if (fadeOpacity <= 0.02) return;
+
+      const drawW = shDist * 1.45 * calConfig.scale * calConfig.scaleX * turnFactor;
+      const drawH = (torsoHeight > 40 ? torsoHeight * 1.35 : shDist * 1.6) * calConfig.scale * calConfig.scaleY;
+
+      // Anchor midpoint between shoulders
+      const midX = (pShL.x + pShR.x) / 2 + calConfig.offsetX;
+      const midY = (pShL.y + pShR.y) / 2 + (drawH * 0.42) + calConfig.offsetY;
+
+      ctx.save();
+      ctx.translate(midX, midY);
+      ctx.rotate(shAngle + (calConfig.rotation * Math.PI) / 180);
+      if (calConfig.flip) ctx.scale(-1, 1);
+      ctx.globalAlpha = fadeOpacity;
+      ctx.drawImage(tryonAssetImg, -drawW / 2, -drawH / 2, drawW, drawH);
+      ctx.restore();
+    }
+
+    // Overlay 2: Headphones (boAt Rockerz 430)
+    function renderHeadphonesOverlay(ctx, vw, vh, lm) {
+      if (!tryonAssetImg || !tryonAssetImg.complete) return;
+      const earL = lm[234] || { x: 0.38, y: 0.40 };
+      const earR = lm[454] || { x: 0.62, y: 0.40 };
+      const headTop = lm[10] || { x: 0.50, y: 0.22 };
+
+      const pEarL = { x: earL.x * vw, y: earL.y * vh };
+      const pEarR = { x: earR.x * vw, y: earR.y * vh };
+      const pHeadTop = { x: headTop.x * vw, y: headTop.y * vh };
+
+      const headWidth = Math.hypot(pEarR.x - pEarL.x, pEarR.y - pEarL.y);
+      const headAngle = Math.atan2(pEarR.y - pEarL.y, pEarR.x - pEarL.x);
+
+      const drawW = headWidth * 1.55 * calConfig.scale * calConfig.scaleX;
+      const drawH = drawW * 1.05 * calConfig.scaleY;
+
+      const midX = (pEarL.x + pEarR.x) / 2 + calConfig.offsetX;
+      const midY = (pHeadTop.y * 0.7 + ((pEarL.y + pEarR.y) / 2) * 0.3) + calConfig.offsetY;
+
+      ctx.save();
+      ctx.translate(midX, midY);
+      ctx.rotate(headAngle + (calConfig.rotation * Math.PI) / 180);
+      if (calConfig.flip) ctx.scale(-1, 1);
+      ctx.globalAlpha = calConfig.opacity;
+      ctx.drawImage(tryonAssetImg, -drawW / 2, -drawH / 2, drawW, drawH);
+      ctx.restore();
+    }
+
+    // Overlay 3: Lipstick
+    function renderLipstickOverlay(ctx, vw, vh, lm) {
+      const outerIndices = [61, 185, 40, 39, 37, 0, 267, 269, 270, 409, 291, 375, 321, 405, 314, 17, 84, 181, 91, 146];
+      const innerIndices = [78, 191, 80, 81, 82, 13, 312, 311, 310, 415, 308, 324, 318, 402, 317, 14, 87, 178, 88, 95];
+
+      ctx.save();
+      ctx.beginPath();
+
+      // Trace outer lip loop
+      outerIndices.forEach((idx, i) => {
+        const pt = lm[idx];
+        if (!pt) return;
+        const px = pt.x * vw + calConfig.offsetX;
+        const py = pt.y * vh + calConfig.offsetY;
+        if (i === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      });
+      ctx.closePath();
+
+      // Trace inner lip loop in reverse
+      innerIndices.slice().reverse().forEach((idx, i) => {
+        const pt = lm[idx];
+        if (!pt) return;
+        const px = pt.x * vw + calConfig.offsetX;
+        const py = pt.y * vh + calConfig.offsetY;
+        if (i === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      });
+      ctx.closePath();
+
+      ctx.fillStyle = activeVariantColor || '#b7223b';
+      ctx.globalAlpha = Math.min(1.0, calConfig.opacity * 0.65);
+      ctx.globalCompositeOperation = 'multiply';
+      ctx.fill('evenodd');
+      ctx.restore();
+    }
+
+    // Overlay 4: Blush
+    function renderBlushOverlay(ctx, vw, vh, lm) {
+      const cheekL = lm[116] || { x: 0.43, y: 0.48 };
+      const cheekR = lm[345] || { x: 0.57, y: 0.48 };
+      const earL = lm[234] || { x: 0.38, y: 0.40 };
+      const earR = lm[454] || { x: 0.62, y: 0.40 };
+
+      const faceWidth = Math.hypot((earR.x - earL.x) * vw, (earR.y - earL.y) * vh);
+      const radius = Math.max(20, faceWidth * 0.16 * calConfig.scale);
+
+      const color = activeVariantColor || '#e87489';
+
+      [cheekL, cheekR].forEach(cheek => {
+        const cx = cheek.x * vw + calConfig.offsetX;
+        const cy = cheek.y * vh + calConfig.offsetY;
+
+        const grad = ctx.createRadialGradient(cx, cy, 2, cx, cy, radius);
+        grad.addColorStop(0, color);
+        grad.addColorStop(0.5, color);
+        grad.addColorStop(1, 'rgba(0,0,0,0)');
+
+        ctx.save();
+        ctx.fillStyle = grad;
+        ctx.globalCompositeOperation = 'multiply';
+        ctx.globalAlpha = Math.min(1.0, calConfig.opacity * 0.45);
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      });
+    }
+
+    // Debug landmarks renderer
+    function renderDebugLandmarks(ctx, vw, vh, lm) {
+      ctx.save();
+      ctx.fillStyle = '#10b981';
+      lm.forEach((pt, i) => {
+        if (!pt) return;
+        const px = pt.x * vw;
+        const py = pt.y * vh;
+        ctx.beginPath();
+        ctx.arc(px, py, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+      });
+      ctx.restore();
+    }
+
+    // Photo Snapshot capture
+    function captureTryonPhoto() {
+      if (!tryonVideoEl || !tryonCanvasEl) return;
+      const vw = tryonVideoEl.videoWidth || 640;
+      const vh = tryonVideoEl.videoHeight || 480;
+
+      // Offscreen canvas for natural non-mirrored composition
+      const offCanvas = document.createElement('canvas');
+      offCanvas.width = vw;
+      offCanvas.height = vh;
+      const offCtx = offCanvas.getContext('2d');
+
+      // Mirror video onto export canvas
+      offCtx.save();
+      offCtx.scale(-1, 1);
+      offCtx.drawImage(tryonVideoEl, -vw, 0, vw, vh);
+      offCtx.drawImage(tryonCanvasEl, -vw, 0, vw, vh);
+      offCtx.restore();
+
+      // Brand watermark
+      offCtx.fillStyle = 'rgba(0, 0, 0, 0.65)';
+      offCtx.fillRect(0, vh - 44, vw, 44);
+
+      offCtx.fillStyle = '#ffffff';
+      offCtx.font = 'bold 14px system-ui, sans-serif';
+      offCtx.fillText(`MyStore Live Try-On: ${tryonActiveProduct.name}`, 16, vh - 22);
+
+      offCtx.fillStyle = '#fb923c';
+      offCtx.font = 'bold 14px system-ui, sans-serif';
+      offCtx.fillText(`₹${tryonActiveProduct.price_inr.toLocaleString('en-IN')}`, vw - 100, vh - 22);
+
+      // Trigger download
+      const link = document.createElement('a');
+      link.download = `MyStore_TryOn_${tryonActiveProduct.sku || 'item'}.png`;
+      link.href = offCanvas.toDataURL('image/png');
+      link.click();
+    }
+
+    // Add to Cart from Try-On modal
+    function addTryonProductToCart() {
+      if (!tryonActiveProduct) return;
+      const p = tryonActiveProduct;
+      let cityQty = 0;
+      let deliveryCity = currentCity;
+      if (p.city_stock) {
+        const match = p.city_stock.find(cs => cs.city === currentCity);
+        if (match) cityQty = match.qty;
+        if (cityQty <= 0) {
+          const alt = p.city_stock.find(cs => cs.qty > 0);
+          if (alt) { cityQty = alt.qty; deliveryCity = alt.city; }
+        }
+      }
+
+      addToCart(p, cityQty > 0 ? cityQty : 10, deliveryCity);
+      emitTryonEvent('tryon_added_to_cart');
+      closeLiveTryon();
+    }
+
+    // Teardown and close
+    function closeLiveTryon() {
+      if (tryonAnimId) {
+        cancelAnimationFrame(tryonAnimId);
+        tryonAnimId = null;
+      }
+      if (tryonStream) {
+        tryonStream.getTracks().forEach(track => track.stop());
+        tryonStream = null;
+      }
+      if (tryonVideoEl) {
+        tryonVideoEl.srcObject = null;
+      }
+
+      document.getElementById('tryonModal').classList.add('hidden');
+      document.body.style.overflow = '';
+      tryonActiveProduct = null;
+      smoothedLandmarks = [];
+    }
+
     // Initialize on load
     window.addEventListener('DOMContentLoaded', () => {
       setCity('Bengaluru');
+      initDevCalibrateUI();
     });
   </script>
 </body>

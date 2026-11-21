@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from decimal import Decimal
 
-from sqlalchemy import Numeric, String, Text
+from sqlalchemy import Boolean, Numeric, String, Text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -24,6 +24,10 @@ class Product(TimestampMixin, Base):
     )
     image_url: Mapped[str | None] = mapped_column(String(512), nullable=True)
     attrs: Mapped[dict] = mapped_column(JSONB, server_default="{}", default=dict)
+    tryon_supported: Mapped[bool] = mapped_column(Boolean, server_default="false", default=False)
+    tryon_type: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    tryon_asset: Mapped[str | None] = mapped_column(String(512), nullable=True)
+    tryon_config: Mapped[dict] = mapped_column(JSONB, server_default="{}", default=dict)
 
     # Relationships
     stock_entries = relationship("StoreStock", back_populates="product", lazy="selectin")
