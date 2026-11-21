@@ -118,11 +118,16 @@
       </div>
 
       <!-- CART & USER ACTIONS -->
-      <div class="flex items-center gap-4">
+      <div class="flex items-center gap-3">
         <div class="hidden sm:flex flex-col text-right text-xs">
           <span class="text-gray-400">Welcome,</span>
           <span class="font-bold text-gray-800" id="userDisplayName">Priya Sharma</span>
         </div>
+
+        <button onclick="retOpenMyOrders()" class="flex items-center gap-1.5 px-3 py-2 bg-orange-50 hover:bg-orange-100 text-orange-700 font-semibold text-xs rounded-full transition border border-orange-200">
+          <i class="fa-solid fa-box-archive text-orange-600"></i>
+          <span>My Orders</span>
+        </button>
 
         <button onclick="toggleCartDrawer()" class="relative p-2.5 bg-orange-50 text-orange-600 hover:bg-orange-100 rounded-full transition">
           <i class="fa-solid fa-cart-shopping text-lg"></i>
@@ -333,14 +338,178 @@
         <div><strong>Kafka Event:</strong> <span class="bg-green-100 text-green-800 px-1.5 py-0.5 rounded">orders.placed emitted</span></div>
       </div>
 
-      <div class="flex gap-2">
+      <div class="flex flex-col sm:flex-row gap-2">
+        <button onclick="closeSuccessModal(); retOpenMyOrders();" class="flex-1 py-2.5 bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold rounded-xl transition flex items-center justify-center gap-1.5">
+          <i class="fa-solid fa-box-archive"></i>
+          <span>View in My Orders</span>
+        </button>
         <a href="/pipeline" class="flex-1 py-2.5 bg-gray-900 hover:bg-black text-white text-xs font-bold rounded-xl transition flex items-center justify-center gap-1.5">
           <i class="fa-solid fa-microchip text-orange-400"></i>
-          <span>View in X-Ray Pipeline</span>
+          <span>X-Ray Pipeline</span>
         </a>
-        <button onclick="closeSuccessModal()" class="px-5 py-2.5 bg-orange-600 text-white text-xs font-bold rounded-xl hover:bg-orange-700 transition">
-          Continue Shopping
+        <button onclick="closeSuccessModal()" class="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-xl transition">
+          Continue
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- POST-DELIVERY RETURNS: MY ORDERS DRAWER    -->
+  <!-- ========================================== -->
+  <div id="retOrdersBackdrop" onclick="retCloseMyOrders()" class="hidden fixed inset-0 bg-black/50 z-50 backdrop-blur-xs transition-opacity"></div>
+  <aside id="retOrdersDrawer" class="fixed right-0 top-0 bottom-0 w-full max-w-xl bg-gray-50 shadow-2xl z-50 transform translate-x-full transition-transform duration-300 flex flex-col">
+    <!-- Header -->
+    <div class="p-4 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800">
+      <div class="flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-lg bg-orange-600 text-white flex items-center justify-center text-sm font-bold shadow">
+          <i class="fa-solid fa-box-archive"></i>
+        </div>
+        <div>
+          <h3 class="font-bold text-sm">My Orders & Returns</h3>
+          <p class="text-[11px] text-slate-400">Priya Sharma • <span id="retDrawerCity">Bengaluru</span></p>
+        </div>
+      </div>
+      <button onclick="retCloseMyOrders()" class="p-1.5 hover:bg-slate-800 rounded-full text-slate-400 hover:text-white transition">
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+    </div>
+
+    <!-- Orders List Container -->
+    <div id="retOrdersList" class="flex-1 overflow-y-auto p-4 space-y-4">
+      <!-- Injected by retRenderCustomerOrders() -->
+    </div>
+  </aside>
+
+  <!-- ========================================== -->
+  <!-- POST-DELIVERY RETURNS: REQUEST MODAL       -->
+  <!-- ========================================== -->
+  <div id="retReturnModal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl animate-in zoom-in-95 my-8">
+      <div class="flex items-center justify-between border-b pb-3">
+        <h3 class="text-base font-bold text-gray-900 flex items-center gap-2">
+          <i class="fa-solid fa-rotate-left text-orange-600"></i> Request Return / Exchange
+        </h3>
+        <button onclick="retCloseReturnModal()" class="text-gray-400 hover:text-gray-700 text-lg">&times;</button>
+      </div>
+
+      <!-- Item Snapshot -->
+      <div id="retModalItemSummary" class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl border border-gray-200">
+        <!-- Injected -->
+      </div>
+
+      <!-- Form -->
+      <div class="space-y-3.5 text-xs">
+        <!-- Quantity -->
+        <div>
+          <label class="block font-semibold text-gray-700 mb-1">Return Quantity:</label>
+          <div class="flex items-center gap-3">
+            <select id="retQuantitySelect" onchange="retUpdateRefundPreview()" class="border border-gray-300 rounded-lg p-2 text-xs focus:ring-2 focus:ring-orange-500 outline-none font-semibold">
+              <option value="1">1</option>
+            </select>
+            <span id="retReturnableQtyHint" class="text-gray-500 text-[11px]"></span>
+          </div>
+        </div>
+
+        <!-- Reason -->
+        <div>
+          <label class="block font-semibold text-gray-700 mb-1">Reason for Return:</label>
+          <select id="retReasonSelect" onchange="retHandleReasonChange()" class="w-full border border-gray-300 rounded-lg p-2 text-xs focus:ring-2 focus:ring-orange-500 outline-none">
+            <!-- Injected dynamically based on category -->
+          </select>
+          <p id="retReasonHint" class="text-[10px] text-gray-400 mt-0.5"></p>
+        </div>
+
+        <!-- Description -->
+        <div>
+          <label class="block font-semibold text-gray-700 mb-1">Description (optional):</label>
+          <textarea id="retDescription" rows="2" placeholder="Tell us more about the issue..." class="w-full border border-gray-300 rounded-lg p-2 text-xs focus:ring-2 focus:ring-orange-500 outline-none"></textarea>
+        </div>
+
+        <!-- Resolution -->
+        <div>
+          <label class="block font-semibold text-gray-700 mb-1">Preferred Resolution:</label>
+          <div class="grid grid-cols-3 gap-2" id="retResolutionOptions">
+            <label id="retOptRefund" class="flex flex-col items-center p-2.5 border rounded-xl cursor-pointer text-center hover:bg-orange-50 border-orange-200 bg-orange-50/50">
+              <input type="radio" name="retResolution" value="refund" checked onchange="retHandleResolutionChange()" class="text-orange-600 focus:ring-orange-500">
+              <span class="font-bold text-[11px] text-gray-900 mt-1">Refund</span>
+              <span class="text-[9px] text-gray-500">Direct to account</span>
+            </label>
+            <label id="retOptReplacement" class="flex flex-col items-center p-2.5 border rounded-xl cursor-pointer text-center hover:bg-orange-50 border-gray-200">
+              <input type="radio" name="retResolution" value="replacement" onchange="retHandleResolutionChange()" class="text-orange-600 focus:ring-orange-500">
+              <span class="font-bold text-[11px] text-gray-900 mt-1">Replacement</span>
+              <span class="text-[9px] text-gray-500">Same product</span>
+            </label>
+            <label id="retOptExchange" class="flex flex-col items-center p-2.5 border rounded-xl cursor-pointer text-center hover:bg-orange-50 border-gray-200">
+              <input type="radio" name="retResolution" value="exchange" onchange="retHandleResolutionChange()" class="text-orange-600 focus:ring-orange-500">
+              <span class="font-bold text-[11px] text-gray-900 mt-1">Exchange</span>
+              <span class="text-[9px] text-gray-500">Different size</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Exchange Size (shown only when exchange is chosen) -->
+        <div id="retExchangeSizeContainer" class="hidden">
+          <label class="block font-semibold text-gray-700 mb-1">Select Exchange Size:</label>
+          <select id="retExchangeSizeSelect" class="w-full border border-gray-300 rounded-lg p-2 text-xs focus:ring-2 focus:ring-orange-500 outline-none">
+            <!-- Injected from product sizes -->
+          </select>
+        </div>
+
+        <!-- Photos Upload -->
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <label class="font-semibold text-gray-700">Proof Photos <span id="retPhotoRequiredLabel" class="text-red-500">*</span></label>
+            <span class="text-[10px] text-gray-400">1 to 3 photos (JPEG/PNG/WebP, max 2MB)</span>
+          </div>
+          
+          <div class="flex items-center gap-2">
+            <input type="file" id="retPhotoInput" accept="image/jpeg,image/png,image/webp" onchange="retHandlePhotoUpload(event)" class="hidden">
+            <button type="button" onclick="document.getElementById('retPhotoInput').click()" id="retUploadBtn" class="px-3 py-1.5 border border-dashed border-gray-400 rounded-lg text-gray-600 hover:border-orange-500 hover:text-orange-600 transition flex items-center gap-1.5 text-xs font-semibold">
+              <i class="fa-solid fa-camera"></i> <span>Add Photo</span>
+            </button>
+            <span id="retPhotoCountText" class="text-[11px] text-gray-500">0 / 3 uploaded</span>
+          </div>
+
+          <div id="retPhotoPreviews" class="flex gap-2 mt-2 flex-wrap">
+            <!-- Preview thumbnails -->
+          </div>
+        </div>
+
+        <!-- Estimated Refund Display -->
+        <div class="p-3 bg-orange-50 rounded-xl border border-orange-200 flex items-center justify-between">
+          <span class="text-gray-700 font-medium">Estimated Refund:</span>
+          <span id="retEstimatedRefund" class="text-sm font-black text-orange-600 font-mono">₹0.00</span>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex justify-end gap-2 pt-2 border-t">
+        <button type="button" onclick="retCloseReturnModal()" class="px-4 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 rounded-xl transition">Cancel</button>
+        <button type="button" id="retSubmitBtn" onclick="retSubmitReturn()" class="px-5 py-2 bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold rounded-xl transition flex items-center gap-2">
+          <span>Submit Request</span> <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- POST-DELIVERY RETURNS: TRACKER MODAL       -->
+  <!-- ========================================== -->
+  <div id="retTrackerModal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl animate-in zoom-in-95 my-8">
+      <div class="flex items-center justify-between border-b pb-3">
+        <div>
+          <h3 class="text-base font-bold text-gray-900 flex items-center gap-2">
+            <i class="fa-solid fa-route text-orange-500"></i> Track Return
+          </h3>
+          <p id="retTrackerRef" class="text-xs text-orange-600 font-mono font-bold mt-0.5">RET-XXXXXX</p>
+        </div>
+        <button onclick="retCloseTracker()" class="text-gray-400 hover:text-gray-700 text-lg">&times;</button>
+      </div>
+
+      <div id="retTrackerContent" class="space-y-4 text-xs">
+        <!-- Injected by retOpenTracker() -->
       </div>
     </div>
   </div>
@@ -765,7 +934,7 @@
               <span class="absolute top-2 left-2 bg-gray-900/80 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-0.5 rounded">
                 ${p.brand}
               </span>
-              ${(/fashion|beauty/i.test(p.category || '') || /headphone|earphone|lipstick|blush/i.test(p.name || '') || p.tryon_supported) ? `
+              ${(/fashion|beauty/i.test(p.category || '') || /headphone|headset|earphone|earbuds|rockerz|airdopes|bassheads|lipstick|lip color|blush|rouge/i.test(p.name || '') || p.tryon_supported) ? `
                 <div class="absolute top-2 right-2 z-10">
                   <button 
                     onclick='event.stopPropagation(); startAiTryon(${JSON.stringify(p).replace(/'/g, "&#39;")})'
@@ -1042,7 +1211,7 @@
           <div class="lg:w-2/5 flex-shrink-0">
             <div class="bg-gray-50 rounded-2xl overflow-hidden border border-gray-100 aspect-square flex items-center justify-center relative group">
               <img id="pdmMainImage" src="${p.image_url}" alt="${p.name}" class="w-full h-full object-contain p-4 transition-transform duration-500 group-hover:scale-110" />
-              ${(/fashion|beauty/i.test(p.category || '') || /headphone|earphone|lipstick|blush/i.test(p.name || '') || p.tryon_supported) ? `
+              ${(/fashion|beauty/i.test(p.category || '') || /headphone|headset|earphone|earbuds|rockerz|airdopes|bassheads|lipstick|lip color|blush|rouge/i.test(p.name || '') || p.tryon_supported) ? `
                 <div class="absolute bottom-3 left-3 right-3">
                   <button onclick="event.stopPropagation(); startAiTryon(currentDetailProduct)" class="w-full py-2.5 bg-gradient-to-r from-fuchsia-600 to-orange-500 hover:opacity-95 text-white rounded-xl text-xs font-bold shadow-lg shadow-orange-500/20 transition flex items-center justify-center gap-2">
                     <i class="fa-solid fa-wand-magic-sparkles"></i> AI Realistic Try-On
@@ -2268,6 +2437,541 @@
       if (videoEl.src) {
         URL.revokeObjectURL(videoEl.src);
         videoEl.src = '';
+      }
+    }
+
+    // ==========================================
+    // POST-DELIVERY RETURNS JAVASCRIPT SYSTEM
+    // ==========================================
+    let retCustomerOrders = [];
+    let retPolicyCache = null;
+    let retActiveItem = null;
+    let retActiveOrder = null;
+    let retUploadedPhotos = [];
+    const retCustomerId = "11111111-1111-1111-1111-111111111111";
+
+    async function retFetchPolicy() {
+      if (!retPolicyCache) {
+        try {
+          const res = await fetch('/api/returns/policy');
+          if (res.ok) retPolicyCache = await res.json();
+        } catch (e) {
+          console.error("Policy fetch error:", e);
+        }
+      }
+      return retPolicyCache;
+    }
+
+    function retOpenMyOrders() {
+      document.getElementById('retOrdersBackdrop').classList.remove('hidden');
+      document.getElementById('retOrdersDrawer').classList.remove('translate-x-full');
+      retLoadCustomerOrders();
+    }
+
+    function retCloseMyOrders() {
+      document.getElementById('retOrdersBackdrop').classList.add('hidden');
+      document.getElementById('retOrdersDrawer').classList.add('translate-x-full');
+    }
+
+    async function retLoadCustomerOrders() {
+      const container = document.getElementById('retOrdersList');
+      container.innerHTML = '<div class="text-center py-12 text-gray-400"><i class="fa-solid fa-spinner fa-spin text-2xl text-orange-500 mb-2"></i><div>Loading your orders...</div></div>';
+      try {
+        const res = await fetch(`/api/orders?customer_id=${retCustomerId}`);
+        const data = await res.json();
+        retCustomerOrders = data.orders || [];
+        retRenderCustomerOrders();
+      } catch (err) {
+        container.innerHTML = `<div class="text-center py-8 text-red-500">Failed to load orders: ${err.message}</div>`;
+      }
+    }
+
+    function retRenderCustomerOrders() {
+      const container = document.getElementById('retOrdersList');
+      if (!retCustomerOrders || retCustomerOrders.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-12 bg-white rounded-2xl border border-gray-200 p-6 space-y-3">
+            <div class="w-12 h-12 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center mx-auto text-xl">
+              <i class="fa-solid fa-box-open"></i>
+            </div>
+            <h4 class="font-bold text-gray-800 text-sm">No Orders Found</h4>
+            <p class="text-gray-500 text-xs">You haven't placed any orders yet. Add items to cart and checkout to try the post-delivery returns workflow.</p>
+          </div>
+        `;
+        return;
+      }
+
+      const statusBadges = {
+        'placed': 'bg-blue-100 text-blue-800 border-blue-200',
+        'shipped': 'bg-indigo-100 text-indigo-800 border-indigo-200',
+        'out_for_delivery': 'bg-amber-100 text-amber-800 border-amber-200',
+        'delivered': 'bg-emerald-100 text-emerald-800 border-emerald-200',
+      };
+
+      container.innerHTML = retCustomerOrders.map(order => {
+        const isDelivered = order.status === 'delivered';
+        const stCls = statusBadges[order.status] || 'bg-gray-100 text-gray-700 border-gray-200';
+
+        const devAdvanceBtn = !isDelivered
+          ? `<button onclick="retDevAdvanceOrder('${order.id}')" class="px-2 py-0.5 bg-purple-100 hover:bg-purple-200 text-purple-800 rounded font-semibold text-[10px] transition border border-purple-300 flex items-center gap-1" title="Dev helper: advance status to delivered">
+               <i class="fa-solid fa-wand-magic-sparkles"></i> Dev: Mark Delivered
+             </button>`
+          : '';
+
+        const itemsHtml = (order.items || []).map(item => {
+          const returns = item.returns || [];
+          
+          let returnBadges = returns.map(r => `
+            <div class="flex items-center justify-between p-2 bg-orange-50/70 border border-orange-200 rounded-lg text-[11px] mt-1.5">
+              <span class="font-mono font-bold text-orange-700">${r.reference}: <strong class="capitalize">${r.status.replace(/_/g, ' ')}</strong></span>
+              <button onclick="retOpenTracker('${r.id}')" class="text-orange-600 hover:underline font-bold text-[10px] flex items-center gap-1">
+                <i class="fa-solid fa-route"></i> Track
+              </button>
+            </div>
+          `).join('');
+
+          let actionBtn = '';
+          if (item.return_eligible) {
+            actionBtn = `
+              <button onclick="retOpenReturnModal('${order.id}', '${item.order_item_id}')" class="px-3 py-1.5 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-bold text-[11px] transition shadow-xs flex items-center gap-1">
+                <i class="fa-solid fa-rotate-left"></i> Return Item
+              </button>
+            `;
+          } else {
+            actionBtn = `
+              <div class="text-[10px] text-gray-400 text-right max-w-[140px] italic">
+                ${item.ineligible_reason || 'Return not available'}
+              </div>
+            `;
+          }
+
+          return `
+            <div class="p-3 bg-white rounded-xl border border-gray-200 space-y-2">
+              <div class="flex items-center justify-between gap-3">
+                <div class="flex items-center gap-2.5 flex-1 min-w-0">
+                  <img src="${item.image_url || '/static/placeholder.png'}" class="w-12 h-12 rounded-lg object-cover border border-gray-100 flex-shrink-0">
+                  <div class="min-w-0 flex-1">
+                    <h5 class="font-semibold text-gray-900 text-xs truncate" title="${item.name}">${item.name}</h5>
+                    <p class="text-[10px] text-gray-500">${item.category} • Qty: <strong>${item.quantity}</strong> (Returnable: <strong>${item.returnable_qty}</strong>)</p>
+                    <p class="text-[11px] font-bold text-gray-800 font-mono">₹${item.unit_price_inr.toLocaleString('en-IN')}</p>
+                  </div>
+                </div>
+                <div class="flex-shrink-0">
+                  ${actionBtn}
+                </div>
+              </div>
+              ${returnBadges}
+            </div>
+          `;
+        }).join('');
+
+        return `
+          <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 space-y-3">
+            <div class="flex items-center justify-between border-b pb-2.5">
+              <div>
+                <span class="font-mono text-xs font-bold text-gray-900">#${order.id.slice(0, 8)}...</span>
+                <span class="text-[10px] text-gray-400 block">${new Date(order.created_at).toLocaleDateString('en-IN', {month:'short', day:'numeric', year:'numeric'})}</span>
+              </div>
+              <div class="flex items-center gap-2">
+                ${devAdvanceBtn}
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold border uppercase ${stCls}">
+                  ${order.status.replace(/_/g, ' ')}
+                </span>
+              </div>
+            </div>
+
+            <div class="space-y-2">
+              ${itemsHtml}
+            </div>
+
+            <div class="flex items-center justify-between pt-2 border-t text-xs">
+              <span class="text-gray-500">Total: <strong class="text-gray-900 font-mono">₹${order.total_inr.toLocaleString('en-IN')}</strong> (${order.city})</span>
+              ${order.delivered_at ? `<span class="text-[10px] text-emerald-600 font-semibold"><i class="fa-solid fa-check-circle"></i> Delivered ${new Date(order.delivered_at).toLocaleDateString()}</span>` : ''}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function retDevAdvanceOrder(orderId) {
+      try {
+        const res = await fetch(`/dev/orders/${orderId}/advance`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ target_status: 'delivered' })
+        });
+        if (!res.ok) throw new Error("Could not advance order.");
+        retLoadCustomerOrders();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    async function retOpenReturnModal(orderId, orderItemId) {
+      const order = retCustomerOrders.find(o => o.id === orderId);
+      if (!order) return;
+      const item = (order.items || []).find(i => i.order_item_id === orderItemId);
+      if (!item) return;
+
+      retActiveOrder = order;
+      retActiveItem = item;
+      retUploadedPhotos = [];
+
+      const policy = await retFetchPolicy();
+
+      // Populate summary
+      document.getElementById('retModalItemSummary').innerHTML = `
+        <img src="${item.image_url || '/static/placeholder.png'}" class="w-14 h-14 rounded-lg object-cover border border-gray-200">
+        <div class="flex-1 min-w-0 text-xs">
+          <div class="font-bold text-gray-900 truncate">${item.name}</div>
+          <div class="text-gray-500 text-[11px]">${item.category} • Unit Price: ₹${item.unit_price_inr.toLocaleString('en-IN')}</div>
+          <div class="text-orange-600 font-semibold text-[11px]">Returnable Quantity: ${item.returnable_qty}</div>
+        </div>
+      `;
+
+      // Quantity selector
+      const qtySelect = document.getElementById('retQuantitySelect');
+      qtySelect.innerHTML = '';
+      for (let i = 1; i <= item.returnable_qty; i++) {
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.textContent = i;
+        qtySelect.appendChild(opt);
+      }
+      document.getElementById('retReturnableQtyHint').textContent = `of ${item.quantity} purchased`;
+
+      // Filter reasons based on category
+      const reasonSelect = document.getElementById('retReasonSelect');
+      reasonSelect.innerHTML = '';
+      const catLower = (item.category || '').toLowerCase();
+
+      (policy.reasons || []).forEach(r => {
+        let allowed = true;
+        if (r.code === 'size_fit' && catLower !== 'fashion') allowed = false;
+        if ((catLower === 'beauty' || catLower === 'food & health') && !['damaged_in_transit', 'wrong_item'].includes(r.code)) allowed = false;
+
+        if (allowed) {
+          const opt = document.createElement('option');
+          opt.value = r.code;
+          opt.textContent = r.label;
+          reasonSelect.appendChild(opt);
+        }
+      });
+
+      // Clear description & photos
+      document.getElementById('retDescription').value = '';
+      retRenderPhotoPreviews();
+
+      // Setup exchange sizes if applicable
+      const exchangeSizeSelect = document.getElementById('retExchangeSizeSelect');
+      exchangeSizeSelect.innerHTML = '';
+      const sizes = Array.isArray(item.sizes) && item.sizes.length > 0 ? item.sizes : ['S', 'M', 'L', 'XL', 'XXL'];
+      sizes.forEach(sz => {
+        const opt = document.createElement('option');
+        opt.value = sz;
+        opt.textContent = sz;
+        exchangeSizeSelect.appendChild(opt);
+      });
+
+      retHandleReasonChange();
+      retUpdateRefundPreview();
+      document.getElementById('retReturnModal').classList.remove('hidden');
+    }
+
+    function retCloseReturnModal() {
+      document.getElementById('retReturnModal').classList.add('hidden');
+      retActiveOrder = null;
+      retActiveItem = null;
+      retUploadedPhotos = [];
+    }
+
+    function retHandleReasonChange() {
+      const reason = document.getElementById('retReasonSelect').value;
+      const catLower = (retActiveItem?.category || '').toLowerCase();
+      
+      const optReplacement = document.getElementById('retOptReplacement');
+      const optExchange = document.getElementById('retOptExchange');
+      const photoReq = document.getElementById('retPhotoRequiredLabel');
+
+      // Replacement disabled for beauty/food
+      if (catLower === 'beauty' || catLower === 'food & health') {
+        optReplacement.classList.add('opacity-40', 'pointer-events-none');
+      } else {
+        optReplacement.classList.remove('opacity-40', 'pointer-events-none');
+      }
+
+      // Exchange only for Fashion + size_fit
+      if (catLower === 'fashion' && reason === 'size_fit') {
+        optExchange.classList.remove('opacity-40', 'pointer-events-none');
+      } else {
+        optExchange.classList.add('opacity-40', 'pointer-events-none');
+        const exRadio = document.querySelector('input[name="retResolution"][value="exchange"]');
+        if (exRadio && exRadio.checked) {
+          document.querySelector('input[name="retResolution"][value="refund"]').checked = true;
+        }
+      }
+
+      // Photo requirement
+      if (reason === 'size_fit') {
+        photoReq.classList.add('hidden');
+        document.getElementById('retReasonHint').textContent = "Size/fit return: Photos optional.";
+      } else {
+        photoReq.classList.remove('hidden');
+        document.getElementById('retReasonHint').textContent = "At least 1 photo required for quality inspection.";
+      }
+
+      retHandleResolutionChange();
+    }
+
+    function retHandleResolutionChange() {
+      const selected = document.querySelector('input[name="retResolution"]:checked')?.value || 'refund';
+      const container = document.getElementById('retExchangeSizeContainer');
+      if (selected === 'exchange') {
+        container.classList.remove('hidden');
+      } else {
+        container.classList.add('hidden');
+      }
+      retUpdateRefundPreview();
+    }
+
+    function retUpdateRefundPreview() {
+      if (!retActiveItem) return;
+      const qty = parseInt(document.getElementById('retQuantitySelect').value || '1', 10);
+      const res = document.querySelector('input[name="retResolution"]:checked')?.value || 'refund';
+      const display = document.getElementById('retEstimatedRefund');
+
+      if (res === 'refund') {
+        const total = qty * retActiveItem.unit_price_inr;
+        display.textContent = `₹${total.toLocaleString('en-IN')}`;
+      } else if (res === 'replacement') {
+        display.textContent = "Replacement Unit (₹0.00)";
+      } else {
+        display.textContent = "Size Exchange (₹0.00)";
+      }
+    }
+
+    async function retHandlePhotoUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      if (retUploadedPhotos.length >= 3) {
+        alert("Maximum 3 photos allowed.");
+        return;
+      }
+
+      const btn = document.getElementById('retUploadBtn');
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Uploading...`;
+
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+        const res = await fetch('/api/returns/uploads', {
+          method: 'POST',
+          body: formData,
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || "Upload failed");
+        retUploadedPhotos.push(data.url);
+        retRenderPhotoPreviews();
+      } catch (err) {
+        alert("Photo upload error: " + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-camera"></i> <span>Add Photo</span>`;
+        event.target.value = '';
+      }
+    }
+
+    function retRenderPhotoPreviews() {
+      const container = document.getElementById('retPhotoPreviews');
+      document.getElementById('retPhotoCountText').textContent = `${retUploadedPhotos.length} / 3 uploaded`;
+      
+      const uploadBtn = document.getElementById('retUploadBtn');
+      if (retUploadedPhotos.length >= 3) {
+        uploadBtn.classList.add('opacity-50', 'pointer-events-none');
+      } else {
+        uploadBtn.classList.remove('opacity-50', 'pointer-events-none');
+      }
+
+      container.innerHTML = retUploadedPhotos.map((url, idx) => `
+        <div class="relative group w-14 h-14 rounded-lg overflow-hidden border border-gray-300">
+          <img src="${url}" class="w-full h-full object-cover">
+          <button type="button" onclick="retRemovePhoto(${idx})" class="absolute top-0.5 right-0.5 bg-red-600 text-white w-4 h-4 rounded-full flex items-center justify-center text-[9px] hover:bg-red-700">
+            &times;
+          </button>
+        </div>
+      `).join('');
+    }
+
+    function retRemovePhoto(index) {
+      retUploadedPhotos.splice(index, 1);
+      retRenderPhotoPreviews();
+    }
+
+    async function retSubmitReturn() {
+      if (!retActiveOrder || !retActiveItem) return;
+
+      const reason = document.getElementById('retReasonSelect').value;
+      const resolution = document.querySelector('input[name="retResolution"]:checked')?.value || 'refund';
+      const qty = parseInt(document.getElementById('retQuantitySelect').value, 10);
+      const description = document.getElementById('retDescription').value.trim();
+      const exchangeSize = resolution === 'exchange' ? document.getElementById('retExchangeSizeSelect').value : null;
+
+      // Photo check
+      if (reason !== 'size_fit' && retUploadedPhotos.length === 0) {
+        alert("Please upload at least 1 proof photo for this reason.");
+        return;
+      }
+
+      const btn = document.getElementById('retSubmitBtn');
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Submitting...`;
+
+      try {
+        const payload = {
+          customer_id: retCustomerId,
+          order_item_id: retActiveItem.order_item_id,
+          quantity: qty,
+          reason_code: reason,
+          description: description || null,
+          photo_urls: retUploadedPhotos,
+          resolution: resolution,
+          exchange_size: exchangeSize,
+        };
+
+        const res = await fetch(`/api/orders/${retActiveOrder.id}/returns`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.detail?.message || data.detail || "Failed to submit return");
+        }
+
+        retCloseReturnModal();
+        alert(`Return request ${data.reference} submitted successfully!`);
+        retLoadCustomerOrders();
+      } catch (err) {
+        alert("Error: " + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<span>Submit Request</span> <i class="fa-solid fa-arrow-right"></i>`;
+      }
+    }
+
+    async function retOpenTracker(returnId) {
+      document.getElementById('retTrackerModal').classList.remove('hidden');
+      const container = document.getElementById('retTrackerContent');
+      container.innerHTML = '<div class="text-center py-8 text-gray-400"><i class="fa-solid fa-spinner fa-spin text-2xl text-orange-500 mb-2"></i><div>Fetching status timeline...</div></div>';
+
+      try {
+        const res = await fetch(`/api/returns/${returnId}`);
+        if (!res.ok) throw new Error("Could not fetch return details.");
+        const ret = await res.json();
+
+        document.getElementById('retTrackerRef').textContent = ret.reference;
+
+        const steps = [
+          { status: 'requested', label: 'Requested' },
+          { status: 'approved', label: 'Approved' },
+          { status: 'pickup_scheduled', label: 'Pickup Sched.' },
+          { status: 'picked_up', label: 'Picked Up' },
+          { status: 'received', label: 'Received' },
+          { status: ret.resolution === 'refund' ? 'refunded' : 'replacement_shipped', label: ret.resolution === 'refund' ? 'Refunded' : 'Replaced' },
+        ];
+
+        const historyStatuses = (ret.history || []).map(h => h.status);
+        const currentIdx = steps.findIndex(s => s.status === ret.status);
+
+        const stepsHtml = steps.map((s, idx) => {
+          const isDone = historyStatuses.includes(s.status) || idx < currentIdx;
+          const isCurrent = s.status === ret.status;
+          
+          let circleCls = 'bg-gray-200 text-gray-500';
+          if (isCurrent) circleCls = 'bg-orange-600 text-white animate-pulse ring-4 ring-orange-100';
+          else if (isDone) circleCls = 'bg-emerald-600 text-white';
+
+          return `
+            <div class="flex items-center gap-3">
+              <div class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold ${circleCls} flex-shrink-0">
+                ${isDone && !isCurrent ? '<i class="fa-solid fa-check"></i>' : idx + 1}
+              </div>
+              <div class="flex-1">
+                <div class="font-bold text-gray-900 ${isCurrent ? 'text-orange-600' : ''}">${s.label}</div>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        const historyHtml = (ret.history || []).map(h => `
+          <div class="flex items-start gap-2 border-b border-gray-100 pb-1.5 last:border-none">
+            <span class="w-1.5 h-1.5 rounded-full bg-orange-500 mt-1.5 flex-shrink-0"></span>
+            <div>
+              <div class="font-bold text-gray-800 capitalize">${h.status.replace(/_/g, ' ')} <span class="text-[10px] text-gray-400 font-normal">(${new Date(h.created_at).toLocaleString()})</span></div>
+              <div class="text-gray-500 text-[11px]">${h.note || ''}</div>
+            </div>
+          </div>
+        `).join('');
+
+        const canCancel = ['requested', 'approved'].includes(ret.status);
+        const cancelBtn = canCancel
+          ? `<button onclick="retCancelReturn('${ret.id}')" class="w-full py-2 bg-red-50 text-red-600 hover:bg-red-100 font-semibold rounded-xl border border-red-200 transition text-xs">
+               Cancel Return Request
+             </button>`
+          : '';
+
+        container.innerHTML = `
+          <div class="p-3 bg-gray-50 rounded-xl border border-gray-200 space-y-1">
+            <div class="flex justify-between"><span>Product:</span> <strong class="text-gray-900 truncate max-w-xs">${ret.product_name}</strong></div>
+            <div class="flex justify-between"><span>Quantity:</span> <strong>${ret.quantity}</strong></div>
+            <div class="flex justify-between"><span>Resolution:</span> <strong class="capitalize">${ret.resolution}</strong></div>
+            ${ret.pickup_date ? `<div class="flex justify-between text-indigo-600"><span>Scheduled Pickup:</span> <strong>${ret.pickup_date}</strong></div>` : ''}
+            <div class="flex justify-between"><span>Amount:</span> <strong class="text-orange-600 font-mono">₹${(ret.refund_amount_inr || 0).toLocaleString('en-IN')}</strong></div>
+          </div>
+
+          <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 space-y-3">
+            <div class="font-bold text-gray-700 text-xs">Progress Tracker:</div>
+            <div class="space-y-2">
+              ${stepsHtml}
+            </div>
+          </div>
+
+          <div class="bg-gray-50 p-3 rounded-xl border border-gray-200 space-y-2">
+            <div class="font-bold text-gray-700 text-xs">Status History Log:</div>
+            <div class="space-y-1.5">
+              ${historyHtml}
+            </div>
+          </div>
+
+          ${cancelBtn}
+        `;
+      } catch (err) {
+        container.innerHTML = `<div class="text-center py-6 text-red-500">${err.message}</div>`;
+      }
+    }
+
+    function retCloseTracker() {
+      document.getElementById('retTrackerModal').classList.add('hidden');
+    }
+
+    async function retCancelReturn(returnId) {
+      if (!confirm("Are you sure you want to cancel this return request?")) return;
+      try {
+        const res = await fetch(`/api/returns/${returnId}/cancel`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ customer_id: retCustomerId, note: "Cancelled by customer via UI" })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || "Failed to cancel return");
+        retCloseTracker();
+        alert("Return request cancelled.");
+        retLoadCustomerOrders();
+      } catch (err) {
+        alert(err.message);
       }
     }
   </script>

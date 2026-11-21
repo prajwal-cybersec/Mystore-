@@ -39,7 +39,7 @@ export function isAiTryonEligible(p) {
   const cat = (p.category || '').toLowerCase();
   const name = (p.name || '').toLowerCase();
   return /fashion|beauty/i.test(cat) || 
-         /headphone|headset|earphone|earbuds|rockerz|lipstick|blush|rouge/i.test(name) || 
+         /headphone|headset|earphone|earbuds|rockerz|airdopes|bassheads|lipstick|lip color|blush|rouge/i.test(name) || 
          Boolean(p.tryon_supported);
 }
 
