@@ -22,6 +22,34 @@ _cb_last_failure: float = 0.0
 _cb_cooldown: float = 60.0  # seconds to wait before probing OpenSearch again
 
 
+# Category aliases mapping legacy and variant terms to active catalogue categories
+CATEGORY_ALIASES = {
+    "grocery": "Food & Health",
+    "atta": "Food & Health",
+    "food": "Food & Health",
+    "health": "Food & Health",
+    "food & health": "Food & Health",
+    "food and health": "Food & Health",
+    "personal_care": "Beauty",
+    "personal care": "Beauty",
+    "beauty": "Beauty",
+    "cosmetics": "Beauty",
+    "home": "Appliances",
+    "cookware": "Appliances",
+    "home & cookware": "Appliances",
+    "appliances": "Appliances",
+    "appliance": "Appliances",
+    "mobiles": "Mobiles",
+    "mobile": "Mobiles",
+    "phones": "Mobiles",
+    "phone": "Mobiles",
+    "electronics": "Electronics",
+    "electronic": "Electronics",
+    "fashion": "Fashion",
+    "clothing": "Fashion",
+}
+
+
 def build_bm25_query(
     search_term: str,
     category: Optional[str] = None,
@@ -290,8 +318,11 @@ async def _pg_fallback_search(
     params: Dict[str, Any] = {}
 
     if category:
-        where_clauses.append("p.category ILIKE :category")
-        params["category"] = category
+        clean_cat = category.strip().lower()
+        target_cat = CATEGORY_ALIASES.get(clean_cat, category.strip())
+        where_clauses.append("(p.category ILIKE :cat_exact OR p.category ILIKE :cat_pattern OR p.attrs->>'subcategory' ILIKE :cat_pattern)")
+        params["cat_exact"] = target_cat
+        params["cat_pattern"] = f"%{target_cat}%"
 
     if min_price is not None:
         where_clauses.append("p.price_inr >= :min_price")

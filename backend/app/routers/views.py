@@ -16,7 +16,11 @@ templates = Jinja2Templates(directory=str(templates_dir))
 @router.get("/", response_class=HTMLResponse)
 async def home_page(request: Request):
     """Serve main store catalog, Hinglish search, cart, and checkout UI."""
-    return templates.TemplateResponse(request, "index.html")
+    response = templates.TemplateResponse(request, "index.html")
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+    return response
 
 
 @router.get("/pipeline", response_class=HTMLResponse)
