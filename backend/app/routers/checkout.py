@@ -109,72 +109,79 @@ async def stress_last_unit_endpoint(
     target_city = req.city
     target_product_id = req.product_id
 
-    # 1. If not specified, select a catalogue product to test concurrency on
-    async with async_session_factory() as session:
-        if not target_product_id:
-            res = await session.execute(
-                text("SELECT id FROM products WHERE sku = 'MOB-0004'")
+    try:
+        # 1. If not specified, select a catalogue product to test concurrency on
+        async with async_session_factory() as session:
+            if not target_product_id:
+                res = await session.execute(
+                    text("SELECT id FROM products WHERE sku = 'MOB-0004'")
+                )
+                row = res.scalar_one_or_none()
+                if not row:
+                    res = await session.execute(text("SELECT id FROM products ORDER BY id ASC LIMIT 1"))
+                    row = res.scalar_one_or_none()
+                if not row:
+                    raise HTTPException(status_code=404, detail="No products in catalogue to run stress test on.")
+                target_product_id = str(row)
+
+            # Reset stock to exactly 1 unit for the test
+            await session.execute(
+                text("""
+                    INSERT INTO store_stock (product_id, city, qty, updated_at)
+                    VALUES (:pid, :city, 1, NOW())
+                    ON CONFLICT (product_id, city) DO UPDATE SET qty = 1, updated_at = NOW()
+                """),
+                {"pid": target_product_id, "city": target_city},
             )
-            row = res.scalar_one_or_none()
-            if not row:
-                res = await session.execute(text("SELECT id FROM products ORDER BY id ASC LIMIT 1"))
-                row = res.scalar_one()
-            target_product_id = str(row)
+            await session.commit()
 
-        # Reset stock to exactly 1 unit for the test
-        await session.execute(
-            text("""
-                INSERT INTO store_stock (product_id, city, qty, updated_at)
-                VALUES (:pid, :city, 1, NOW())
-                ON CONFLICT (product_id, city) DO UPDATE SET qty = 1, updated_at = NOW()
-            """),
-            {"pid": target_product_id, "city": target_city},
-        )
-        await session.commit()
+        # 2. Fire N concurrent checkout tasks
+        concurrency = req.concurrency
+        successes = []
+        rejections = []
 
-    # 2. Fire N concurrent checkout tasks
-    concurrency = req.concurrency
-    successes = []
-    rejections = []
+        async def attempt_checkout(buyer_idx: int):
+            try:
+                async with async_session_factory() as session:
+                    async with session.begin():
+                        res = await execute_checkout_transaction(
+                            session=session,
+                            customer_id="11111111-1111-1111-1111-111111111111",
+                            city=target_city,
+                            items=[{"product_id": target_product_id, "quantity": 1}],
+                        )
+                        return {"status": "SUCCESS", "buyer": buyer_idx, "order_id": res["order_id"]}
+            except Exception as exc:
+                return {"status": "REJECTED", "buyer": buyer_idx, "reason": str(exc)}
 
-    async def attempt_checkout(buyer_idx: int):
-        try:
-            async with async_session_factory() as session:
-                async with session.begin():
-                    res = await execute_checkout_transaction(
-                        session=session,
-                        customer_id="11111111-1111-1111-1111-111111111111",
-                        city=target_city,
-                        items=[{"product_id": target_product_id, "quantity": 1}],
-                    )
-                    return {"status": "SUCCESS", "buyer": buyer_idx, "order_id": res["order_id"]}
-        except Exception as exc:
-            return {"status": "REJECTED", "buyer": buyer_idx, "reason": str(exc)}
+        tasks = [attempt_checkout(i + 1) for i in range(concurrency)]
+        results = await asyncio.gather(*tasks)
 
-    tasks = [attempt_checkout(i + 1) for i in range(concurrency)]
-    results = await asyncio.gather(*tasks)
+        for r in results:
+            if r["status"] == "SUCCESS":
+                successes.append(r)
+            else:
+                rejections.append(r)
 
-    for r in results:
-        if r["status"] == "SUCCESS":
-            successes.append(r)
-        else:
-            rejections.append(r)
+        # Verify final remaining stock in DB is 0
+        async with async_session_factory() as session:
+            final_stock_res = await session.execute(
+                text("SELECT qty FROM store_stock WHERE product_id = :pid AND city = :city"),
+                {"pid": target_product_id, "city": target_city},
+            )
+            final_stock = final_stock_res.scalar() or 0
 
-    # Verify final remaining stock in DB is 0
-    async with async_session_factory() as session:
-        final_stock_res = await session.execute(
-            text("SELECT qty FROM store_stock WHERE product_id = :pid AND city = :city"),
-            {"pid": target_product_id, "city": target_city},
-        )
-        final_stock = final_stock_res.scalar() or 0
-
-    return {
-        "concurrency_tested": concurrency,
-        "succeeded_count": len(successes),
-        "rejected_count": len(rejections),
-        "winner": successes[0] if successes else None,
-        "final_store_stock": final_stock,
-        "invariant_preserved": len(successes) == 1 and final_stock == 0,
-        "message": f"Exactly {len(successes)} buyer acquired the unit; {len(rejections)} rejected with OutOfStockError.",
-    }
+        return {
+            "concurrency_tested": concurrency,
+            "succeeded_count": len(successes),
+            "rejected_count": len(rejections),
+            "winner": successes[0] if successes else None,
+            "final_store_stock": final_stock,
+            "invariant_preserved": len(successes) == 1 and final_stock == 0,
+            "message": f"Exactly {len(successes)} buyer acquired the unit; {len(rejections)} rejected with OutOfStockError.",
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Stress test failed: {str(e)}")
 
