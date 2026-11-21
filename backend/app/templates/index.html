@@ -1521,6 +1521,61 @@
       }
     }
 
+    let lastLandmarkTimestamp = -1;
+
+    // Real-time canvas head detector for instant zero-latency tracking
+    let fallbackFaceBox = { x: 0.50, y: 0.36, width: 0.24, height: 0.30 };
+    const trackCanvas = document.createElement('canvas');
+    trackCanvas.width = 64;
+    trackCanvas.height = 48;
+    const trackCtx = trackCanvas.getContext('2d', { willReadFrequently: true });
+
+    function detectUserHeadFromVideo() {
+      if (!tryonVideoEl || tryonVideoEl.readyState < 2) return fallbackFaceBox;
+      trackCtx.drawImage(tryonVideoEl, 0, 0, 64, 48);
+      let imgData;
+      try {
+        imgData = trackCtx.getImageData(0, 0, 64, 48).data;
+      } catch(e) {
+        return fallbackFaceBox;
+      }
+
+      let sumX = 0, sumY = 0, count = 0;
+      let minX = 64, maxX = 0, minY = 48, maxY = 0;
+
+      for (let y = 6; y < 42; y++) {
+        for (let x = 10; x < 54; x++) {
+          const idx = (y * 64 + x) * 4;
+          const r = imgData[idx];
+          const g = imgData[idx + 1];
+          const b = imgData[idx + 2];
+          // Skin color tone heuristic
+          if (r > 75 && g > 40 && b > 25 && r > g && r > b && (r - g) > 10) {
+            sumX += x;
+            sumY += y;
+            count++;
+            if (x < minX) minX = x;
+            if (x > maxX) maxX = x;
+            if (y < minY) minY = y;
+            if (y > maxY) maxY = y;
+          }
+        }
+      }
+
+      if (count > 20) {
+        const cx = (sumX / count) / 64;
+        const cy = (sumY / count) / 48;
+        const w = Math.max(0.18, Math.min(0.42, (maxX - minX + 8) / 64));
+        const h = Math.max(0.22, Math.min(0.50, (maxY - minY + 8) / 48));
+
+        fallbackFaceBox.x = fallbackFaceBox.x * 0.70 + cx * 0.30;
+        fallbackFaceBox.y = fallbackFaceBox.y * 0.70 + cy * 0.30;
+        fallbackFaceBox.width = fallbackFaceBox.width * 0.70 + w * 0.30;
+        fallbackFaceBox.height = fallbackFaceBox.height * 0.70 + h * 0.30;
+      }
+      return fallbackFaceBox;
+    }
+
     async function loadMediaPipeModel() {
       if (!tryonActiveProduct) return;
       const type = tryonActiveProduct.tryon_type;
@@ -1535,31 +1590,55 @@
         );
 
         if (type === 'shirt' || type === 'tshirt') {
-          tryonLandmarker = await PoseLandmarker.createFromOptions(wasmResolver, {
-            baseOptions: {
-              modelAssetPath: "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task",
-              delegate: "GPU"
-            },
-            runningMode: "VIDEO",
-            numPoses: 1
-          });
+          try {
+            tryonLandmarker = await PoseLandmarker.createFromOptions(wasmResolver, {
+              baseOptions: {
+                modelAssetPath: "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task",
+                delegate: "GPU"
+              },
+              runningMode: "VIDEO",
+              numPoses: 1
+            });
+          } catch(gpuErr) {
+            console.warn('Pose GPU delegate unavailable, falling back to CPU:', gpuErr);
+            tryonLandmarker = await PoseLandmarker.createFromOptions(wasmResolver, {
+              baseOptions: {
+                modelAssetPath: "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task",
+                delegate: "CPU"
+              },
+              runningMode: "VIDEO",
+              numPoses: 1
+            });
+          }
           tryonLandmarkerType = 'pose';
           if (statusText) statusText.textContent = 'Pose Tracking Active';
         } else if (['lipstick', 'blush', 'headphones', 'glasses', 'earrings'].includes(type)) {
-          tryonLandmarker = await FaceLandmarker.createFromOptions(wasmResolver, {
-            baseOptions: {
-              modelAssetPath: "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
-              delegate: "GPU"
-            },
-            runningMode: "VIDEO",
-            numFaces: 1
-          });
+          try {
+            tryonLandmarker = await FaceLandmarker.createFromOptions(wasmResolver, {
+              baseOptions: {
+                modelAssetPath: "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
+                delegate: "GPU"
+              },
+              runningMode: "VIDEO",
+              numFaces: 1
+            });
+          } catch(gpuErr) {
+            console.warn('Face GPU delegate unavailable, falling back to CPU:', gpuErr);
+            tryonLandmarker = await FaceLandmarker.createFromOptions(wasmResolver, {
+              baseOptions: {
+                modelAssetPath: "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
+                delegate: "CPU"
+              },
+              runningMode: "VIDEO",
+              numFaces: 1
+            });
+          }
           tryonLandmarkerType = 'face';
           if (statusText) statusText.textContent = 'Face Tracking Active';
         }
       } catch (e) {
-        console.warn('MediaPipe CDN lazy-load skipped, using smooth geometric vision tracker:', e);
-        if (statusText) statusText.textContent = 'Smart Geometric Tracker';
+        console.warn('MediaPipe CDN load note:', e);
+        if (statusText) statusText.textContent = 'Smart Face Tracker';
       }
     }
 
@@ -1593,9 +1672,14 @@
       const type = tryonActiveProduct ? tryonActiveProduct.tryon_type : null;
       let rawLandmarks = null;
 
-      if (tryonLandmarker && tryonLandmarkerType) {
+      if (tryonLandmarker && tryonLandmarkerType && tryonVideoEl.readyState >= 2) {
         try {
-          const timestamp = performance.now();
+          let timestamp = performance.now();
+          if (timestamp <= lastLandmarkTimestamp) {
+            timestamp = lastLandmarkTimestamp + 1;
+          }
+          lastLandmarkTimestamp = timestamp;
+
           if (tryonLandmarkerType === 'pose') {
             const results = tryonLandmarker.detectForVideo(tryonVideoEl, timestamp);
             if (results && results.landmarks && results.landmarks[0]) {
@@ -1608,11 +1692,11 @@
             }
           }
         } catch (inferenceErr) {
-          // Handled gracefully
+          console.warn('Inference notice:', inferenceErr);
         }
       }
 
-      // Fallback synthetic tracker if AI model has not loaded or no person detected
+      // Fallback tracker based on user's real face in video feed
       if (!rawLandmarks) {
         rawLandmarks = generateSyntheticTracker(vw, vh, type);
       }
@@ -1650,34 +1734,48 @@
       tryonAnimId = requestAnimationFrame(renderTryonFrame);
     }
 
-    // Synthetic fallback tracker based on portrait frame geometry
+    // Dynamic tracker using user's detected face position & proportions
     function generateSyntheticTracker(vw, vh, type) {
-      const cx = 0.5;
-      const cy = 0.5;
-      const time = performance.now() * 0.001;
-      const sway = Math.sin(time * 0.8) * 0.004;
+      const box = detectUserHeadFromVideo();
+      const cx = box.x;
+      const cy = box.y;
+      const hw = box.width;
+      const hh = box.height;
 
       if (type === 'shirt' || type === 'tshirt') {
         const lm = new Array(33).fill(null).map(() => ({ x: cx, y: cy, z: 0 }));
-        lm[11] = { x: 0.36 + sway, y: 0.46, z: 0 }; // Left shoulder
-        lm[12] = { x: 0.64 + sway, y: 0.46, z: 0 }; // Right shoulder
-        lm[23] = { x: 0.40 + sway, y: 0.85, z: 0 }; // Left hip
-        lm[24] = { x: 0.60 + sway, y: 0.85, z: 0 }; // Right hip
+        const shY = cy + hh * 0.72;
+        const shSpread = hw * 1.35;
+        lm[11] = { x: cx - shSpread, y: shY, z: 0 }; // Left shoulder
+        lm[12] = { x: cx + shSpread, y: shY, z: 0 }; // Right shoulder
+        lm[23] = { x: cx - shSpread * 0.75, y: shY + hh * 1.5, z: 0 }; // Left hip
+        lm[24] = { x: cx + shSpread * 0.75, y: shY + hh * 1.5, z: 0 }; // Right hip
         return lm;
       } else {
         const lm = new Array(478).fill(null).map(() => ({ x: cx, y: cy, z: 0 }));
-        lm[10] = { x: 0.50 + sway, y: 0.22, z: 0 }; // Top of head
-        lm[234] = { x: 0.38 + sway, y: 0.40, z: 0 }; // Left ear
-        lm[454] = { x: 0.62 + sway, y: 0.40, z: 0 }; // Right ear
-        lm[116] = { x: 0.43 + sway, y: 0.48, z: 0 }; // Left cheek
-        lm[345] = { x: 0.57 + sway, y: 0.48, z: 0 }; // Right cheek
+        lm[10] = { x: cx, y: cy - hh * 0.52, z: 0 }; // Head top crown
+        lm[234] = { x: cx - hw * 0.55, y: cy, z: 0 }; // Left ear
+        lm[454] = { x: cx + hw * 0.55, y: cy, z: 0 }; // Right ear
+        lm[1] = { x: cx, y: cy + hh * 0.08, z: 0 };   // Nose tip
+        lm[168] = { x: cx, y: cy - hh * 0.05, z: 0 }; // Nose bridge
+        lm[116] = { x: cx - hw * 0.32, y: cy + hh * 0.12, z: 0 }; // Left cheek
+        lm[345] = { x: cx + hw * 0.32, y: cy + hh * 0.12, z: 0 }; // Right cheek
 
         // Lips outer
         const lipIndices = [61, 185, 40, 39, 37, 0, 267, 269, 270, 409, 291, 375, 321, 405, 314, 17, 84, 181, 91, 146];
         lipIndices.forEach((idx, i) => {
           const ang = (i / lipIndices.length) * Math.PI * 2;
-          lm[idx] = { x: 0.50 + Math.cos(ang) * 0.045 + sway, y: 0.58 + Math.sin(ang) * 0.02, z: 0 };
+          lm[idx] = { x: cx + Math.cos(ang) * (hw * 0.20), y: cy + hh * 0.32 + Math.sin(ang) * (hh * 0.09), z: 0 };
         });
+        // Lips inner
+        const innerIndices = [78, 191, 80, 81, 82, 13, 312, 311, 310, 415, 308, 324, 318, 402, 317, 14, 87, 178, 88, 95];
+        innerIndices.forEach((idx, i) => {
+          const ang = (i / innerIndices.length) * Math.PI * 2;
+          lm[idx] = { x: cx + Math.cos(ang) * (hw * 0.14), y: cy + hh * 0.32 + Math.sin(ang) * (hh * 0.05), z: 0 };
+        });
+        return lm;
+      }
+    }
         // Lips inner
         const innerIndices = [78, 191, 80, 81, 82, 13, 312, 311, 310, 415, 308, 324, 318, 402, 317, 14, 87, 178, 88, 95];
         innerIndices.forEach((idx, i) => {
@@ -1691,10 +1789,10 @@
     // Overlay 1: Apparel (Shirt / T-Shirt / Kurta)
     function renderApparelOverlay(ctx, vw, vh, lm) {
       if (!tryonAssetImg || !tryonAssetImg.complete) return;
-      const shL = lm[11];
-      const shR = lm[12];
-      const hipL = lm[23] || { x: shL.x, y: shL.y + 0.35, z: 0 };
-      const hipR = lm[24] || { x: shR.x, y: shR.y + 0.35, z: 0 };
+      const shL = lm[11] || { x: 0.32, y: 0.45 };
+      const shR = lm[12] || { x: 0.68, y: 0.45 };
+      const hipL = lm[23] || { x: shL.x, y: shL.y + 0.38, z: 0 };
+      const hipR = lm[24] || { x: shR.x, y: shR.y + 0.38, z: 0 };
 
       const pShL = { x: shL.x * vw, y: shL.y * vh };
       const pShR = { x: shR.x * vw, y: shR.y * vh };
@@ -1704,26 +1802,23 @@
       // Distance and angles
       const shDist = Math.hypot(pShR.x - pShL.x, pShR.y - pShL.y);
       const shAngle = Math.atan2(pShR.y - pShL.y, pShR.x - pShL.x);
-      const torsoHeight = Math.hypot(
-        ((pHipL.x + pHipR.x) / 2) - ((pShL.x + pShR.x) / 2),
-        ((pHipL.y + pHipR.y) / 2) - ((pShL.y + pShR.y) / 2)
-      );
 
       // Depth orientation estimation
       const zDiff = Math.abs((shL.z || 0) - (shR.z || 0));
-      let turnFactor = Math.max(0.2, 1.0 - zDiff * 1.5);
+      let turnFactor = Math.max(0.3, 1.0 - zDiff * 1.4);
       let fadeOpacity = calConfig.opacity;
       if (zDiff > 0.45) {
         fadeOpacity *= Math.max(0, 1.0 - (zDiff - 0.45) * 4);
       }
       if (fadeOpacity <= 0.02) return;
 
-      const drawW = shDist * 1.45 * calConfig.scale * calConfig.scaleX * turnFactor;
-      const drawH = (torsoHeight > 40 ? torsoHeight * 1.35 : shDist * 1.6) * calConfig.scale * calConfig.scaleY;
+      const drawW = shDist * 1.50 * calConfig.scale * calConfig.scaleX * turnFactor;
+      const assetRatio = (tryonAssetImg.naturalHeight || tryonAssetImg.height) / (tryonAssetImg.naturalWidth || tryonAssetImg.width) || 1.18;
+      const drawH = drawW * assetRatio * calConfig.scaleY;
 
-      // Anchor midpoint between shoulders
+      // Collar sits near the shoulder line, body extends down
       const midX = (pShL.x + pShR.x) / 2 + calConfig.offsetX;
-      const midY = (pShL.y + pShR.y) / 2 + (drawH * 0.42) + calConfig.offsetY;
+      const midY = (pShL.y + pShR.y) / 2 + (drawH * 0.44) + calConfig.offsetY;
 
       ctx.save();
       ctx.translate(midX, midY);
@@ -1734,28 +1829,41 @@
       ctx.restore();
     }
 
-    // Overlay 2: Headphones (boAt Rockerz 430)
+    // Overlay 2: Photorealistic Front-View Headphones (boAt Rockerz 430)
     function renderHeadphonesOverlay(ctx, vw, vh, lm) {
       if (!tryonAssetImg || !tryonAssetImg.complete) return;
-      const earL = lm[234] || { x: 0.38, y: 0.40 };
-      const earR = lm[454] || { x: 0.62, y: 0.40 };
-      const headTop = lm[10] || { x: 0.50, y: 0.22 };
+      const earL = lm[234] || { x: 0.38, y: 0.38 };
+      const earR = lm[454] || { x: 0.62, y: 0.38 };
+      const headTop = lm[10] || { x: 0.50, y: 0.18 };
+      const nose = lm[1] || lm[168] || { x: 0.50, y: 0.42 };
 
       const pEarL = { x: earL.x * vw, y: earL.y * vh };
       const pEarR = { x: earR.x * vw, y: earR.y * vh };
       const pHeadTop = { x: headTop.x * vw, y: headTop.y * vh };
+      const pNose = { x: nose.x * vw, y: nose.y * vh };
 
-      const headWidth = Math.hypot(pEarR.x - pEarL.x, pEarR.y - pEarL.y);
+      // Ear-to-ear distance
+      const earDist = Math.hypot(pEarR.x - pEarL.x, pEarR.y - pEarL.y);
+      // Head tilt angle in radians
       const headAngle = Math.atan2(pEarR.y - pEarL.y, pEarR.x - pEarL.x);
 
-      const drawW = headWidth * 1.55 * calConfig.scale * calConfig.scaleX;
-      const drawH = drawW * 1.05 * calConfig.scaleY;
+      // Over-ear headphones span across both earcups (~1.38x the inter-ear distance)
+      const drawW = earDist * 1.38 * calConfig.scale * calConfig.scaleX;
+      const assetRatio = (tryonAssetImg.naturalHeight || tryonAssetImg.height) / (tryonAssetImg.naturalWidth || tryonAssetImg.width) || 1.135;
+      const drawH = drawW * assetRatio * calConfig.scaleY;
 
-      const midX = (pEarL.x + pEarR.x) / 2 + calConfig.offsetX;
-      const midY = (pHeadTop.y * 0.7 + ((pEarL.y + pEarR.y) / 2) * 0.3) + calConfig.offsetY;
+      const earCenterY = (pEarL.y + pEarR.y) / 2;
+      const earCenterX = (pEarL.x + pEarR.x) / 2;
+
+      // Vertical anchor: Earcups are in lower 68% of the image, headband arches over headTop
+      const midX = earCenterX + calConfig.offsetX;
+      const midY = earCenterY - (drawH * 0.18) + calConfig.offsetY;
+
+      // Subtle yaw perspective shift when head rotates
+      const yawOffset = (pNose.x - earCenterX) * 0.12;
 
       ctx.save();
-      ctx.translate(midX, midY);
+      ctx.translate(midX + yawOffset, midY);
       ctx.rotate(headAngle + (calConfig.rotation * Math.PI) / 180);
       if (calConfig.flip) ctx.scale(-1, 1);
       ctx.globalAlpha = calConfig.opacity;
