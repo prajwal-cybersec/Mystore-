@@ -43,7 +43,7 @@ class Settings(BaseSettings):
     # --- App ---
     app_env: str = "development"
     log_level: str = "INFO"
-    admin_api_key: str = ""
+    admin_api_key: str = "admin123"
 
     # --- Marketplace & GST Configuration ---
     category_gst_rates: dict[str, float] = {
