@@ -951,9 +951,9 @@
               ${p.tryon_supported ? `
                 <div class="absolute top-2 right-2 z-10">
                   <button 
-                    onclick='event.stopPropagation(); startLiveTryon(${pJson})'
-                    class="bg-gradient-to-r from-orange-500 to-amber-500 hover:opacity-90 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-md flex items-center gap-1 transition transform hover:scale-105"
-                    title="Live Virtual Try-On"
+                    onclick='event.stopPropagation(); startAiTryon(${pJson})'
+                    class="bg-gradient-to-r from-fuchsia-600 to-orange-500 hover:opacity-95 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-md flex items-center gap-1 transition transform hover:scale-105"
+                    title="Live AI Virtual Try-On (Decart)"
                   >
                     <i class="fa-solid fa-wand-magic-sparkles"></i> AI Try-On
                   </button>
@@ -1263,11 +1263,11 @@
               <img id="pdmMainImage" src="${p.image_url}" alt="${p.name}" class="w-full h-full object-contain p-4 transition-transform duration-500 group-hover:scale-110" />
               ${p.tryon_supported ? `
                 <div class="absolute bottom-3 left-3 right-3 flex gap-2">
-                  <button onclick="event.stopPropagation(); startLiveTryon(currentDetailProduct)" class="flex-1 py-2.5 bg-gradient-to-r from-orange-500 to-amber-500 hover:opacity-95 text-white rounded-xl text-xs font-bold shadow-lg shadow-orange-500/20 transition flex items-center justify-center gap-1.5">
-                    <i class="fa-solid fa-camera"></i> Live Try-On
-                  </button>
                   <button onclick="event.stopPropagation(); startAiTryon(currentDetailProduct)" class="flex-1 py-2.5 bg-gradient-to-r from-fuchsia-600 to-orange-500 hover:opacity-95 text-white rounded-xl text-xs font-bold shadow-lg shadow-orange-500/20 transition flex items-center justify-center gap-1.5">
-                    <i class="fa-solid fa-wand-magic-sparkles"></i> AI Realistic
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> Live AI Try-On
+                  </button>
+                  <button onclick="event.stopPropagation(); startLiveTryon(currentDetailProduct)" class="flex-1 py-2.5 bg-gradient-to-r from-orange-500 to-amber-500 hover:opacity-95 text-white rounded-xl text-xs font-bold shadow-lg shadow-orange-500/20 transition flex items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-camera"></i> 2D Overlay
                   </button>
                 </div>
               ` : ''}

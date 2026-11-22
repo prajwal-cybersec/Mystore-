@@ -98,7 +98,7 @@ async function loadConfig() {
 
 async function referenceBlob(p) {
   const attrs = parseAttrs(p);
-  const url = attrs.tryon_ai_image || p.image_url;   // clean garment shot beats a model photo
+  const url = attrs.tryon_ai_image || p.tryon_asset || p.image_url;   // clean garment/asset shot beats a model photo
   if (!url) return null;
   try {
     const res = await fetch(url);
@@ -159,7 +159,12 @@ function ensureModal() {
           Unlike our on-device overlay try-on, your camera video is streamed to our AI partner (Decart) to generate this view. We do not store it.
           Sessions end automatically after <span id="aiConsentSecs">2 minutes</span>.
         </p>
-        <button id="aiStart" class="w-full py-3 rounded-xl bg-gradient-to-r from-fuchsia-600 to-orange-500 font-bold text-sm shadow-lg">Allow camera &amp; start</button>
+        <button id="aiStart" class="w-full py-3 rounded-xl bg-gradient-to-r from-fuchsia-600 to-orange-500 font-bold text-sm shadow-lg flex items-center justify-center gap-2">
+          <i class="fa-solid fa-wand-magic-sparkles"></i> Start Decart AI Virtual Try-On
+        </button>
+        <button id="aiInstantOverlay" class="w-full py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-semibold border border-white/15 text-gray-200 flex items-center justify-center gap-2">
+          <i class="fa-solid fa-camera"></i> Or Switch to 2D Camera Overlay
+        </button>
       </div>
 
       <!-- error / ended -->
@@ -198,6 +203,11 @@ function ensureModal() {
 
   $('aiClose').onclick = closeAiTryon;
   $('aiStart').onclick = () => beginSession();
+  $('aiInstantOverlay').onclick = () => {
+    const p = active;
+    closeAiTryon();
+    if (window.startLiveTryon) window.startLiveTryon(p);
+  };
   $('aiRetry').onclick = () => beginSession();
   $('aiCompare').onclick = () => {
     $('aiRaw').classList.toggle('hidden');
