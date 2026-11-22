@@ -1864,7 +1864,7 @@
           "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm"
         );
 
-        if (type === 'shirt' || type === 'tshirt') {
+        if (type === 'shirt' || type === 'tshirt' || type === 'saree') {
           try {
             tryonLandmarker = await PoseLandmarker.createFromOptions(wasmResolver, {
               baseOptions: {
@@ -1991,7 +1991,7 @@
       }
 
       // Render overlay based on type
-      if (type === 'shirt' || type === 'tshirt') {
+      if (type === 'shirt' || type === 'tshirt' || type === 'saree') {
         renderApparelOverlay(tryonCtx, vw, vh, smoothedLandmarks);
       } else if (type === 'headphones') {
         renderHeadphonesOverlay(tryonCtx, vw, vh, smoothedLandmarks);
@@ -2021,7 +2021,7 @@
       const hw = box.width;
       const hh = box.height;
 
-      if (type === 'shirt' || type === 'tshirt') {
+      if (type === 'shirt' || type === 'tshirt' || type === 'saree') {
         const lm = new Array(33).fill(null).map(() => ({ x: cx, y: cy, z: 0 }));
         // Shoulders sit at the bottom edge of the detected head region
         const shY = cy + hh * 0.55;

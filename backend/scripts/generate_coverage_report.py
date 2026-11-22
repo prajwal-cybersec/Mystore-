@@ -5,7 +5,7 @@ import sys
 from pathlib import Path
 
 # Add backend to path
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "backend"))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from app.database import async_session_factory
 from sqlalchemy import text
@@ -102,7 +102,7 @@ async def generate_coverage_report():
         "| **Accessories / Glasses** | FaceLandmarker (Eye Bridge 168) | `glasses` | 🟡 Ready for Catalog Addition |",
         "| **Jewellery / Earrings** | FaceLandmarker (Earlobes 177, 401) | `earrings` | 🟡 Ready for Catalog Addition |",
         "| **Accessories / Watches** | HandLandmarker (Wrist 0, Middle MCP 9) | `watch` | 🟡 Ready for Catalog Addition |",
-        "| **Fashion / Sarees** | N/A (6-yard body drape) | `unsupported` | ⚪ Unsupported |",
+        "| **Fashion / Sarees** | PoseLandmarker (Shoulders 11, 12, Hips 23, 24) | `saree` | ✅ Supported |",
         "| **Fashion / Bottomwear (Jeans, Trousers)**| N/A (Lower body obstruction) | `unsupported` | ⚪ Unsupported |",
         "| **Mobiles / Smartphones** | N/A (Handheld device) | `unsupported` | ⚪ Unsupported |",
         "| **Appliances / TV, Refrigerators** | N/A (Home appliances) | `unsupported` | ⚪ Unsupported |",

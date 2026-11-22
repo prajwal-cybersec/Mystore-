@@ -9,6 +9,7 @@
 export const TRYON_TYPES = {
   SHIRT: 'shirt',
   TSHIRT: 'tshirt',
+  SAREE: 'saree',
   HEADPHONES: 'headphones',
   LIPSTICK: 'lipstick',
   BLUSH: 'blush',
@@ -52,6 +53,26 @@ export const CATEGORY_MAP = [
       scaleY: 1.35,
       offsetX: 0.0,
       offsetY: -0.04,
+      offsetZ: 0.0,
+      rotation: 0.0,
+      flip: false,
+      fadeAngleDeg: 60.0
+    }
+  },
+
+  // 2b. Sarees
+  {
+    category: 'Fashion',
+    subcategories: ['Sarees', 'Banarasi Sarees', 'Pure Cotton Sarees', 'Jacquard Sarees', 'Ethnic Wear'],
+    keywords: ['saree', 'sari', 'jacquard saree', 'banarasi', 'sambalpuri'],
+    tryon_type: TRYON_TYPES.SAREE,
+    tryon_supported: true,
+    default_config: {
+      scale: 1.0,
+      scaleX: 1.5,
+      scaleY: 1.45,
+      offsetX: 0.0,
+      offsetY: -0.02,
       offsetZ: 0.0,
       rotation: 0.0,
       flip: false,
