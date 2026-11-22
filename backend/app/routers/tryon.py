@@ -159,9 +159,9 @@ async def get_tryon_stats():
 @router.get("/config")
 async def ai_tryon_config():
     """Tells the storefront whether AI try-on is available and which model to use."""
-    model_name = getattr(settings, "decart_vton_model", "lucy-vton-latest")
-    if not model_name or model_name == "vton-1":
-        model_name = "lucy-vton-latest"
+    model_name = getattr(settings, "decart_vton_model", "lucy-vton-3.5")
+    if not model_name or model_name in ("vton-1", "lucy-vton-latest"):
+        model_name = "lucy-vton-3.5"
     return {
         "ai_enabled": bool(getattr(settings, "decart_api_key", None)),
         "model": model_name,
@@ -186,7 +186,7 @@ async def create_ai_tryon_token(request: Request):
     max_secs = getattr(settings, "ai_tryon_max_seconds", 120)
     allowed_origins_str = getattr(settings, "ai_tryon_allowed_origins", "")
     kwargs: Dict[str, Any] = {
-        "expires_in": 60,
+        "expires_in": 120,
         "constraints": {"realtime": {"maxSessionDuration": max_secs}},
     }
     origins = [o.strip() for o in allowed_origins_str.split(",") if o.strip()]

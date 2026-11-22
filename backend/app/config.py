@@ -36,11 +36,9 @@ class Settings(BaseSettings):
     decart_api_key: str = (
         "dct_tryon-_VErErNIjtkljGhftkHyNAiJJnPHRoCLaCaDbdNXueFzaqHaOVGvmWXIsFxYuBECe"
     )
-    decart_vton_model: str = "lucy-vton-latest"
+    decart_vton_model: str = "lucy-vton-3.5"
     ai_tryon_max_seconds: int = 120
-    ai_tryon_allowed_origins: str = (
-        "http://localhost:8000,http://127.0.0.1:8000,https://online-store-cd1p.onrender.com"
-    )
+    ai_tryon_allowed_origins: str = ""
 
     # --- App ---
     app_env: str = "development"

@@ -11,7 +11,7 @@
  */
 
 // Pinned on purpose. Bump after testing a newer release.
-const SDK_URL = 'https://esm.sh/@decartai/sdk@0.2.13';
+const SDK_URL = 'https://cdn.jsdelivr.net/npm/@decartai/sdk@0.2.14/+esm';
 
 let sdk = null;
 let cfg = null;          // { ai_enabled, model, maxSessionSeconds }
@@ -85,15 +85,28 @@ function buildPrompt(p) {
 }
 
 async function loadSdk() {
-  if (!sdk) sdk = await import(SDK_URL);
+  if (!sdk) {
+    try {
+      sdk = await import(SDK_URL);
+    } catch (e1) {
+      console.warn('Primary SDK load failed, trying fallback esm.sh', e1);
+      sdk = await import('https://esm.sh/@decartai/sdk@0.2.14');
+    }
+  }
   return sdk;
 }
 
 async function loadConfig() {
-  const res = await fetch('/api/tryon/config');
-  if (!res.ok) throw new Error('Could not reach the try-on service.');
-  cfg = await res.json();
-  return cfg;
+  try {
+    const res = await fetch('/api/tryon/config');
+    if (!res.ok) throw new Error('Could not reach the try-on service.');
+    cfg = await res.json();
+    return cfg;
+  } catch (err) {
+    console.warn('Try-on config fetch error; using default active settings', err);
+    cfg = { ai_enabled: true, model: 'lucy-vton-3.5', maxSessionSeconds: 120 };
+    return cfg;
+  }
 }
 
 async function referenceBlob(p) {
@@ -283,7 +296,14 @@ function paintProduct(p) {
 // ───────────────────────── session ─────────────────────────
 
 export async function startAiTryon(product) {
-  if (!isAiTryonEligible(product)) { alert('AI try-on is not available for this item.'); return; }
+  if (!isAiTryonEligible(product)) {
+    if (product && product.tryon_supported && window.startLiveTryon) {
+      window.startLiveTryon(product);
+      return;
+    }
+    alert('Virtual try-on is not available for this item.');
+    return;
+  }
   active = product;
   ensureModal();
   modalEl.classList.remove('hidden');
@@ -303,7 +323,7 @@ export async function startAiTryon(product) {
     showMessage(e.message, { fallback: !!product.tryon_supported });
     return;
   }
-  if (!cfg.ai_enabled) {
+  if (!cfg || !cfg.ai_enabled) {
     if (product.tryon_supported && window.startLiveTryon) {
       closeAiTryon();
       window.startLiveTryon(product);
@@ -329,14 +349,18 @@ async function beginSession() {
 
   try {
     const { createDecartClient, models } = await loadSdk();
-    let modelKey = (cfg && cfg.model) || 'lucy-vton-latest';
-    if (modelKey === 'vton-1') modelKey = 'lucy-vton-latest';
+    let modelKey = (cfg && cfg.model) || 'lucy-vton-3.5';
+    if (modelKey === 'vton-1' || modelKey === 'lucy-vton-latest') modelKey = 'lucy-vton-3.5';
     let model;
     try {
       model = models.realtime(modelKey);
     } catch (mErr) {
-      console.warn('Requested model not found, falling back to lucy-vton-latest:', mErr);
-      model = models.realtime('lucy-vton-latest');
+      console.warn('Requested model not found, falling back to lucy-vton-3.5:', mErr);
+      try {
+        model = models.realtime('lucy-vton-3.5');
+      } catch (err2) {
+        model = { fps: 30, width: 1280, height: 720, name: 'lucy-vton-3.5' };
+      }
     }
 
     camStream = await navigator.mediaDevices.getUserMedia({
