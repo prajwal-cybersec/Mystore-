@@ -36,11 +36,7 @@ function parseAttrs(p) {
 
 export function isAiTryonEligible(p) {
   if (!p) return false;
-  const cat = (p.category || '').toLowerCase();
-  const name = (p.name || '').toLowerCase();
-  return /fashion|beauty/i.test(cat) || 
-         /headphone|headset|earphone|earbuds|rockerz|airdopes|bassheads|lipstick|lip color|blush|rouge/i.test(name) || 
-         Boolean(p.tryon_supported);
+  return Boolean(p.tryon_supported);
 }
 
 /**
@@ -289,10 +285,20 @@ export async function startAiTryon(product) {
   try {
     await loadConfig();
   } catch (e) {
+    if (product.tryon_supported && window.startLiveTryon) {
+      closeAiTryon();
+      window.startLiveTryon(product);
+      return;
+    }
     showMessage(e.message, { fallback: !!product.tryon_supported });
     return;
   }
   if (!cfg.ai_enabled) {
+    if (product.tryon_supported && window.startLiveTryon) {
+      closeAiTryon();
+      window.startLiveTryon(product);
+      return;
+    }
     showMessage('AI try-on is not switched on for this store yet.', { fallback: !!product.tryon_supported });
     return;
   }
@@ -379,6 +385,12 @@ async function beginSession() {
     renderRail();
   } catch (e) {
     console.error('AI try-on failed to start', e);
+    if (active && active.tryon_supported && window.startLiveTryon) {
+      const p = active;
+      closeAiTryon();
+      window.startLiveTryon(p);
+      return;
+    }
     const msg = e && e.name === 'NotAllowedError'
       ? 'Camera permission was denied. Allow camera access and try again.'
       : (e && e.message) || 'Could not start AI try-on.';
